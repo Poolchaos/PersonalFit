@@ -27,6 +27,7 @@ export interface WorkoutPlanRequest {
     quantity?: number;
     specifications?: Record<string, unknown>;
   }>;
+  workoutModality?: 'strength' | 'hiit' | 'flexibility' | 'cardio';
 }
 
 export interface WorkoutPlan {
@@ -48,6 +49,8 @@ export interface WorkoutPlan {
         reps?: number;
         duration_seconds?: number;
         rest_seconds?: number;
+        work_seconds?: number;
+        rounds?: number;
         equipment?: string[];
         target_muscles: string[];
         instructions: string;
@@ -62,7 +65,64 @@ export interface WorkoutPlan {
 export const generateWorkoutPlan = async (
   request: WorkoutPlanRequest
 ): Promise<WorkoutPlan> => {
-  const { userProfile, preferences, availableEquipment } = request;
+  const { userProfile, preferences, availableEquipment, workoutModality = 'strength' } = request;
+
+  // Build modality-specific context
+  let modalityGuidance = '';
+  if (workoutModality === 'hiit') {
+    modalityGuidance = `
+WORKOUT TYPE: HIGH-INTENSITY INTERVAL TRAINING (HIIT)
+
+Design a HIIT-focused workout plan with the following structure:
+- Include exercises with work/rest intervals (e.g., 30 seconds work, 15 seconds rest)
+- Specify rounds for each exercise or circuit
+- Focus on high-intensity, explosive movements
+- Include both cardio and strength-based HIIT exercises
+- Provide proper warm-up and cool-down
+- For each HIIT exercise, include: work_seconds, rest_seconds, and rounds fields
+
+Example HIIT exercise format:
+{
+  "name": "Burpees",
+  "work_seconds": 30,
+  "rest_seconds": 15,
+  "rounds": 4,
+  "target_muscles": ["full_body", "cardiovascular"],
+  "instructions": "..."
+}
+`;
+  } else if (workoutModality === 'strength') {
+    modalityGuidance = `
+WORKOUT TYPE: STRENGTH TRAINING
+
+Design a traditional strength-focused workout plan:
+- Include progressive overload principles
+- Specify sets and reps for each exercise
+- Focus on compound and isolation movements
+- Include rest periods between sets
+- Provide guidance on weight selection
+`;
+  } else if (workoutModality === 'cardio') {
+    modalityGuidance = `
+WORKOUT TYPE: CARDIOVASCULAR TRAINING
+
+Design a cardio-focused workout plan:
+- Include duration-based exercises
+- Specify intensity levels
+- Mix steady-state and interval cardio
+- Focus on heart rate zones
+`;
+  } else if (workoutModality === 'flexibility') {
+    modalityGuidance = `
+WORKOUT TYPE: FLEXIBILITY & MOBILITY
+
+Design a flexibility-focused workout plan:
+- Include static and dynamic stretches
+- Specify hold durations
+- Focus on major muscle groups
+- Include mobility work
+`;
+  }
 
   // Build equipment context
   let equipmentContext = 'No equipment available (bodyweight exercises only)';
@@ -105,9 +165,11 @@ ${equipmentContext}
 
 ${userContext}
 
+${modalityGuidance}
+
 CRITICAL: You must ONLY use exercises that can be performed with the equipment listed above. If no equipment is available, use only bodyweight exercises. Do not suggest exercises requiring equipment the user doesn't have.
 
-Generate a structured 4-week workout plan with specific exercises, sets, reps, and progression guidance. Format your response as a valid JSON object matching this structure:
+Generate a structured 4-week workout plan with specific exercises and progression guidance. Format your response as a valid JSON object matching this structure:
 
 {
   "plan_overview": {

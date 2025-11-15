@@ -4,10 +4,10 @@ export interface IExerciseLog extends Document {
   session_id: mongoose.Types.ObjectId;
   user_id: mongoose.Types.ObjectId;
   exercise_name: string;
-  exercise_type: 'strength' | 'cardio' | 'flexibility' | 'balance' | 'other';
-  sets_completed: number;
+  exercise_type: 'strength' | 'cardio' | 'flexibility' | 'balance' | 'hiit' | 'other';
+  sets_completed?: number;
   target_sets?: number;
-  set_details: Array<{
+  set_details?: Array<{
     set_number: number;
     reps?: number;
     target_reps?: number;
@@ -19,6 +19,12 @@ export interface IExerciseLog extends Document {
     form_rating?: number; // 1-5 scale
     notes?: string;
   }>;
+  interval_structure?: {
+    work_seconds: number;
+    rest_seconds: number;
+    rounds: number;
+    rounds_completed?: number;
+  };
   equipment_used?: string[];
   target_muscles: string[];
   total_volume_kg?: number; // sets × reps × weight
@@ -52,13 +58,12 @@ const exerciseLogSchema = new Schema<IExerciseLog>(
     },
     exercise_type: {
       type: String,
-      enum: ['strength', 'cardio', 'flexibility', 'balance', 'other'],
+      enum: ['strength', 'cardio', 'flexibility', 'balance', 'hiit', 'other'],
       default: 'strength',
       required: true,
     },
     sets_completed: {
       type: Number,
-      required: true,
       min: 0,
     },
     target_sets: {
@@ -90,6 +95,24 @@ const exerciseLogSchema = new Schema<IExerciseLog>(
         notes: String,
       },
     ],
+    interval_structure: {
+      work_seconds: {
+        type: Number,
+        min: 1,
+      },
+      rest_seconds: {
+        type: Number,
+        min: 0,
+      },
+      rounds: {
+        type: Number,
+        min: 1,
+      },
+      rounds_completed: {
+        type: Number,
+        min: 0,
+      },
+    },
     equipment_used: [String],
     target_muscles: {
       type: [String],
@@ -119,8 +142,18 @@ exerciseLogSchema.index({ session_id: 1, created_at: 1 });
 exerciseLogSchema.index({ user_id: 1, created_at: -1 });
 exerciseLogSchema.index({ user_id: 1, personal_record: 1 });
 
-// Calculate total volume before saving
+// Calculate total volume and duration before saving
 exerciseLogSchema.pre('save', function (next) {
+  // Handle HIIT exercises with interval structure
+  if (this.interval_structure && this.exercise_type === 'hiit') {
+    const { work_seconds, rest_seconds, rounds_completed } = this.interval_structure;
+    if (rounds_completed) {
+      // Total duration = (work + rest) * completed rounds
+      this.total_duration_seconds = (work_seconds + rest_seconds) * rounds_completed;
+    }
+  }
+
+  // Handle traditional set-based exercises
   if (this.set_details && this.set_details.length > 0) {
     // Calculate total volume for strength exercises
     const volumeSets = this.set_details.filter(
