@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Layout from '../components/Layout';
 import { profileAPI } from '../api';
 import type { UserProfile, UserPreferences } from '../types';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '../design-system';
+import { User, Settings } from 'lucide-react';
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
@@ -44,73 +46,72 @@ export default function ProfilePage() {
   return (
     <Layout>
       <div className="px-4 py-6 sm:px-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Profile Settings</h1>
+        <div className="flex items-center gap-3 mb-6">
+          <User className="w-8 h-8 text-primary-500" />
+          <h1 className="text-3xl font-bold text-neutral-900">Profile Settings</h1>
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
-            <form onSubmit={handleProfileSubmit} className="space-y-4">
-              <div>
-                <label className="label">First Name</label>
-                <input
+          <Card>
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <Input
+                  label="First Name"
                   type="text"
-                  className="input-field"
                   placeholder={data?.user.profile.first_name || 'Enter first name'}
                   onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
                 />
-              </div>
-              <div>
-                <label className="label">Last Name</label>
-                <input
+                <Input
+                  label="Last Name"
                   type="text"
-                  className="input-field"
                   placeholder={data?.user.profile.last_name || 'Enter last name'}
                   onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="label">Height (cm)</label>
-                  <input
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Height (cm)"
                     type="number"
-                    className="input-field"
                     placeholder={data?.user.profile.height_cm?.toString() || '170'}
                     onChange={(e) => setProfile({ ...profile, height_cm: Number(e.target.value) })}
                   />
-                </div>
-                <div>
-                  <label className="label">Weight (kg)</label>
-                  <input
+                  <Input
+                    label="Weight (kg)"
                     type="number"
-                    className="input-field"
                     placeholder={data?.user.profile.weight_kg?.toString() || '70'}
                     onChange={(e) => setProfile({ ...profile, weight_kg: Number(e.target.value) })}
                   />
                 </div>
-              </div>
-              <button type="submit" className="btn-primary" disabled={updateProfileMutation.isPending}>
-                {updateProfileMutation.isPending ? 'Saving...' : 'Save Profile'}
-              </button>
-            </form>
-          </div>
+                <Button type="submit" loading={updateProfileMutation.isPending} className="w-full">
+                  Save Profile
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
-          <div className="card">
-            <h2 className="text-xl font-semibold mb-4">Workout Preferences</h2>
-            <form onSubmit={handlePreferencesSubmit} className="space-y-4">
-              <div>
-                <label className="label">Preferred Workout Duration (minutes)</label>
-                <input
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Workout Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handlePreferencesSubmit} className="space-y-4">
+                <Input
+                  label="Preferred Workout Duration (minutes)"
                   type="number"
-                  className="input-field"
                   placeholder={data?.user.preferences.preferred_workout_duration?.toString() || '60'}
                   onChange={(e) => setPreferences({ ...preferences, preferred_workout_duration: Number(e.target.value) })}
                 />
-              </div>
-              <button type="submit" className="btn-primary" disabled={updatePreferencesMutation.isPending}>
-                {updatePreferencesMutation.isPending ? 'Saving...' : 'Save Preferences'}
-              </button>
-            </form>
-          </div>
+                <Button type="submit" loading={updatePreferencesMutation.isPending} className="w-full">
+                  Save Preferences
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </Layout>
