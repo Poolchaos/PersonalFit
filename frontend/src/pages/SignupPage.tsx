@@ -5,6 +5,8 @@ import { useMutation } from '@tanstack/react-query';
 import { authAPI } from '../api';
 import { useAuthStore } from '../store/authStore';
 import type { SignupData } from '../types';
+import { Button, Input, Card } from '../design-system';
+import { AlertCircle } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -27,16 +29,16 @@ export default function SignupPage() {
   const validatePassword = (password: string): string[] => {
     const errors: string[] = [];
     if (password.length < 8) {
-      errors.push('Password must be at least 8 characters long');
+      errors.push('At least 8 characters');
     }
     if (!/[a-z]/.test(password)) {
-      errors.push('Password must contain at least one lowercase letter');
+      errors.push('One lowercase letter');
     }
     if (!/[A-Z]/.test(password)) {
-      errors.push('Password must contain at least one uppercase letter');
+      errors.push('One uppercase letter');
     }
     if (!/\d/.test(password)) {
-      errors.push('Password must contain at least one number');
+      errors.push('One number');
     }
     return errors;
   };
@@ -45,14 +47,12 @@ export default function SignupPage() {
     e.preventDefault();
     setValidationErrors([]);
 
-    // Validate password strength
     const passwordErrors = validatePassword(formData.password);
     if (passwordErrors.length > 0) {
       setValidationErrors(passwordErrors);
       return;
     }
 
-    // Check password match
     if (formData.password !== formData.confirmPassword) {
       setValidationErrors(['Passwords do not match']);
       return;
@@ -61,82 +61,85 @@ export default function SignupPage() {
     signupMutation.mutate(formData);
   };
 
+  const passwordErrors = validatePassword(formData.password);
+  const passwordsMatch = formData.password === formData.confirmPassword && formData.confirmPassword.length > 0;
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 to-primary-700 px-4">
       <div className="max-w-md w-full">
-        <div className="card">
+        <Card className="p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Start your fitness journey today!</p>
+            <h1 className="text-3xl font-bold text-neutral-900 mb-2">Create Account</h1>
+            <p className="text-neutral-600">Start your fitness journey today!</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label htmlFor="email" className="label">Email Address</label>
-              <input
-                id="email"
-                type="email"
-                required
-                className="input-field"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
-            </div>
+            <Input
+              label="Email Address"
+              id="email"
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
 
-            <div>
-              <label htmlFor="password" className="label">Password</label>
-              <input
-                id="password"
-                type="password"
-                required
-                className="input-field"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Must be at least 8 characters with uppercase, lowercase, and number
-              </p>
-            </div>
+            <Input
+              label="Password"
+              id="password"
+              type="password"
+              required
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              error={validationErrors.length > 0 && formData.password.length > 0 ? validationErrors.join(', ') : undefined}
+              helperText="Must include: uppercase, lowercase, number (8+ chars)"
+            />
 
-            <div>
-              <label htmlFor="confirmPassword" className="label">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                required
-                className="input-field"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              />
-            </div>
-
-            {validationErrors.length > 0 && (
-              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                <ul className="list-disc list-inside space-y-1">
-                  {validationErrors.map((error, index) => (
-                    <li key={index}>{error}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <Input
+              label="Confirm Password"
+              id="confirmPassword"
+              type="password"
+              required
+              placeholder="••••••••"
+              value={formData.confirmPassword || ''}
+              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+              success={passwordsMatch ? 'Passwords match' : undefined}
+              error={!passwordsMatch && (formData.confirmPassword?.length || 0) > 0 ? 'Passwords do not match' : undefined}
+            />
 
             {signupMutation.isError && (
-              <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
-                {signupMutation.error instanceof Error ? signupMutation.error.message : 'Signup failed. Please try again.'}
+              <div className="p-3 bg-error-light/10 border border-error-light text-error-DEFAULT rounded-lg text-sm flex items-center gap-2">
+                <AlertCircle size={16} />
+                <span>
+                  {signupMutation.error instanceof Error
+                    ? signupMutation.error.message
+                    : 'Registration failed. Please try again.'}
+                </span>
               </div>
             )}
 
-            <button type="submit" disabled={signupMutation.isPending} className="w-full btn-primary">
-              {signupMutation.isPending ? 'Creating Account...' : 'Sign Up'}
-            </button>
+            <Button
+              type="submit"
+              loading={signupMutation.isPending}
+              disabled={passwordErrors.length > 0 || !passwordsMatch}
+              className="w-full"
+            >
+              Create Account
+            </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-sm text-neutral-600">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-semibold">
+            <Link to="/login" className="text-primary-500 hover:text-primary-600 font-semibold transition-colors">
               Sign in
             </Link>
           </div>
+        </Card>
+
+        <div className="mt-8 text-center text-white text-sm">
+          <p>Join thousands of fitness enthusiasts</p>
+          <p className="mt-1">Start your journey today</p>
         </div>
       </div>
     </div>

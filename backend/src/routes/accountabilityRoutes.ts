@@ -18,7 +18,10 @@ import {
 
 const router = express.Router();
 
-// Get accountability summary
+// Get accountability status (summary)
+router.get('/status', authenticate, getAccountability);
+
+// Get accountability summary (alias for /status)
 router.get('/', authenticate, getAccountability);
 
 // Get full accountability details

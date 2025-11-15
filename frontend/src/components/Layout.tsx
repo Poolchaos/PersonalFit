@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
+import { MobileBottomNav } from './navigation/MobileBottomNav';
+import { XPBar } from './gamification/XPBar';
+import { LogOut } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -18,31 +21,35 @@ export default function Layout({ children }: LayoutProps) {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/profile', label: 'Profile' },
-    { path: '/equipment', label: 'Equipment' },
-    { path: '/metrics', label: 'Metrics' },
     { path: '/workouts', label: 'Workouts' },
-    { path: '/accountability', label: 'Accountability' },
+    { path: '/metrics', label: 'Metrics' },
+    { path: '/accountability', label: 'Goals' },
+    { path: '/equipment', label: 'Equipment' },
+    { path: '/profile', label: 'Profile' },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
+    <div className="min-h-screen bg-neutral-50">
+      {/* Desktop Header */}
+      <nav className="bg-white shadow-sm border-b border-neutral-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
-              <Link to="/dashboard" className="flex items-center text-xl font-bold text-primary-600">
+              <Link
+                to="/dashboard"
+                className="flex items-center text-xl font-bold text-primary-500 hover:text-primary-600 transition-colors"
+              >
                 PersonalFit
               </Link>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-4">
+              <div className="hidden md:ml-8 md:flex md:space-x-1">
                 {navItems.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`inline-flex items-center px-3 border-b-2 text-sm font-medium ${
+                    className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                       location.pathname === item.path
-                        ? 'border-primary-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
                     }`}
                   >
                     {item.label}
@@ -51,17 +58,33 @@ export default function Layout({ children }: LayoutProps) {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">{user?.email}</span>
-              <button onClick={handleLogout} className="btn-secondary">
-                Logout
+              {/* XP Bar */}
+              <XPBar />
+
+              <span className="hidden sm:inline text-sm text-neutral-700 font-medium">
+                {user?.profile?.first_name
+                  ? `${user.profile.first_name} ${user.profile.last_name || ''}`
+                  : user?.email}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-100 transition-colors"
+              >
+                <LogOut size={18} />
+                <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
           </div>
         </div>
       </nav>
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pb-20 md:pb-6">
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 }

@@ -23,7 +23,24 @@ export const getAccountability = async (
     const userId = new mongoose.Types.ObjectId(req.user?.userId);
     const summary = await getAccountabilitySummary(userId);
 
-    res.json(summary);
+    // Format response to match frontend AccountabilityStatus type
+    const response = {
+      streak: {
+        current: summary.streak.current,
+        longest: summary.streak.longest,
+      },
+      totals: summary.totals,
+      current_week: {
+        week_start: summary.current_week.week_start.toISOString(),
+        workouts_planned: summary.current_week.workouts_planned,
+        workouts_completed: summary.current_week.workouts_completed,
+        workouts_missed: summary.current_week.workouts_missed,
+        completion_rate: summary.current_week.completion_rate,
+      },
+      recent_penalties: summary.recent_penalties,
+    };
+
+    res.json(response);
   } catch (error) {
     console.error('Get accountability error:', error);
     res.status(500).json({ message: 'Server error' });
