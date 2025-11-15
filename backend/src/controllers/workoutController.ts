@@ -17,6 +17,8 @@ export const createWorkoutPlan = async (
       return;
     }
 
+    const { workout_modality = 'strength' } = req.body;
+
     // Get user profile
     const user = await User.findById(req.user?.userId);
     if (!user) {
@@ -53,6 +55,7 @@ export const createWorkoutPlan = async (
         quantity: eq.quantity,
         specifications: eq.specifications,
       })),
+      workoutModality: workout_modality,
     });
 
     // Deactivate previous plans
@@ -64,11 +67,13 @@ export const createWorkoutPlan = async (
     // Save new workout plan
     const newPlan = new WorkoutPlan({
       user_id: req.user?.userId,
+      workout_modality,
       plan_data: workoutPlan,
       generation_context: {
         user_goals: user.profile.fitness_goals,
         experience_level: user.profile.experience_level,
         equipment_used: equipment.map((eq) => eq.equipment_name),
+        workout_modality,
       },
       is_active: true,
     });

@@ -64,13 +64,17 @@ router.post(
   [
     body('exercise_name').notEmpty().trim(),
     body('exercise_type')
-      .isIn(['strength', 'cardio', 'flexibility', 'balance', 'other']),
-    body('sets_completed').isInt({ min: 0 }),
+      .isIn(['strength', 'cardio', 'flexibility', 'balance', 'hiit', 'other']),
+    body('sets_completed').optional().isInt({ min: 0 }),
     body('target_sets').optional().isInt({ min: 0 }),
-    body('set_details').isArray(),
-    body('set_details.*.set_number').isInt({ min: 1 }),
-    body('set_details.*.completed').isBoolean(),
+    body('set_details').optional().isArray(),
+    body('set_details.*.set_number').optional().isInt({ min: 1 }),
+    body('set_details.*.completed').optional().isBoolean(),
     body('set_details.*.form_rating').optional().isInt({ min: 1, max: 5 }),
+    body('interval_structure.work_seconds').optional().isInt({ min: 1 }),
+    body('interval_structure.rest_seconds').optional().isInt({ min: 0 }),
+    body('interval_structure.rounds').optional().isInt({ min: 1 }),
+    body('interval_structure.rounds_completed').optional().isInt({ min: 0 }),
     body('target_muscles').isArray().notEmpty(),
     body('difficulty_rating').optional().isInt({ min: 1, max: 10 }),
   ],
@@ -82,6 +86,10 @@ router.put(
   [
     body('sets_completed').optional().isInt({ min: 0 }),
     body('set_details').optional().isArray(),
+    body('interval_structure.work_seconds').optional().isInt({ min: 1 }),
+    body('interval_structure.rest_seconds').optional().isInt({ min: 0 }),
+    body('interval_structure.rounds').optional().isInt({ min: 1 }),
+    body('interval_structure.rounds_completed').optional().isInt({ min: 0 }),
     body('difficulty_rating').optional().isInt({ min: 1, max: 10 }),
   ],
   updateExercise

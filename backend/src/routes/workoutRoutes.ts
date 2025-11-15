@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { body } from 'express-validator';
 import {
   createWorkoutPlan,
   getWorkoutPlans,
@@ -13,7 +14,16 @@ const router = Router();
 router.use(authenticate);
 
 // Generate new workout plan
-router.post('/generate', createWorkoutPlan);
+router.post(
+  '/generate',
+  [
+    body('workout_modality')
+      .optional()
+      .isIn(['strength', 'hiit', 'flexibility', 'cardio'])
+      .withMessage('Invalid workout modality'),
+  ],
+  createWorkoutPlan
+);
 
 // Get all workout plans for user
 router.get('/', getWorkoutPlans);
