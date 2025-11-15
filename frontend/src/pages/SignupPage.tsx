@@ -22,7 +22,7 @@ export default function SignupPage() {
     mutationFn: authAPI.signup,
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken);
-      navigate('/dashboard');
+      navigate('/onboarding');
     },
   });
 
