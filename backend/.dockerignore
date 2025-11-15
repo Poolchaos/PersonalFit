@@ -1,0 +1,19 @@
+# Ignore patterns for Docker builds
+node_modules/
+npm-debug.log
+.env
+.env.local
+.env.*.local
+dist/
+coverage/
+.vscode/
+.idea/
+*.log
+.DS_Store
+*.test.ts
+*.spec.ts
+__tests__/
+.git/
+.gitignore
+README.md
+IMPLEMENTATION_SUMMARY.md
