@@ -3,7 +3,7 @@ import { validationResult } from 'express-validator';
 import User from '../models/User';
 import Equipment from '../models/Equipment';
 import WorkoutPlan from '../models/WorkoutPlan';
-import { generateWorkoutPlan } from '../services/openaiService';
+import { createAIProvider } from '../services/aiProviderService';
 import { AuthRequest } from '../middleware/auth';
 
 export const createWorkoutPlan = async (
@@ -19,8 +19,8 @@ export const createWorkoutPlan = async (
 
     const { workout_modality = 'strength' } = req.body;
 
-    // Get user profile
-    const user = await User.findById(req.user?.userId);
+    // Get user profile with AI config
+    const user = await User.findById(req.user?.userId).select('+ai_config.api_key_encrypted');
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -32,29 +32,27 @@ export const createWorkoutPlan = async (
       is_available: true,
     });
 
-    // Generate workout plan using OpenAI
-    const workoutPlan = await generateWorkoutPlan({
+    // Create AI provider based on user's configuration
+    let aiProvider;
+    try {
+      aiProvider = createAIProvider(user);
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : 'Failed to initialize AI provider'
+      });
+      return;
+    }
+
+    // Generate workout plan using configured AI provider
+    const workoutPlan = await aiProvider.generateWorkoutPlan({
       userProfile: {
-        fitness_goals: user.profile.fitness_goals,
         experience_level: user.profile.experience_level,
+        fitness_goals: user.profile.fitness_goals,
         activity_level: user.profile.activity_level,
         medical_conditions: user.profile.medical_conditions,
         injuries: user.profile.injuries,
-        height_cm: user.profile.height_cm,
-        weight_kg: user.profile.weight_kg,
       },
-      preferences: {
-        preferred_workout_days: user.preferences.preferred_workout_days,
-        preferred_workout_duration: user.preferences.preferred_workout_duration,
-        preferred_workout_types: user.preferences.preferred_workout_types,
-        equipment_access: user.preferences.equipment_access,
-      },
-      availableEquipment: equipment.map((eq) => ({
-        equipment_name: eq.equipment_name,
-        equipment_type: eq.equipment_type,
-        quantity: eq.quantity,
-        specifications: eq.specifications,
-      })),
+      equipment: equipment.map((eq) => eq.equipment_name),
       workoutModality: workout_modality,
     });
 

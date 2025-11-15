@@ -23,6 +23,13 @@ export interface IUser extends Document {
     preferred_workout_types?: string[];
     equipment_access?: string[];
   };
+  ai_config?: {
+    provider: 'openai' | 'anthropic' | 'local' | 'custom';
+    api_key_encrypted?: string;
+    model?: string;
+    endpoint_url?: string; // For local/custom LLMs
+    enabled: boolean;
+  };
   created_at: Date;
   updated_at: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -70,6 +77,23 @@ const userSchema = new Schema<IUser>(
       preferred_workout_types: [String],
       equipment_access: [String],
     },
+    ai_config: {
+      provider: {
+        type: String,
+        enum: ['openai', 'anthropic', 'local', 'custom'],
+        default: 'openai',
+      },
+      api_key_encrypted: {
+        type: String,
+        select: false, // Never return in queries by default
+      },
+      model: String,
+      endpoint_url: String, // For local/custom LLMs
+      enabled: {
+        type: Boolean,
+        default: false,
+      },
+    },
   },
   {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
@@ -81,7 +105,7 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified('password_hash')) {
     return next();
   }
-  
+
   const salt = await bcrypt.genSalt(10);
   this.password_hash = await bcrypt.hash(this.password_hash, salt);
   next();

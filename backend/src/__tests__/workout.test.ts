@@ -4,8 +4,8 @@ import User from '../models/User';
 import WorkoutPlan from '../models/WorkoutPlan';
 import Equipment from '../models/Equipment';
 
-// Mock the OpenAI-based workout generation to avoid real API calls during tests
-const mockGeneratePlan = (modality: string | undefined) => {
+// Mock the AI provider service to avoid real API calls during tests
+const mockGeneratePlan = (modality: string | undefined): Record<string, unknown> => {
   const basePlan = {
     plan_overview: {
       duration_weeks: 4,
@@ -50,10 +50,13 @@ const mockGeneratePlan = (modality: string | undefined) => {
   return basePlan;
 };
 
-jest.mock('../services/openaiService', () => ({
-  generateWorkoutPlan: jest.fn(async (req: any) => {
-    return mockGeneratePlan(req?.workoutModality);
-  }),
+// Mock AI provider service
+jest.mock('../services/aiProviderService', () => ({
+  createAIProvider: jest.fn(() => ({
+    generateWorkoutPlan: jest.fn(async (params: { workoutModality?: string }) => {
+      return mockGeneratePlan(params?.workoutModality);
+    }),
+  })),
 }));
 
 import app from '../app';
