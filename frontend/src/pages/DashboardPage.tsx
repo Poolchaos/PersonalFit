@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { Sparkles, TrendingUp } from 'lucide-react';
 import Layout from '../components/Layout';
 import { HeroSection } from '../components/dashboard/HeroSection';
 import { WorkoutStats } from '../components/dashboard/WorkoutStats';
+import VolumeChart from '../components/charts/VolumeChart';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../design-system';
-import { profileAPI, accountabilityAPI, sessionAPI } from '../api';
-import { Sparkles } from 'lucide-react';
+import { profileAPI, accountabilityAPI, sessionAPI, workoutAPI } from '../api';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -22,6 +23,11 @@ export default function DashboardPage() {
   const { data: sessionsData } = useQuery({
     queryKey: ['sessions'],
     queryFn: sessionAPI.getAll,
+  });
+
+  const { data: workoutsData } = useQuery({
+    queryKey: ['workouts'],
+    queryFn: workoutAPI.getAll,
   });
 
   // Check if profile is incomplete
@@ -69,6 +75,19 @@ export default function DashboardPage() {
             consistency="85%"
           />
         </div>
+
+        {/* Volume Progression Chart */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              Workout Volume Progression
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VolumeChart workouts={workoutsData?.workouts || []} />
+          </CardContent>
+        </Card>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
