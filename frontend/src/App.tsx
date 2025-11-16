@@ -10,6 +10,7 @@ import ProfilePage from './pages/ProfilePage';
 import EquipmentPage from './pages/EquipmentPage';
 import MetricsPage from './pages/MetricsPage';
 import WorkoutsPage from './pages/WorkoutsPage';
+import GoalsPage from './pages/GoalsPage';
 import AccountabilityPage from './pages/AccountabilityPage';
 
 const queryClient = new QueryClient({
@@ -102,6 +103,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <WorkoutsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/goals"
+            element={
+              <ProtectedRoute>
+                <GoalsPage />
               </ProtectedRoute>
             }
           />
