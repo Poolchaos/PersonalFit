@@ -9,7 +9,8 @@ export async function registerAndLogin(page: Page, email: string, password: stri
   await page.fill('input[id="password"]', password);
   await page.fill('input[id="confirmPassword"]', password);
   await page.click('button[type="submit"]');
-  await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+  // New users are redirected to onboarding (correct behavior)
+  await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
 }
 
 /**
