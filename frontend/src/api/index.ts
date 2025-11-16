@@ -38,14 +38,14 @@ export const profileAPI = {
   },
 
   updateProfile: async (profileData: Partial<User['profile']>): Promise<{ user: User }> => {
-    const { data } = await apiClient.put('/api/profile', profileData);
+    const { data } = await apiClient.put('/api/profile', { profile: profileData });
     return data;
   },
 
   updatePreferences: async (
     preferences: Partial<User['preferences']>
   ): Promise<{ user: User }> => {
-    const { data } = await apiClient.put('/api/profile/preferences', preferences);
+    const { data } = await apiClient.put('/api/profile', { preferences });
     return data;
   },
 };
@@ -205,6 +205,29 @@ export const accountabilityAPI = {
     const { data } = await apiClient.put(`/api/accountability/penalties/${id}/complete`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
+    return data;
+  },
+};
+
+// AI Config API
+export const aiConfigAPI = {
+  get: async (): Promise<{ ai_config: { provider: string; model?: string; endpoint_url?: string; enabled: boolean; has_api_key: boolean } }> => {
+    const { data } = await apiClient.get('/api/ai-config');
+    return data;
+  },
+
+  update: async (config: { provider?: string; api_key?: string; model?: string; endpoint_url?: string; enabled?: boolean }): Promise<{ ai_config: { provider: string; model?: string; endpoint_url?: string; enabled: boolean; has_api_key: boolean }; message: string }> => {
+    const { data } = await apiClient.patch('/api/ai-config', config);
+    return data;
+  },
+
+  test: async (): Promise<{ success: boolean; message: string }> => {
+    const { data } = await apiClient.post('/api/ai-config/test');
+    return data;
+  },
+
+  deleteApiKey: async (): Promise<{ message: string }> => {
+    const { data } = await apiClient.delete('/api/ai-config/api-key');
     return data;
   },
 };

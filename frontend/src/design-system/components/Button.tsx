@@ -9,7 +9,7 @@ const buttonVariants = cva(
       variant: {
         primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500',
         secondary: 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300 focus:ring-neutral-400',
-        success: 'bg-success-DEFAULT text-white hover:bg-success-dark focus:ring-success-DEFAULT',
+        success: 'bg-success-dark text-white hover:bg-success-DEFAULT focus:ring-success-dark shadow-md hover:shadow-lg',
         danger: 'bg-error-DEFAULT text-white hover:bg-error-dark focus:ring-error-DEFAULT',
         outline: 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50 focus:ring-primary-500',
         ghost: 'text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-400',

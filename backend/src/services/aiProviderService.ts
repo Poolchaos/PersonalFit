@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { IUser } from '../models/User';
 import { decrypt } from '../utils/encryption';
 import config from '../config';
+import * as openaiService from './openaiService';
 
 export interface WorkoutGenerationParams {
   userProfile: {
@@ -31,34 +32,25 @@ class OpenAIProvider implements AIProvider {
   }
 
   async generateWorkoutPlan(params: WorkoutGenerationParams): Promise<unknown> {
-    const prompt = this.buildPrompt(params);
-
-    const completion = await this.client.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert personal trainer and strength coach...',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error('No content returned from OpenAI');
-    }
-
-    return JSON.parse(content);
-  }
-
-  private buildPrompt(params: WorkoutGenerationParams): string {
-    return `Generate a personalized ${params.workoutModality} workout plan...`;
+    // Use the detailed openaiService implementation with research-based prompts
+    return openaiService.generateWorkoutPlan({
+      userProfile: {
+        fitness_goals: params.userProfile.fitness_goals,
+        experience_level: params.userProfile.experience_level,
+        activity_level: params.userProfile.activity_level,
+        medical_conditions: params.userProfile.medical_conditions,
+        injuries: params.userProfile.injuries,
+      },
+      preferences: {
+        preferred_workout_duration: params.weeklySchedule?.session_duration,
+        preferred_workout_days: [], // Can be expanded to include specific days
+      },
+      availableEquipment: params.equipment.map(name => ({
+        equipment_name: name,
+        equipment_type: 'other',
+      })),
+      workoutModality: params.workoutModality,
+    }, this.client); // Pass the user's OpenAI client
   }
 }
 

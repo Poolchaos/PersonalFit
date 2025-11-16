@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { profileAPI, equipmentAPI, workoutAPI } from '../../api';
+import { profileAPI, equipmentAPI, workoutAPI, aiConfigAPI } from '../../api';
 import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '../../design-system';
 import { ChevronRight, ChevronLeft, Sparkles, Key, User, Target, Dumbbell, Calendar, Zap } from 'lucide-react';
 import type { UserProfile, Equipment } from '../../types';
@@ -36,6 +36,10 @@ export function OnboardingWizard() {
     mutationFn: profileAPI.updatePreferences,
   });
 
+  const updateAIConfigMutation = useMutation({
+    mutationFn: aiConfigAPI.update,
+  });
+
   const createEquipmentMutation = useMutation({
     mutationFn: equipmentAPI.create,
   });
@@ -56,6 +60,15 @@ export function OnboardingWizard() {
   const handleComplete = async () => {
     try {
       toast.loading('Setting up your profile...');
+
+      // Save OpenAI API key first
+      if (data.openai_token) {
+        await updateAIConfigMutation.mutateAsync({
+          provider: 'openai',
+          api_key: data.openai_token,
+          enabled: true,
+        });
+      }
 
       // Update profile
       if (Object.keys(data.profile).length > 0) {
@@ -99,50 +112,50 @@ export function OnboardingWizard() {
         return {
           icon: <Key className="w-16 h-16 text-primary-500" />,
           title: 'AI-Powered Workouts',
-          imageDesc: 'Robot or AI assistant shaking hands with a person holding dumbbells',
-          imageUrl: '/images/onboarding/ai-powered.svg', // Replace with your actual image
+          imageUrl: '/images/onboarding/step-0-ai-token.jpg',
+          imageAlt: 'Programmer working with AI fitness interface',
         };
       case 1:
         return {
           icon: <User className="w-16 h-16 text-primary-500" />,
           title: 'Your Profile',
-          imageDesc: 'Person filling out a profile form with fitness icons around them',
-          imageUrl: '/images/onboarding/profile-setup.svg',
+          imageUrl: '/images/onboarding/step-1-profile.jpg',
+          imageAlt: 'Athletic person with fitness profile on tablet',
         };
       case 2:
         return {
           icon: <Target className="w-16 h-16 text-primary-500" />,
           title: 'Your Goals',
-          imageDesc: 'Person climbing towards a target/bullseye on a mountain peak',
-          imageUrl: '/images/onboarding/goals.svg',
+          imageUrl: '/images/onboarding/step-2-goals.jpg',
+          imageAlt: 'Woman climbing toward fitness goal target',
         };
       case 3:
         return {
           icon: <Dumbbell className="w-16 h-16 text-primary-500" />,
           title: 'Experience Level',
-          imageDesc: 'Three people of different fitness levels - beginner stretching, intermediate with dumbbells, advanced athlete',
-          imageUrl: '/images/onboarding/experience.svg',
+          imageUrl: '/images/onboarding/step-3-experience.jpg',
+          imageAlt: 'Three people at different fitness levels exercising',
         };
       case 4:
         return {
           icon: <Calendar className="w-16 h-16 text-primary-500" />,
           title: 'Workout Schedule',
-          imageDesc: 'Calendar with workout days highlighted and a stopwatch showing workout duration',
-          imageUrl: '/images/onboarding/schedule.svg',
+          imageUrl: '/images/onboarding/step-4-schedule.jpg',
+          imageAlt: 'Person planning workout schedule on calendar',
         };
       case 5:
         return {
           icon: <Dumbbell className="w-16 h-16 text-primary-500" />,
           title: 'Available Equipment',
-          imageDesc: 'Home gym setup with dumbbells, resistance bands, yoga mat, and pull-up bar',
-          imageUrl: '/images/onboarding/equipment.svg',
+          imageUrl: '/images/onboarding/step-5-equipment.jpg',
+          imageAlt: 'Home gym with organized fitness equipment',
         };
       default:
         return {
           icon: <Sparkles className="w-16 h-16 text-primary-500" />,
           title: 'Welcome',
-          imageDesc: 'Welcome illustration',
-          imageUrl: '/images/onboarding/welcome.svg',
+          imageUrl: '/images/onboarding/welcome.jpg',
+          imageAlt: 'Welcome to PersonalFit',
         };
     }
   };
@@ -169,18 +182,24 @@ export function OnboardingWizard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left side - Image/Illustration */}
-            <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg p-8 min-h-[400px]">
-              <div className="text-center space-y-4">
-                {/* Fallback icon - replace with actual image */}
+            <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg overflow-hidden min-h-[400px]">
+              <img
+                src={stepContent.imageUrl}
+                alt={stepContent.imageAlt}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to icon if image fails to load
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling;
+                  if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                }}
+              />
+              {/* Fallback icon display */}
+              <div className="hidden flex-col items-center justify-center p-8 w-full h-full">
                 <div className="mb-4">
                   {stepContent.icon}
                 </div>
-                {/* TODO: Replace with actual images */}
-                <div className="bg-white/50 rounded-lg p-6 max-w-xs">
-                  <p className="text-xs text-primary-600 italic mb-2">Image placeholder:</p>
-                  <p className="text-sm text-primary-800 font-medium">{stepContent.imageDesc}</p>
-                </div>
-                <p className="text-sm text-primary-700 font-medium mt-4">
+                <p className="text-sm text-primary-700 font-medium text-center">
                   {stepContent.title}
                 </p>
               </div>

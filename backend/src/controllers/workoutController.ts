@@ -54,6 +54,12 @@ export const createWorkoutPlan = async (
       },
       equipment: equipment.map((eq) => eq.equipment_name),
       workoutModality: workout_modality,
+      weeklySchedule: user.preferences?.workout_frequency && user.preferences?.preferred_workout_duration
+        ? {
+            days_per_week: user.preferences.workout_frequency,
+            session_duration: user.preferences.preferred_workout_duration,
+          }
+        : undefined,
     });
 
     // Deactivate previous plans
@@ -88,7 +94,28 @@ export const createWorkoutPlan = async (
     });
   } catch (error) {
     console.error('Create workout plan error:', error);
-    res.status(500).json({ error: 'Failed to generate workout plan' });
+
+    // Provide more specific error information
+    let errorMessage = 'Failed to generate workout plan';
+    let statusCode = 500;
+
+    if (error instanceof Error) {
+      // Check for specific error types
+      if (error.message.includes('API key')) {
+        errorMessage = 'OpenAI API key is missing or invalid. Please configure your AI settings.';
+        statusCode = 400;
+      } else if (error.message.includes('rate limit')) {
+        errorMessage = 'AI service rate limit reached. Please try again later.';
+        statusCode = 429;
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'AI service request timed out. Please try again.';
+        statusCode = 504;
+      } else {
+        errorMessage = `Failed to generate workout plan: ${error.message}`;
+      }
+    }
+
+    res.status(statusCode).json({ error: errorMessage });
   }
 };
 

@@ -22,6 +22,7 @@ export interface IUser extends Document {
     preferred_workout_duration?: number;
     preferred_workout_types?: string[];
     equipment_access?: string[];
+    workout_frequency?: number; // Days per week user wants to workout
   };
   ai_config?: {
     provider: 'openai' | 'anthropic' | 'local' | 'custom';
@@ -76,6 +77,7 @@ const userSchema = new Schema<IUser>(
       preferred_workout_duration: Number,
       preferred_workout_types: [String],
       equipment_access: [String],
+      workout_frequency: Number, // Days per week user wants to workout
     },
     ai_config: {
       provider: {
