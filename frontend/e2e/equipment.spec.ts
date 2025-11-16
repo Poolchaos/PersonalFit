@@ -1,28 +1,27 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 test.describe('Equipment Management', () => {
-  const testEmail = `equipment-test-${Date.now()}@example.com`;
   const testPassword = 'Test123456';
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login
+  async function setupUser(page: Page, emailSuffix: string) {
+    const testEmail = `equipment-${emailSuffix}-${Date.now()}@example.com`;
     await page.goto('/signup');
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
-
-    // Navigate directly to equipment page (bypassing onboarding)
     await page.goto('/equipment');
     await expect(page).toHaveURL('/equipment');
-  });
+  }
 
   test('should display empty state initially', async ({ page }) => {
+    await setupUser(page, 'empty');
     await expect(page.locator('text=No equipment added yet')).toBeVisible();
   });
 
   test('should add new equipment', async ({ page }) => {
+    await setupUser(page, 'add');
     // Click add equipment button
     await page.click('button:has-text("Add Equipment")');
 
@@ -44,6 +43,7 @@ test.describe('Equipment Management', () => {
   });
 
   test('should edit existing equipment', async ({ page }) => {
+    await setupUser(page, 'edit');
     // Add equipment first
     await page.click('button:has-text("Add Equipment")');
     await page.fill('input[name="name"]', 'Pull-up Bar');
@@ -68,6 +68,7 @@ test.describe('Equipment Management', () => {
   });
 
   test('should delete equipment', async ({ page }) => {
+    await setupUser(page, 'delete');
     // Add equipment first
     await page.click('button:has-text("Add Equipment")');
     await page.fill('input[name="name"]', 'Resistance Bands');
@@ -87,6 +88,7 @@ test.describe('Equipment Management', () => {
   });
 
   test('should add multiple equipment items', async ({ page }) => {
+    await setupUser(page, 'multiple');
     const equipment = [
       { name: 'Barbell', category: 'free_weights' },
       { name: 'Yoga Mat', category: 'accessories' },

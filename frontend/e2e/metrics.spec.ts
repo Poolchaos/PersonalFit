@@ -1,25 +1,23 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 import path from 'path';
 
 test.describe('Body Metrics and Photos', () => {
-  const testEmail = `metrics-test-${Date.now()}@example.com`;
   const testPassword = 'Test123456';
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login
+  async function setupUser(page: Page, emailSuffix: string) {
+    const testEmail = `metrics-${emailSuffix}-${Date.now()}@example.com`;
     await page.goto('/signup');
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
-
-    // Navigate directly to metrics page (bypassing onboarding)
     await page.goto('/metrics');
     await expect(page).toHaveURL('/metrics');
-  });
+  }
 
   test('should add body metrics', async ({ page }) => {
+    await setupUser(page, 'add');
     // Fill metrics form
     await page.fill('input[name="weight"]', '75.5');
     await page.fill('input[name="bodyFat"]', '18.5');
@@ -40,6 +38,7 @@ test.describe('Body Metrics and Photos', () => {
   });
 
   test('should upload progress photo', async ({ page }) => {
+    await setupUser(page, 'upload');
     // Create a test image file path
     const testImagePath = path.join(__dirname, '../public/vite.svg');
 
@@ -54,6 +53,7 @@ test.describe('Body Metrics and Photos', () => {
   });
 
   test('should display metrics history', async ({ page }) => {
+    await setupUser(page, 'history');
     // Add first set of metrics
     await page.fill('input[name="weight"]', '76.0');
     await page.click('button:has-text("Save Metrics")');

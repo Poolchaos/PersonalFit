@@ -1,30 +1,29 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 test.describe('Workout Generation and Management', () => {
-  const testEmail = `workout-test-${Date.now()}@example.com`;
   const testPassword = 'Test123456';
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login
+  async function setupUser(page: Page, emailSuffix: string) {
+    const testEmail = `workout-${emailSuffix}-${Date.now()}@example.com`;
     await page.goto('/signup');
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
-
-    // Navigate directly to workouts page (bypassing onboarding)
     await page.goto('/workouts');
     await expect(page).toHaveURL('/workouts');
-  });
+  }
 
   test('should display workout generation form', async ({ page }) => {
+    await setupUser(page, 'form');
     await expect(page.locator('text=Generate Workout')).toBeVisible();
     await expect(page.locator('select[name="type"]')).toBeVisible();
     await expect(page.locator('input[name="duration"]')).toBeVisible();
   });
 
   test('should generate AI workout plan', async ({ page }) => {
+    await setupUser(page, 'generate');
     // Fill workout generation form
     await page.selectOption('select[name="type"]', 'strength');
     await page.fill('input[name="duration"]', '45');
@@ -45,11 +44,13 @@ test.describe('Workout Generation and Management', () => {
   });
 
   test('should display workout library', async ({ page }) => {
+    await setupUser(page, 'library');
     // Should have section for saved workouts
     await expect(page.locator('text=/Workout|Library|Plans/i')).toBeVisible();
   });
 
   test('should handle workout form validation', async ({ page }) => {
+    await setupUser(page, 'validation');
     // Try to generate without filling required fields
     await page.selectOption('select[name="type"]', '');
     await page.click('button:has-text("Generate")');

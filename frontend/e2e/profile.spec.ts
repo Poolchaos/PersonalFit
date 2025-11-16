@@ -1,20 +1,20 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
 
 test.describe('Profile Management', () => {
-  const testEmail = `profile-test-${Date.now()}@example.com`;
   const testPassword = 'Test123456';
 
-  test.beforeEach(async ({ page }) => {
-    // Register and login
+  async function setupUser(page: Page, emailSuffix: string) {
+    const testEmail = `profile-${emailSuffix}-${Date.now()}@example.com`;
     await page.goto('/signup');
     await page.fill('input[type="email"]', testEmail);
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
-  });
+  }
 
   test('should update personal information', async ({ page }) => {
+    await setupUser(page, 'personal');
     // Navigate directly to profile (bypassing onboarding)
     await page.goto('/profile');
     await expect(page).toHaveURL('/profile');
@@ -37,6 +37,7 @@ test.describe('Profile Management', () => {
   });
 
   test('should update fitness preferences', async ({ page }) => {
+    await setupUser(page, 'preferences');
     await page.goto('/profile');
     await expect(page).toHaveURL('/profile');
 
