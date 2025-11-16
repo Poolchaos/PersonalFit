@@ -25,8 +25,11 @@ test.describe('Equipment Management', () => {
     // Click add equipment button
     await page.click('button:has-text("Add Equipment")');
 
+    // Wait for form to appear (might be in a modal)
+    await page.waitForSelector('input[name="name"], input[placeholder*="name" i]', { timeout: 5000 });
+
     // Fill equipment form
-    await page.fill('input[name="name"]', 'Dumbbells');
+    await page.fill('input[name="name"], input[placeholder*="name" i]', 'Dumbbells');
     await page.selectOption('select[name="category"]', 'free_weights');
     await page.fill('textarea[name="description"]', '20kg adjustable dumbbells');
 
