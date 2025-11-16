@@ -9,6 +9,7 @@ import { metricsAPI, photosAPI } from '../api';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/components/Card';
 import { Button } from '../design-system/components/Button';
 import { Input } from '../design-system/components/Input';
+import { MetricCardSkeleton } from '../design-system';
 import WeightChart from '../components/charts/WeightChart';
 import type { BodyMetrics } from '../types';
 
@@ -18,7 +19,7 @@ export default function MetricsPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoType, setPhotoType] = useState<'front' | 'side' | 'back'>('front');
 
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['metrics'],
     queryFn: metricsAPI.getAll,
   });
@@ -156,12 +157,24 @@ export default function MetricsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <WeightChart metrics={data?.metrics || []} />
+            {isLoading ? (
+              <div className="h-64 flex items-center justify-center">
+                <MetricCardSkeleton />
+              </div>
+            ) : (
+              <WeightChart metrics={data?.metrics || []} />
+            )}
           </CardContent>
         </Card>
 
         <div className="space-y-4">
-          {data?.metrics.map((metric: BodyMetrics) => (
+          {isLoading ? (
+            <>
+              <MetricCardSkeleton />
+              <MetricCardSkeleton />
+            </>
+          ) : (
+            data?.metrics.map((metric: BodyMetrics) => (
             <Card key={metric._id}>
               <CardContent className="pt-6">
                 <div className="flex justify-between items-start">
@@ -205,7 +218,7 @@ export default function MetricsPage() {
                 </div>
               </CardContent>
             </Card>
-          )) || (
+          ))) || (
             <Card>
               <CardContent className="pt-6 text-center text-gray-500">
                 <Scale className="h-12 w-12 text-neutral-300 mx-auto mb-3" />
@@ -213,7 +226,8 @@ export default function MetricsPage() {
                 <p className="text-sm mt-1">Click "Add Metrics" to track your progress</p>
               </CardContent>
             </Card>
-          )}
+          )
+          }
         </div>
         </div>
       </PageTransition>

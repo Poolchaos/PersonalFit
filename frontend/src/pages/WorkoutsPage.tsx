@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { workoutAPI } from '../api';
-import { Card, Button } from '../design-system';
+import { Card, Button, WorkoutCardSkeleton } from '../design-system';
 import { Dumbbell, Zap, Clock, TrendingUp } from 'lucide-react';
 
 export default function WorkoutsPage() {
@@ -47,10 +47,11 @@ export default function WorkoutsPage() {
 
         <div className="space-y-4">
           {isLoading && (
-            <div className="text-center py-12">
-              <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-neutral-500">Loading workouts...</p>
-            </div>
+            <>
+              <WorkoutCardSkeleton />
+              <WorkoutCardSkeleton />
+              <WorkoutCardSkeleton />
+            </>
           )}
 
           {isError && (

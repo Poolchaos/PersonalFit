@@ -5,14 +5,15 @@ import { accountabilityAPI } from '../api';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/components/Card';
 import { StreakWidget } from '../components/gamification/StreakWidget';
 import { PageTransition } from '../components/layout/PageTransition';
+import { StreakCardSkeleton } from '../design-system';
 
 export default function AccountabilityPage() {
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['accountability'],
     queryFn: accountabilityAPI.getStatus,
   });
 
-  const { data: penaltiesData } = useQuery({
+  const { data: penaltiesData, isLoading: penaltiesLoading } = useQuery({
     queryKey: ['penalties'],
     queryFn: accountabilityAPI.getPenalties,
   });
@@ -41,12 +42,19 @@ export default function AccountabilityPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* StreakWidget - takes 1 column */}
           <div className="lg:col-span-1">
-            <StreakWidget />
+            {isLoading ? <StreakCardSkeleton /> : <StreakWidget />}
           </div>
 
           {/* Summary Stats - takes 2 columns */}
           <div className="lg:col-span-2 space-y-4">
-            <Card>
+            {isLoading ? (
+              <>
+                <StreakCardSkeleton />
+                <StreakCardSkeleton />
+              </>
+            ) : (
+              <>
+                <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Award className="h-5 w-5 text-primary" />
@@ -107,6 +115,8 @@ export default function AccountabilityPage() {
                 </div>
               </CardContent>
             </Card>
+              </>
+            )}
           </div>
         </div>
 
@@ -149,7 +159,9 @@ export default function AccountabilityPage() {
             <CardTitle className="text-red-600">Active Penalties</CardTitle>
           </CardHeader>
           <CardContent>
-            {penaltiesData?.penalties.filter(p => !p.completed).length ? (
+            {penaltiesLoading ? (
+              <StreakCardSkeleton />
+            ) : penaltiesData?.penalties.filter(p => !p.completed).length ? (
               <div className="space-y-3">
                 {penaltiesData.penalties
                   .filter(p => !p.completed)
