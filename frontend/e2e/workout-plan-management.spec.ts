@@ -271,14 +271,12 @@ test.describe('Workout Plan Management - Plan Actions', () => {
 });
 
 test.describe('Workout Plan Management - Filtering and Sorting', () => {
-  const testEmail = `e2e-filter-sort-${Date.now()}@test.com`;
   const testPassword = 'Test123456!';
 
-  test.beforeEach(async ({ page }) => {
-    await registerAndLogin(page, testEmail, testPassword);
-  });
-
   test('should filter plans by status (active/inactive)', async ({ page }) => {
+    const testEmail = `e2e-filter-sort-${Date.now()}@test.com`;
+    await registerAndLogin(page, testEmail, testPassword);
+
     await page.goto('/workouts');
 
     // Look for filter controls
@@ -310,6 +308,9 @@ test.describe('Workout Plan Management - Filtering and Sorting', () => {
   });
 
   test('should filter plans by modality (strength/cardio/HIIT)', async ({ page }) => {
+    const testEmail = `e2e-filter-sort-${Date.now()}@test.com`;
+    await registerAndLogin(page, testEmail, testPassword);
+
     await page.goto('/workouts');
 
     // Look for modality filter
@@ -332,6 +333,9 @@ test.describe('Workout Plan Management - Filtering and Sorting', () => {
   });
 
   test('should sort plans by date created', async ({ page }) => {
+    const testEmail = `e2e-filter-sort-${Date.now()}@test.com`;
+    await registerAndLogin(page, testEmail, testPassword);
+
     await page.goto('/workouts');
 
     const planCount = await checkForExistingPlans(page);
@@ -364,10 +368,10 @@ test.describe('Workout Plan Management - Filtering and Sorting', () => {
 });
 
 test.describe('Workout Plan Management - Empty States', () => {
-  const testEmail = `e2e-empty-${Date.now()}@test.com`;
   const testPassword = 'Test123456!';
 
   test('should show empty state when user has no plans', async ({ page }) => {
+    const testEmail = `e2e-empty-${Date.now()}@test.com`;
     // Create brand new user (no plans)
     await registerAndLogin(page, testEmail, testPassword);
     await page.goto('/workouts');
@@ -389,6 +393,7 @@ test.describe('Workout Plan Management - Empty States', () => {
   });
 
   test('should navigate to generation from empty state CTA', async ({ page }) => {
+    const testEmail = `e2e-empty-cta-${Date.now()}@test.com`;
     await registerAndLogin(page, testEmail, testPassword);
     await page.goto('/workouts');
 
@@ -413,10 +418,10 @@ test.describe('Workout Plan Management - Empty States', () => {
 });
 
 test.describe('Workout Plan Management - Performance', () => {
-  const testEmail = `e2e-perf-${Date.now()}@test.com`;
   const testPassword = 'Test123456!';
 
   test('should load workouts page within acceptable time', async ({ page }) => {
+    const testEmail = `e2e-perf-${Date.now()}@test.com`;
     await registerAndLogin(page, testEmail, testPassword);
 
     const startTime = Date.now();
@@ -430,6 +435,7 @@ test.describe('Workout Plan Management - Performance', () => {
   });
 
   test('should handle large number of plans efficiently', async ({ page }) => {
+    const testEmail = `e2e-perf-large-${Date.now()}@test.com`;
     await registerAndLogin(page, testEmail, testPassword);
     await page.goto('/workouts');
 

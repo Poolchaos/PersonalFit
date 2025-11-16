@@ -242,17 +242,15 @@ test.describe('Workout Plan Generation - Full Flow', () => {
 });
 
 test.describe('Workout Plan Review - Interactions', () => {
-  const testEmail = `e2e-review-${Date.now()}@test.com`;
   const testPassword = 'Test123456!';
 
-  test.beforeEach(async ({ page }) => {
+  test('should accept plan and navigate to dashboard', async ({ page }) => {
+    const testEmail = `e2e-review-${Date.now()}@test.com`;
     // Setup user and attempt to generate a plan
     await setupUserWithProfile(page, testEmail, testPassword);
     await completeProfileSetup(page);
     await addEquipment(page);
-  });
 
-  test('should accept plan and navigate to dashboard', async ({ page }) => {
     // Navigate to review page (assuming plan exists or showing error state)
     await page.goto('/workout-plan-review');
 
@@ -279,6 +277,12 @@ test.describe('Workout Plan Review - Interactions', () => {
   });
 
   test('should regenerate plan when clicking Generate New Plan', async ({ page }) => {
+    const testEmail = `e2e-review-regen-${Date.now()}@test.com`;
+    // Setup user and attempt to generate a plan
+    await setupUserWithProfile(page, testEmail, testPassword);
+    await completeProfileSetup(page);
+    await addEquipment(page);
+
     await page.goto('/workout-plan-review');
 
     // Check if plan is present
@@ -302,6 +306,12 @@ test.describe('Workout Plan Review - Interactions', () => {
   });
 
   test('should navigate to customize when clicking Customize Plan', async ({ page }) => {
+    const testEmail = `e2e-review-customize-${Date.now()}@test.com`;
+    // Setup user and attempt to generate a plan
+    await setupUserWithProfile(page, testEmail, testPassword);
+    await completeProfileSetup(page);
+    await addEquipment(page);
+
     await page.goto('/workout-plan-review');
 
     // Check if customize button exists
@@ -335,10 +345,10 @@ test.describe('Workout Plan Review - Interactions', () => {
 });
 
 test.describe('Workout Plan Review - Data Display', () => {
-  const testEmail = `e2e-display-${Date.now()}@test.com`;
   const testPassword = 'Test123456!';
 
   test('should display plan overview correctly', async ({ page }) => {
+    const testEmail = `e2e-display-${Date.now()}@test.com`;
     await setupUserWithProfile(page, testEmail, testPassword);
     await page.goto('/workout-plan-review');
 
@@ -361,6 +371,7 @@ test.describe('Workout Plan Review - Data Display', () => {
   });
 
   test('should display weekly schedule with exercises', async ({ page }) => {
+    const testEmail = `e2e-display-schedule-${Date.now()}@test.com`;
     await setupUserWithProfile(page, testEmail, testPassword);
     await page.goto('/workout-plan-review');
 
@@ -383,6 +394,7 @@ test.describe('Workout Plan Review - Data Display', () => {
   });
 
   test('should display exercise details (sets, reps, instructions)', async ({ page }) => {
+    const testEmail = `e2e-display-details-${Date.now()}@test.com`;
     await setupUserWithProfile(page, testEmail, testPassword);
     await page.goto('/workout-plan-review');
 
@@ -405,6 +417,7 @@ test.describe('Workout Plan Review - Data Display', () => {
   });
 
   test('should display progression notes and safety reminders', async ({ page }) => {
+    const testEmail = `e2e-display-guidance-${Date.now()}@test.com`;
     await setupUserWithProfile(page, testEmail, testPassword);
     await page.goto('/workout-plan-review');
 
