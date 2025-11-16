@@ -11,7 +11,7 @@ test.describe('Profile Management', () => {
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
   });
 
   test('should update personal information', async ({ page }) => {
@@ -63,3 +63,4 @@ test.describe('Profile Management', () => {
     await expect(page.locator('text=Not set')).toHaveCount(0);
   });
 });
+

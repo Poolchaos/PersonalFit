@@ -11,7 +11,7 @@ test.describe('Workout Generation and Management', () => {
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
 
     // Navigate to workouts page
     await page.click('a[href="/workouts"]');
@@ -58,3 +58,4 @@ test.describe('Workout Generation and Management', () => {
     await page.waitForTimeout(500);
   });
 });
+

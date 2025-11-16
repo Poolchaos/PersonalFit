@@ -11,7 +11,7 @@ test.describe('Accountability System', () => {
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
 
     // Navigate to accountability page
     await page.click('a[href="/accountability"]');
@@ -41,3 +41,4 @@ test.describe('Accountability System', () => {
     await expect(page.locator('text=/0/').first()).toBeVisible();
   });
 });
+

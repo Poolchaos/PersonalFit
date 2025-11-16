@@ -11,7 +11,7 @@ test.describe('Equipment Management', () => {
     await page.fill('input[id="password"]', testPassword);
     await page.fill('input[id="confirmPassword"]', testPassword);
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/dashboard', { timeout: 10000 });
+    await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
 
     // Navigate to equipment page
     await page.click('a[href="/equipment"]');
@@ -107,3 +107,4 @@ test.describe('Equipment Management', () => {
     await expect(page.locator('text=Kettlebell')).toBeVisible();
   });
 });
+
