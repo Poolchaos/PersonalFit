@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { workoutAPI } from '../api';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../design-system';
+import { formatDuration } from '../utils/formatDuration';
 import {
   Sparkles,
   Dumbbell,
@@ -267,13 +268,13 @@ export default function WorkoutPlanReviewPage() {
                               {exercise.duration_seconds && (
                                 <div>
                                   <span className="text-neutral-500">Duration:</span>
-                                  <span className="ml-1 font-semibold">{exercise.duration_seconds}s</span>
+                                  <span className="ml-1 font-semibold">{formatDuration(exercise.duration_seconds)}</span>
                                 </div>
                               )}
                               {exercise.rest_seconds && (
                                 <div>
                                   <span className="text-neutral-500">Rest:</span>
-                                  <span className="ml-1 font-semibold">{exercise.rest_seconds}s</span>
+                                  <span className="ml-1 font-semibold">{formatDuration(exercise.rest_seconds)}</span>
                                 </div>
                               )}
                             </div>
