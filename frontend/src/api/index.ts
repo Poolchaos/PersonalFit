@@ -14,6 +14,9 @@ import type {
   ProgressStats,
 } from '../types';
 
+export { gamificationAPI } from './gamification';
+export type { GamificationStats, XPGainResponse } from './gamification';
+
 // Auth API
 export const authAPI = {
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {

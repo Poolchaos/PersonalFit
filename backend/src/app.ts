@@ -12,6 +12,7 @@ import aiConfigRoutes from './routes/aiConfigRoutes';
 import accountabilityRoutes from './routes/accountabilityRoutes';
 import adminRoutes from './routes/adminRoutes';
 import photoRoutes from './routes/photoRoutes';
+import gamificationRoutes from './routes/gamificationRoutes';
 
 const app: Application = express();
 
@@ -40,6 +41,7 @@ app.use('/api/ai-config', aiConfigRoutes);
 app.use('/api/accountability', accountabilityRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/photos', photoRoutes);
+app.use('/api/gamification', gamificationRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

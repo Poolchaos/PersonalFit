@@ -25,6 +25,15 @@ export interface IUser extends Document {
     equipment_access?: string[];
     workout_frequency?: number; // Days per week user wants to workout
   };
+  gamification?: {
+    xp: number; // Total experience points earned
+    level: number; // Current level (calculated from XP)
+    total_workouts_completed: number;
+    current_streak: number; // Consecutive days with workouts
+    longest_streak: number; // Best streak ever
+    last_workout_date?: Date;
+    achievements: string[]; // Array of achievement IDs earned
+  };
   ai_config?: {
     provider: 'openai' | 'anthropic' | 'local' | 'custom';
     api_key_encrypted?: string;
@@ -80,6 +89,33 @@ const userSchema = new Schema<IUser>(
       preferred_workout_types: [String],
       equipment_access: [String],
       workout_frequency: Number, // Days per week user wants to workout
+    },
+    gamification: {
+      xp: {
+        type: Number,
+        default: 0,
+      },
+      level: {
+        type: Number,
+        default: 1,
+      },
+      total_workouts_completed: {
+        type: Number,
+        default: 0,
+      },
+      current_streak: {
+        type: Number,
+        default: 0,
+      },
+      longest_streak: {
+        type: Number,
+        default: 0,
+      },
+      last_workout_date: Date,
+      achievements: {
+        type: [String],
+        default: [],
+      },
     },
     ai_config: {
       provider: {
