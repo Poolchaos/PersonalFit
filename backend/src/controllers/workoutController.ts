@@ -124,6 +124,7 @@ export const createWorkoutPlan = async (
         activity_level: user.profile?.activity_level,
         medical_conditions: user.profile?.medical_conditions,
         injuries: user.profile?.injuries,
+        injuries_and_restrictions: user.profile?.injuries_and_restrictions,
         current_activities: user.profile?.current_activities,
       },
       equipment: equipmentList,

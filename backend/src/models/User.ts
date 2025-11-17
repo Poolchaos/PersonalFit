@@ -16,6 +16,7 @@ export interface IUser extends Document {
     experience_level?: 'beginner' | 'intermediate' | 'advanced';
     medical_conditions?: string[];
     injuries?: string[];
+    injuries_and_restrictions?: string; // Detailed description of injuries, impairments, and exercise restrictions
     current_activities?: string; // Description of existing regular activities (e.g., "Daily 30min uphill walk with dog")
   };
   preferences: {
@@ -81,6 +82,7 @@ const userSchema = new Schema<IUser>(
       },
       medical_conditions: [String],
       injuries: [String],
+      injuries_and_restrictions: String,
       current_activities: String,
     },
     preferences: {

@@ -13,6 +13,7 @@ export interface WorkoutPlanRequest {
     activity_level?: string;
     medical_conditions?: string[];
     injuries?: string[];
+    injuries_and_restrictions?: string;
     height_cm?: number;
     weight_kg?: number;
     current_activities?: string;
@@ -167,6 +168,28 @@ User Profile:
 - Injuries: ${userProfile.injuries?.join(', ') || 'None reported'}
 - Height: ${userProfile.height_cm ? `${userProfile.height_cm} cm` : 'Not specified'}
 - Weight: ${userProfile.weight_kg ? `${userProfile.weight_kg} kg` : 'Not specified'}
+
+${userProfile.injuries_and_restrictions ? `
+⚠️ CRITICAL SAFETY ALERT - INJURIES & RESTRICTIONS ⚠️
+${userProfile.injuries_and_restrictions}
+
+MANDATORY REQUIREMENTS:
+1. YOU MUST CAREFULLY READ AND UNDERSTAND the above injuries and restrictions
+2. NEVER include exercises that could aggravate these conditions
+3. NEVER include exercises with movements that the user explicitly cannot perform
+4. If an injury affects a body part, AVOID all exercises that stress that area
+5. Provide SAFE ALTERNATIVES that work around the limitations
+6. When in doubt about safety, EXCLUDE the exercise
+
+Examples of restrictions to respect:
+- "Knee injury" → NO squats, lunges, jumping, or knee flexion under load
+- "Pilonidal sinus" → NO situps, crunches, or exercises with direct pressure on lower back/tailbone
+- "Shoulder injury" → NO overhead press, pull-ups, or shoulder-intensive movements
+- "Back problems" → NO deadlifts, heavy spinal loading, or high-impact exercises
+- "Missing limb" → Design unilateral alternatives and balance-focused modifications
+
+USER SAFETY IS PARAMOUNT. When programming, constantly ask: "Could this exercise harm someone with these specific conditions?" If yes, EXCLUDE IT.
+` : ''}
 
 Weekly Schedule Requirements:
 - Sessions Per Week: ${weeklySchedule?.days_per_week || preferences.preferred_workout_days?.length || 3}

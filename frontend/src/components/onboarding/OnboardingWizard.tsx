@@ -57,6 +57,7 @@ export function OnboardingWizard() {
           height_cm: user.profile?.height_cm || prev.profile.height_cm,
           weight_kg: user.profile?.weight_kg || prev.profile.weight_kg,
           current_activities: user.profile?.current_activities || prev.profile.current_activities,
+          injuries_and_restrictions: user.profile?.injuries_and_restrictions || prev.profile.injuries_and_restrictions,
           fitness_goals: user.profile?.fitness_goals || prev.profile.fitness_goals,
           experience_level: user.profile?.experience_level || prev.profile.experience_level,
         },
@@ -463,6 +464,30 @@ export function OnboardingWizard() {
                   </svg>
                   <span>Tell us about physical activities you already do regularly. This helps us create a workout plan that complements your lifestyle without overtraining.</span>
                 </p>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700">
+                  Injuries, Impairments & Exercise Restrictions
+                  <span className="text-neutral-500 font-normal ml-1">(optional but important)</span>
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[120px] resize-y"
+                  placeholder="e.g., Injured left knee - no squats or lunges; Pilonidal sinus - cannot do situps or exercises with direct pressure on lower back; Previous shoulder surgery - limited overhead movements"
+                  value={data.profile.injuries_and_restrictions || ''}
+                  onChange={(e) => setData({ ...data, profile: { ...data.profile, injuries_and_restrictions: e.target.value } })}
+                />
+                <p className="text-xs text-red-600 flex items-start gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span className="font-medium">Important for your safety: Please list any injuries, medical conditions, or physical limitations. This ensures your workout plan avoids exercises that could cause harm or aggravate existing conditions.</span>
+                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+                  <p className="text-xs text-blue-800">
+                    <strong>Examples:</strong> Knee injuries, back problems, shoulder impairments, missing limbs, pilonidal sinus, hernias, recent surgeries, balance issues, joint problems, chronic pain conditions.
+                  </p>
+                </div>
               </div>
             </div>
           )}

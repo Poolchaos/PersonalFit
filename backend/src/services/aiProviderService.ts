@@ -11,6 +11,7 @@ export interface WorkoutGenerationParams {
     activity_level?: string;
     injuries?: string[];
     medical_conditions?: string[];
+    injuries_and_restrictions?: string;
     current_activities?: string;
   };
   equipment: string[];
@@ -49,6 +50,7 @@ class OpenAIProvider implements AIProvider {
         activity_level: params.userProfile.activity_level,
         medical_conditions: params.userProfile.medical_conditions,
         injuries: params.userProfile.injuries,
+        injuries_and_restrictions: params.userProfile.injuries_and_restrictions,
         current_activities: params.userProfile.current_activities,
       },
       preferences: {
