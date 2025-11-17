@@ -54,6 +54,8 @@ export function OnboardingWizard() {
         profile: {
           first_name: user.profile?.first_name || prev.profile.first_name,
           last_name: user.profile?.last_name || prev.profile.last_name,
+          height_cm: user.profile?.height_cm || prev.profile.height_cm,
+          weight_kg: user.profile?.weight_kg || prev.profile.weight_kg,
           fitness_goals: user.profile?.fitness_goals || prev.profile.fitness_goals,
           experience_level: user.profile?.experience_level || prev.profile.experience_level,
         },
