@@ -1,5 +1,10 @@
 import { test, expect, Page } from '@playwright/test';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// ES modules compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 test.describe('Body Metrics and Photos', () => {
   const testPassword = 'Test123456';
@@ -18,29 +23,29 @@ test.describe('Body Metrics and Photos', () => {
 
   test('should add body metrics', async ({ page }) => {
     await setupUser(page, 'add');
-    // Fill metrics form
-    await page.fill('input[name="weight"]', '75.5');
-    await page.fill('input[name="bodyFat"]', '18.5');
-    await page.fill('input[name="muscleMass"]', '32.0');
-    await page.fill('input[name="chest"]', '100');
-    await page.fill('input[name="waist"]', '82');
-    await page.fill('input[name="hips"]', '95');
-    await page.fill('input[name="biceps"]', '35');
-    await page.fill('input[name="thighs"]', '58');
+    
+    // Click "+ Add Metrics" button to show form
+    await page.click('button:has-text("Add Metrics")');
+    await page.waitForTimeout(500);
+    
+    // Fill simplified metrics form (only 3 fields now)
+    await page.fill('input[name="weight_kg"]', '75.5');
+    await page.fill('input[name="body_fat_percentage"]', '18.5');
+    await page.fill('textarea[name="notes"]', 'Feeling strong today');
 
     // Submit form
     await page.click('button:has-text("Save Metrics")');
 
     await page.waitForTimeout(1000);
 
-    // Verify success message or metrics display
-    await expect(page.locator('text=75.5')).toBeVisible();
+    // Verify metrics value appears
+    await expect(page.locator('text=75.5')).toBeVisible({ timeout: 5000 });
   });
 
   test('should upload progress photo', async ({ page }) => {
     await setupUser(page, 'upload');
-    // Create a test image file path
-    const testImagePath = path.join(__dirname, '../public/vite.svg');
+    // Create a test image file path using ES modules path
+    const testImagePath = join(__dirname, '../public/vite.svg');
 
     // Upload front photo
     const frontInput = page.locator('input[type="file"][accept*="image"]').first();
@@ -54,13 +59,22 @@ test.describe('Body Metrics and Photos', () => {
 
   test('should display metrics history', async ({ page }) => {
     await setupUser(page, 'history');
+    
+    // Click "+ Add Metrics" button to show form
+    await page.click('button:has-text("Add Metrics")');
+    await page.waitForTimeout(500);
+    
     // Add first set of metrics
-    await page.fill('input[name="weight"]', '76.0');
+    await page.fill('input[name="weight_kg"]', '76.0');
     await page.click('button:has-text("Save Metrics")');
     await page.waitForTimeout(1000);
 
+    // Click "+ Add Metrics" again (form closes after save)
+    await page.click('button:has-text("Add Metrics")');
+    await page.waitForTimeout(500);
+    
     // Add second set
-    await page.fill('input[name="weight"]', '75.0');
+    await page.fill('input[name="weight_kg"]', '75.0');
     await page.click('button:has-text("Save Metrics")');
     await page.waitForTimeout(1000);
 
