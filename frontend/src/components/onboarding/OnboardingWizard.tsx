@@ -84,9 +84,26 @@ export function OnboardingWizard() {
       toast.success('Your personalized workout plan is ready!');
       navigate('/workout-plan-review');
     },
-    onError: () => {
-      toast.error('Failed to generate workout plan. You can try again from the Workouts page.');
-      navigate('/dashboard');
+    onError: (error: unknown) => {
+      setIsGenerating(false);
+      const err = error as { response?: { data?: { error?: string }; status?: number } };
+      const errorMessage = err.response?.data?.error || 'Failed to generate workout plan';
+
+      console.error('Workout generation error:', error);
+      console.error('Error details:', err.response);
+
+      // Show specific error message
+      if (errorMessage.includes('API key')) {
+        toast.error('AI configuration issue: ' + errorMessage + ' Please check your API key in step 1.');
+      } else if (errorMessage.includes('rate limit')) {
+        toast.error('Rate limit exceeded. Please try again in a few moments.');
+      } else if (errorMessage.includes('authenticate')) {
+        toast.error('API authentication failed. Please verify your API key is valid and active.');
+      } else {
+        toast.error(errorMessage + ' You can retry by clicking "Complete Setup" again.');
+      }
+
+      // Don't navigate away - stay on onboarding to allow retry
     },
   });
 
@@ -640,18 +657,31 @@ export function OnboardingWizard() {
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             ) : (
-              <Button
-                variant="success"
-                onClick={handleComplete}
-                loading={
-                  updateProfileMutation.isPending ||
-                  updatePreferencesMutation.isPending ||
-                  generateWorkoutMutation.isPending
-                }
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Generate My Plan
-              </Button>
+              <div className="flex gap-2">
+                {generateWorkoutMutation.isError && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      toast.success('Profile setup complete! You can generate a workout plan from the Workouts page.');
+                      navigate('/dashboard');
+                    }}
+                  >
+                    Skip & Go to Dashboard
+                  </Button>
+                )}
+                <Button
+                  variant="success"
+                  onClick={handleComplete}
+                  loading={
+                    updateProfileMutation.isPending ||
+                    updatePreferencesMutation.isPending ||
+                    generateWorkoutMutation.isPending
+                  }
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  {generateWorkoutMutation.isError ? 'Retry Generation' : 'Generate My Plan'}
+                </Button>
+              </div>
             )}
           </div>
         </CardContent>

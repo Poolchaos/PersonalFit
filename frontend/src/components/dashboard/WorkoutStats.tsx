@@ -40,9 +40,18 @@ interface WorkoutStatsProps {
   thisWeek: number;
   totalVolume: string;
   consistency: string;
+  thisWeekChange?: string;
+  consistencyChange?: string;
 }
 
-export function WorkoutStats({ totalWorkouts, thisWeek, totalVolume, consistency }: WorkoutStatsProps) {
+export function WorkoutStats({
+  totalWorkouts,
+  thisWeek,
+  totalVolume,
+  consistency,
+  thisWeekChange,
+  consistencyChange
+}: WorkoutStatsProps) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <StatItem
@@ -54,8 +63,8 @@ export function WorkoutStats({ totalWorkouts, thisWeek, totalVolume, consistency
         icon={Flame}
         label="This Week"
         value={thisWeek}
-        change="+2 from last week"
-        changeType="positive"
+        change={thisWeekChange}
+        changeType={thisWeekChange && thisWeekChange.includes('+') ? 'positive' : thisWeekChange && thisWeekChange.includes('-') ? 'negative' : 'neutral'}
       />
       <StatItem
         icon={TrendingUp}
@@ -66,8 +75,8 @@ export function WorkoutStats({ totalWorkouts, thisWeek, totalVolume, consistency
         icon={Target}
         label="Consistency"
         value={consistency}
-        change="↑ 5%"
-        changeType="positive"
+        change={consistencyChange}
+        changeType={consistencyChange && consistencyChange.includes('↑') ? 'positive' : consistencyChange && consistencyChange.includes('↓') ? 'negative' : 'neutral'}
       />
     </div>
   );
