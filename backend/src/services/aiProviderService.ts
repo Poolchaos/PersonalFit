@@ -11,6 +11,7 @@ export interface WorkoutGenerationParams {
     activity_level?: string;
     injuries?: string[];
     medical_conditions?: string[];
+    current_activities?: string;
   };
   equipment: string[];
   workoutModality: 'strength' | 'hiit' | 'flexibility' | 'cardio';
@@ -48,6 +49,7 @@ class OpenAIProvider implements AIProvider {
         activity_level: params.userProfile.activity_level,
         medical_conditions: params.userProfile.medical_conditions,
         injuries: params.userProfile.injuries,
+        current_activities: params.userProfile.current_activities,
       },
       preferences: {
         preferred_workout_duration: params.weeklySchedule?.session_duration,
@@ -58,6 +60,7 @@ class OpenAIProvider implements AIProvider {
         equipment_type: 'other',
       })),
       workoutModality: params.workoutModality,
+      weeklySchedule: params.weeklySchedule,
     }, this.client); // CRITICAL: Pass the user's OpenAI client with their API key
   }
 }

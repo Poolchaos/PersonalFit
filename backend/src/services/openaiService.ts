@@ -15,6 +15,7 @@ export interface WorkoutPlanRequest {
     injuries?: string[];
     height_cm?: number;
     weight_kg?: number;
+    current_activities?: string;
   };
   preferences: {
     preferred_workout_days?: string[];
@@ -161,6 +162,7 @@ User Profile:
 - Fitness Goals: ${userProfile.fitness_goals?.join(', ') || 'General fitness'}
 - Experience Level: ${userProfile.experience_level || 'Not specified'}
 - Activity Level: ${userProfile.activity_level || 'Not specified'}
+- Current Regular Activities: ${userProfile.current_activities || 'None reported'}
 - Medical Conditions: ${userProfile.medical_conditions?.join(', ') || 'None reported'}
 - Injuries: ${userProfile.injuries?.join(', ') || 'None reported'}
 - Height: ${userProfile.height_cm ? `${userProfile.height_cm} cm` : 'Not specified'}
@@ -169,6 +171,8 @@ User Profile:
 Weekly Schedule Requirements:
 - Sessions Per Week: ${weeklySchedule?.days_per_week || preferences.preferred_workout_days?.length || 3}
 - Session Duration: ${weeklySchedule?.session_duration || preferences.preferred_workout_duration || 45} minutes
+
+IMPORTANT: The user already performs regular activities outside of this program. DO NOT duplicate these activities in the workout plan. Account for this existing activity when determining total weekly volume to avoid overtraining.
 
 Preferences:
 - Preferred Workout Days: ${preferences.preferred_workout_days?.join(', ') || 'Flexible'}
