@@ -210,21 +210,93 @@ ${userContext}
 
 ${modalityGuidance}
 
-EVIDENCE-BASED PRINCIPLES (Apply to all programming):
+═══════════════════════════════════════════════════════════════════════════════
+CRITICAL QUALITY CONTROL RULES - STRICT COMPLIANCE REQUIRED
+═══════════════════════════════════════════════════════════════════════════════
 
-1. **Progressive Overload** (Kraemer & Ratamess, 2004): Systematically increase training stimulus through volume, intensity, or complexity over 4-week mesocycle.
+⚠️ NO GUESSING OR ASSUMPTIONS ALLOWED ⚠️
+
+You MUST follow these non-negotiable quality standards:
+
+1. **FACTUAL ONLY - NO SPECULATION**
+   - Every exercise selection, set/rep scheme, and progression MUST be grounded in research
+   - If user profile lacks specific data, use conservative evidence-based defaults
+   - NEVER invent exercise variations or training methods not backed by literature
+   - NEVER assume user capabilities beyond stated experience level
+   - If uncertain about exercise appropriateness, EXCLUDE IT (safety first)
+
+2. **EVIDENCE-BASED DECISION FRAMEWORK**
+   For EVERY exercise and parameter, you must be able to answer:
+   - "What research supports this selection?"
+   - "Is this appropriate for the user's experience level?"
+   - "Does this align with evidence-based volume/intensity guidelines?"
+   - "Could this cause harm given reported injuries/conditions?"
+
+   If you cannot confidently answer YES to all questions, DO NOT INCLUDE IT.
+
+3. **VOLUME & INTENSITY BOUNDARIES (Non-negotiable)**
+   - Beginners: 10-15 sets per muscle group per week (lower bound proven effective)
+   - Intermediate: 12-20 sets per muscle group per week (optimal hypertrophy range)
+   - Advanced: 15-25 sets per muscle group per week (with deload protocol)
+
+   NEVER exceed these ranges without explicit justification.
+   NEVER program volume below minimum effective dose.
+
+4. **EXPERIENCE-APPROPRIATE COMPLEXITY**
+   - Beginner: Basic compound movements, machine exercises, simple progressions
+   - Intermediate: Advanced compounds, free weight variations, periodization
+   - Advanced: Complex movements, advanced training methods, autoregulation
+
+   NEVER program movements above user's stated experience level.
+
+5. **INJURY SAFETY VERIFICATION**
+   Before including ANY exercise, verify:
+   - Does this movement conflict with reported injuries?
+   - Could this aggravate reported medical conditions?
+   - Are there safer alternatives that achieve the same training stimulus?
+
+   When in doubt, EXCLUDE and choose safer alternative.
+
+6. **EQUIPMENT CONSTRAINT ENFORCEMENT**
+   - You may ONLY use equipment explicitly listed as available
+   - NO substitutions without user approval
+   - NO assumptions about equipment access
+   - For bodyweight-only: Use tempo, leverage, and unilateral variations for progression
+
+7. **PROGRESSIVE OVERLOAD VERIFICATION**
+   Every week MUST show measurable progression through:
+   - Increased volume (sets × reps)
+   - Increased intensity (load, tempo, leverage)
+   - Increased complexity (exercise variation)
+
+   Progression MUST be realistic for user's experience level.
+   Week 4 MUST be deload (40-60% volume reduction).
+
+8. **RECOVERY & FATIGUE MANAGEMENT**
+   - Minimum 48 hours between training same muscle groups
+   - Maximum 72 hours for heavy compound movements
+   - Strategic rest day placement (avoid back-to-back high-intensity)
+   - Week 4 deload is MANDATORY for recovery
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EVIDENCE-BASED PRINCIPLES (Research-Backed Standards):
+
+1. **Progressive Overload** (Kraemer & Ratamess, 2004; Schoenfeld et al., 2017):
+   Systematically increase training stimulus through volume, intensity, or complexity over 4-week mesocycle.
 
 2. **Frequency Guidelines** (Schoenfeld et al., 2016):
    - Beginners: 2-3 sessions/week per muscle group
    - Intermediate: 2-4 sessions/week per muscle group
    - Advanced: 4-6 sessions/week with proper periodization
 
-3. **Volume Landmarks** (Schoenfeld et al., 2017):
+3. **Volume Landmarks** (Schoenfeld et al., 2017; Baz-Valle et al., 2022):
    - Minimum Effective Volume: 10+ sets/muscle/week for growth
-   - Maximum Adaptive Volume: 10-20 sets/muscle/week for most individuals
+   - Optimal Volume: 10-20 sets/muscle/week for most individuals
+   - Maximum Recoverable Volume: 20-25 sets/muscle/week (advanced only)
    - Fatigue management critical beyond 20 sets/muscle/week
 
-4. **Rest Intervals** (Grgic et al., 2017):
+4. **Rest Intervals** (Grgic et al., 2017; Henselmans & Schoenfeld, 2014):
    - Strength (>85% 1RM): 3-5 minutes between sets
    - Hypertrophy (60-80% 1RM): 1-3 minutes between sets
    - Endurance (<60% 1RM): 30-90 seconds between sets
@@ -234,16 +306,18 @@ EVIDENCE-BASED PRINCIPLES (Apply to all programming):
    - Prioritize compound movements for efficiency and functional strength
    - Include unilateral work for stability and imbalance correction
    - Match exercise complexity to user experience level
+   - 70-80% compound movements, 20-30% isolation work
 
-6. **Injury Prevention** (Soligard et al., 2010):
-   - Include movement preparation (dynamic warm-up) before all sessions
+6. **Injury Prevention** (Soligard et al., 2010; Lauersen et al., 2014):
+   - Include movement preparation (5-10min dynamic warm-up) before all sessions
    - Progressive loading: increase volume OR intensity, not both simultaneously
    - Respect reported injuries with appropriate modifications
-   - Include mobility work for joint health
+   - Include mobility work for joint health and injury resilience
 
-7. **Deload Strategy** (Stone et al., 1991):
+7. **Deload Strategy** (Stone et al., 1991; Rhea & Alderman, 2004):
    - Week 4 volume reduction (40-60% of week 3) to facilitate supercompensation
    - Maintain intensity, reduce volume/frequency
+   - Critical for long-term progress and injury prevention
 
 EQUIPMENT CONSTRAINT - CRITICAL:
 You must ONLY use exercises performable with: ${availableEquipment && availableEquipment.length > 0 ? availableEquipment.map(e => e.equipment_name).join(', ') : 'bodyweight only (no equipment)'}
@@ -298,17 +372,81 @@ PLAN REQUIREMENTS:
 9. **Periodization**: Week 4 should be deload (reduced volume, maintained intensity)
 10. **Recovery Guidance**: Include rest day placement and recovery modality suggestions
 11. **Measurable Progression**: Each week should have clear progression markers (reps, sets, tempo, or load recommendations)
+12. **NO GUESSING**: If any aspect is unclear from user data, use conservative evidence-based defaults
 
-VALIDATION CHECKLIST (ensure before responding):
+═══════════════════════════════════════════════════════════════════════════════
+MANDATORY PRE-RESPONSE VALIDATION CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before submitting your workout plan, you MUST verify ALL of the following:
+
+STRUCTURE COMPLIANCE:
 - [ ] Weekly schedule has EXACTLY ${weeklySchedule?.days_per_week || 3} workout sessions
 - [ ] Each session is approximately ${weeklySchedule?.session_duration || 45} minutes in duration
-- [ ] All exercises use ONLY available equipment
-- [ ] Volume per muscle group falls within evidence-based ranges (10-20 sets/week)
-- [ ] Rest intervals appropriate for training goal
-- [ ] Week-to-week progression is logical and measurable
-- [ ] Warm-up included for injury prevention
-- [ ] Modifications provided for any reported injuries
-- [ ] Week 4 implements deload for recovery`;
+- [ ] 4-week mesocycle structure (Weeks 1-3 progressive, Week 4 deload)
+
+EVIDENCE-BASED VOLUME:
+- [ ] Beginner: 10-15 sets per muscle group per week
+- [ ] Intermediate: 12-20 sets per muscle group per week
+- [ ] Advanced: 15-25 sets per muscle group per week
+- [ ] Volume does NOT exceed user's experience level capacity
+
+SAFETY VERIFICATION:
+- [ ] All exercises compatible with reported injuries/restrictions
+- [ ] NO exercises that could aggravate reported conditions
+- [ ] Safe alternatives provided where standard exercises are contraindicated
+- [ ] Dynamic warm-up included in every session (5-10 minutes)
+- [ ] Progressive loading applied (NOT volume + intensity simultaneously)
+
+EQUIPMENT CONSTRAINT:
+- [ ] All exercises use ONLY available equipment: ${availableEquipment && availableEquipment.length > 0 ? availableEquipment.map(e => e.equipment_name).join(', ') : 'bodyweight only'}
+- [ ] NO substitutions or assumptions about equipment access
+- [ ] For bodyweight: tempo/leverage/unilateral variations for progression
+
+EXERCISE SELECTION:
+- [ ] 70-80% compound movements, 20-30% isolation work
+- [ ] Exercise complexity matches user experience level
+- [ ] All exercises have clear research backing for inclusion
+- [ ] Target muscles aligned with user's stated goals
+
+PERIODIZATION:
+- [ ] Week 1: Foundation/assessment volume
+- [ ] Week 2: Volume increase (10-15% vs Week 1)
+- [ ] Week 3: Peak volume (10-15% vs Week 2)
+- [ ] Week 4: Deload (40-60% of Week 3 volume, maintain intensity)
+- [ ] Progressive overload clearly measurable week-to-week
+
+RECOVERY MANAGEMENT:
+- [ ] Minimum 48 hours between training same muscle groups
+- [ ] Maximum 72 hours for heavy compound movements
+- [ ] Strategic rest day placement (avoid back-to-back high-intensity)
+- [ ] Recovery guidance provided in progression_notes
+
+INSTRUCTION QUALITY:
+- [ ] Each exercise has detailed, factual instructions
+- [ ] Form cues are evidence-based (not generic)
+- [ ] Modifications provided for all exercises
+- [ ] Safety reminders specific to user profile
+
+REST INTERVALS (Match training goal):
+- [ ] Strength work: 3-5 minutes between sets
+- [ ] Hypertrophy work: 1-3 minutes between sets
+- [ ] Endurance work: 30-90 seconds between sets
+- [ ] HIIT work: 1:1 to 1:3 work-to-rest ratios
+
+QUALITY CONTROL:
+- [ ] NO guessing or assumptions made
+- [ ] ALL parameters grounded in research
+- [ ] NO exercises beyond available equipment
+- [ ] NO exercises inappropriate for experience level
+- [ ] NO exercises that conflict with injuries/restrictions
+
+═══════════════════════════════════════════════════════════════════════════════
+
+IF YOU CANNOT CHECK ALL BOXES ABOVE, DO NOT SUBMIT THE PLAN.
+Revise until 100% compliant with evidence-based standards and user constraints.
+
+USER SAFETY AND RESEARCH INTEGRITY ARE NON-NEGOTIABLE.`;
 
   console.log('\n=== OpenAI Workout Generation Request ===');
   console.log('Timestamp:', new Date().toISOString());
@@ -345,7 +483,7 @@ VALIDATION CHECKLIST (ensure before responding):
         {
           role: 'system',
           content:
-            'You are an evidence-based strength and conditioning specialist with expertise in exercise science, biomechanics, and periodization. All programming decisions must be grounded in peer-reviewed research. Prioritize safety, progressive overload, and individualization. Always respond with valid JSON matching the requested schema.',
+            'You are an evidence-based strength and conditioning specialist with expertise in exercise science, biomechanics, and periodization. CRITICAL RULES: (1) All programming decisions MUST be grounded in peer-reviewed research - NO guessing or assumptions. (2) User safety is paramount - when in doubt about exercise safety, EXCLUDE IT. (3) Only use explicitly available equipment - NO substitutions. (4) Match complexity to stated experience level - NEVER program beyond user capabilities. (5) Respect ALL reported injuries and restrictions - provide safe alternatives. (6) Volume must fall within evidence-based ranges for experience level. Prioritize safety, progressive overload, and individualization. Always respond with valid JSON matching the requested schema.',
         },
         {
           role: 'user',
