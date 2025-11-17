@@ -122,14 +122,14 @@ test.describe('Workout Plan Generation - Full Flow', () => {
     await addEquipment(page);
 
     // Navigate to workouts page
-    await page.click('a[href="/workouts"]');
+    await page.goto('/workouts');
     await expect(page).toHaveURL('/workouts');
 
     // Note: This test requires a valid OPENAI_API_KEY in backend environment
     // If not present, test will validate error handling instead
 
-    // Trigger generation
-    const generateButton = page.locator('button:has-text("Generate")');
+    // Trigger generation (button text is "Generate AI Workout")
+    const generateButton = page.locator('button:has-text("Generate AI Workout")');
 
     // Check if generate button is present
     const hasGenerateButton = await generateButton.count() > 0;
