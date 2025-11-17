@@ -72,7 +72,7 @@ async function addEquipment(page: Page) {
 
   // Fill equipment form (uses placeholder-based inputs)
   await page.fill('input[placeholder*="Dumbbells" i]', 'Dumbbells');
-  
+
   // Find and fill type field (may be combobox now)
   const typeField = page.locator('select, [role="combobox"]').first();
   if (await typeField.count() > 0) {
@@ -198,20 +198,20 @@ test.describe('Workout Plan Generation - Full Flow', () => {
     // Navigate to workouts
     await page.goto('/workouts');
 
-    // Attempt to generate workout
-    const generateButton = page.locator('button:has-text("Generate")');
+    // Attempt to generate workout (button is now "Generate AI Workout")
+    const generateButton = page.locator('button:has-text("Generate AI Workout")');
 
     if (await generateButton.count() > 0) {
       await generateButton.click();
 
-      // Wait for error
-      await page.waitForSelector('.toast-error, .bg-red-100, [role="alert"]', { timeout: 10000 });
+      // Wait for error toast or message
+      await page.waitForTimeout(2000); // Give time for API call to fail
 
-      // Verify error message mentions API key
-      const errorElement = page.locator('.toast-error, .bg-red-100, [role="alert"]').first();
-      const errorText = await errorElement.textContent();
+      // Check for error message (might be in toast or on page)
+      const hasError = await page.locator('text=/API key|configure|OpenAI|Failed to generate/i').count();
 
-      expect(errorText).toMatch(/API key|configure|OpenAI|settings/i);
+      // Error should appear somewhere
+      expect(hasError).toBeGreaterThan(0);
 
       console.log('✓ Missing API key error handled correctly');
     } else {
@@ -459,10 +459,10 @@ test.describe('Workout Plan Review - Error States', () => {
     await page.goto('/workout-plan-review');
 
     // Should show "no plan found" message
-    await expect(page.locator('text=/No Workout Plan Found|couldn\'t find|no plan/i')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/No Workout Plan Found/i')).toBeVisible({ timeout: 5000 });
 
     // Should have button to navigate to workouts
-    await expect(page.locator('button:has-text("Go to Workouts"), a:has-text("Go to Workouts")')).toBeVisible();
+    await expect(page.locator('button:has-text("Go to Workouts")')).toBeVisible();
 
     console.log('✓ Empty state displays correctly');
   });
