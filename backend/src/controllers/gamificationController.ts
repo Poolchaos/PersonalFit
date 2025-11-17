@@ -22,12 +22,14 @@ export const getGamificationStats = async (
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
+      return;
     }
 
     // Initialize gamification if not present
@@ -73,7 +75,8 @@ export const awardWorkoutXp = async (
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
     }
 
     const { hadPersonalRecord = false, workoutDate } = req.body;
@@ -81,7 +84,8 @@ export const awardWorkoutXp = async (
 
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
+      return;
     }
 
     // Initialize gamification if not present
