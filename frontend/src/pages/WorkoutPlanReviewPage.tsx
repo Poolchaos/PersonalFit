@@ -126,10 +126,13 @@ export default function WorkoutPlanReviewPage() {
   };
 
   const handleCustomize = () => {
-    navigate(`/workouts/${plan.id}/edit`);
+    // Redirect to onboarding to adjust preferences and regenerate
+    navigate('/onboarding');
   };
 
   const handleRegenerate = () => {
+    // Clear cached data and redirect to onboarding
+    queryClient.removeQueries({ queryKey: ['workouts'] });
     navigate('/onboarding');
   };
 

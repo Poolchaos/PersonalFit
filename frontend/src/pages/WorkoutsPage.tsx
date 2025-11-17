@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -10,6 +11,7 @@ import { ActiveSession } from '../components/workout/ActiveSession';
 import type { WorkoutPlan } from '../types';
 
 export default function WorkoutsPage() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeWorkout, setActiveWorkout] = useState<WorkoutPlan | null>(null);
 
@@ -32,10 +34,15 @@ export default function WorkoutsPage() {
 
       if (err.response?.status === 401) {
         toast.error('Session expired. Please log in again.');
+        // Don't navigate away - let auth interceptor handle it
+      } else if (err.response?.status === 400 && err.response?.data?.error?.includes('profile')) {
+        // Profile incomplete - redirect to onboarding
+        toast.error('Please complete your profile first');
+        navigate('/onboarding');
       } else if (err.response?.data?.error) {
         toast.error(err.response.data.error);
       } else {
-        toast.error('Failed to generate workout. Make sure OpenAI API key is configured.');
+        toast.error('Failed to generate workout. Please try again or complete your profile setup.');
       }
     },
   });
