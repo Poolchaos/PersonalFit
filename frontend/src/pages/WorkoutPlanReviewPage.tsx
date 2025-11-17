@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { workoutAPI } from '../api';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../design-system';
 import {
@@ -60,20 +60,32 @@ interface GeneratedPlan {
 export default function WorkoutPlanReviewPage() {
   const navigate = useNavigate();
   const [isAccepted, setIsAccepted] = useState(false);
+  const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  // First, try to get the cached plan data from the onboarding wizard
+  const cachedData = queryClient.getQueryData(['workouts']);
+  console.log('WorkoutPlanReviewPage - Cached data:', cachedData);
+
+  // If no cached data, fetch from API
+  const { data: fetchedData, isLoading } = useQuery({
     queryKey: ['workouts'],
     queryFn: workoutAPI.getAll,
+    enabled: !cachedData, // Only fetch if we don't have cached data
   });
 
+  const data = cachedData || fetchedData;
+
   // Debug: Log what we received
-  console.log('WorkoutPlanReviewPage - Raw data:', data);
+  console.log('WorkoutPlanReviewPage - Final data:', data);
   console.log('WorkoutPlanReviewPage - Data type:', typeof data);
   console.log('WorkoutPlanReviewPage - Data keys:', data ? Object.keys(data) : 'no data');
 
   // Get the most recent workout plan (the one just generated)
-  // Backend returns either { workouts: [...] } or { plan: {...} }
-  const plan: GeneratedPlan | undefined = (data as unknown as { workouts?: GeneratedPlan[] })?.workouts?.[0] || (data as unknown as { plan?: GeneratedPlan })?.plan;
+  // Backend generate endpoint returns { plan: {...} }
+  // Backend getAll endpoint returns { workouts: [...] }
+  const plan: GeneratedPlan | undefined =
+    (data as unknown as { plan?: GeneratedPlan })?.plan ||
+    (data as unknown as { workouts?: GeneratedPlan[] })?.workouts?.[0];
 
   console.log('WorkoutPlanReviewPage - Extracted plan:', plan);
 
