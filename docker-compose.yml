@@ -46,7 +46,7 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin123}
       MINIO_EXTERNAL_URL: http://localhost:9002
-      CORS_ORIGIN: http://localhost:5173
+      CORS_ORIGIN: http://localhost:5173,http://localhost:3000
     ports:
       - "5000:5000"
     volumes:
@@ -68,6 +68,30 @@ services:
       retries: 3
       start_period: 30s
     command: npm run dev
+
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production
+    container_name: personalfit-frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:5000
+    ports:
+      - "3000:80"  # Using port 3000 to avoid conflicts with 3001, 3002, 3003
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - personalfit-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
 
   # MinIO Object Storage (S3-compatible)
   minio:

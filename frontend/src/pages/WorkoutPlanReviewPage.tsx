@@ -73,7 +73,7 @@ export default function WorkoutPlanReviewPage() {
 
   // Get the most recent workout plan (the one just generated)
   // Backend returns either { workouts: [...] } or { plan: {...} }
-  const plan: GeneratedPlan | undefined = (data as { workouts?: GeneratedPlan[] })?.workouts?.[0] || (data as { plan?: GeneratedPlan })?.plan;
+  const plan: GeneratedPlan | undefined = (data as unknown as { workouts?: GeneratedPlan[] })?.workouts?.[0] || (data as unknown as { plan?: GeneratedPlan })?.plan;
 
   console.log('WorkoutPlanReviewPage - Extracted plan:', plan);
 

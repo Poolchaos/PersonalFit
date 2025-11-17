@@ -70,10 +70,10 @@ test.describe('Body Metrics and Photos', () => {
     // Add first set of metrics
     await page.fill('input[name="weight_kg"]', '76.0');
     await page.click('button:has-text("Save Metrics")');
-    
+
     // Wait for save to complete
     await page.waitForTimeout(3000);
-    
+
     // Check if form closed (button should say "+ Add Metrics")
     // If it still says "Cancel", the save might have failed - click Cancel to close form
     const buttonText = await addButton.textContent();
@@ -82,7 +82,7 @@ test.describe('Body Metrics and Photos', () => {
       await addButton.click(); // Click Cancel to close the form
       await page.waitForTimeout(500);
     }
-    
+
     // Now button should say "+ Add Metrics" - click to add second set
     await expect(addButton).toContainText('Add Metrics', { timeout: 5000 });
     await addButton.click();
@@ -95,7 +95,7 @@ test.describe('Body Metrics and Photos', () => {
 
     // Should show both entries (check for multiple weight values)
     const weightElements = await page.locator('text=/7[56]\\.0/').count();
-    
+
     // If metrics aren't showing, the API save might be failing (backend issue)
     if (weightElements === 0) {
       console.log('⚠ Metrics not displaying - API save may be failing');
