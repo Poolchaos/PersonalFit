@@ -17,6 +17,7 @@ export interface UserProfile {
   experience_level?: 'beginner' | 'intermediate' | 'advanced';
   medical_conditions?: string[];
   injuries?: string[];
+  current_activities?: string;
 }
 
 export interface UserPreferences {

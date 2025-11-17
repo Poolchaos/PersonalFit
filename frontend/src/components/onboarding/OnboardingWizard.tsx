@@ -56,6 +56,7 @@ export function OnboardingWizard() {
           last_name: user.profile?.last_name || prev.profile.last_name,
           height_cm: user.profile?.height_cm || prev.profile.height_cm,
           weight_kg: user.profile?.weight_kg || prev.profile.weight_kg,
+          current_activities: user.profile?.current_activities || prev.profile.current_activities,
           fitness_goals: user.profile?.fitness_goals || prev.profile.fitness_goals,
           experience_level: user.profile?.experience_level || prev.profile.experience_level,
         },
@@ -443,6 +444,25 @@ export function OnboardingWizard() {
                   value={data.profile.weight_kg || ''}
                   onChange={(e) => setData({ ...data, profile: { ...data.profile, weight_kg: Number(e.target.value) } })}
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-neutral-700">
+                  Current Regular Activities
+                  <span className="text-neutral-500 font-normal ml-1">(optional)</span>
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent min-h-[100px] resize-y"
+                  placeholder="e.g., Daily 30min uphill walk with dog, 3x weekly yoga classes, cycle to work 5km each way"
+                  value={data.profile.current_activities || ''}
+                  onChange={(e) => setData({ ...data, profile: { ...data.profile, current_activities: e.target.value } })}
+                />
+                <p className="text-xs text-neutral-500 flex items-start gap-2">
+                  <svg className="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Tell us about physical activities you already do regularly. This helps us create a workout plan that complements your lifestyle without overtraining.</span>
+                </p>
               </div>
             </div>
           )}
