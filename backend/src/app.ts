@@ -17,7 +17,7 @@ const app: Application = express();
 
 // Middleware
 app.use(cors({
-  origin: config.cors_origin,
+  origin: config.cors_origin.split(',').map(origin => origin.trim()),
   credentials: true,
 }));
 app.use(express.json());
