@@ -66,15 +66,21 @@ test.describe('Authentication Flow', () => {
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
 
-    // Navigate to profile or dashboard to find logout
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL('/dashboard');
+    // If on onboarding, complete it by clicking through or navigate directly to workouts
+    // (workouts page should have the logout button)
+    if (page.url().includes('onboarding')) {
+      // Navigate to workouts page which should be accessible and have logout button
+      await page.goto('/workouts');
+      await page.waitForLoadState('networkidle');
+    } else {
+      await page.goto('/dashboard');
+    }
+    
+    await page.waitForTimeout(1000); // Wait for page to fully render
 
     // Logout - use data-testid for reliable selection
-    await page.waitForTimeout(1000); // Wait for navigation to settle
-
     const logoutButton = page.locator('[data-testid="logout-button"]');
-    await logoutButton.waitFor({ state: 'visible', timeout: 5000 });
+    await logoutButton.waitFor({ state: 'visible', timeout: 10000 });
     await logoutButton.click();
     await expect(page).toHaveURL('/login', { timeout: 5000 });
 

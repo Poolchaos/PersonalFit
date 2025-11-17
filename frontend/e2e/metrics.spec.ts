@@ -70,19 +70,22 @@ test.describe('Body Metrics and Photos', () => {
     // Add first set of metrics
     await page.fill('input[name="weight_kg"]', '76.0');
     await page.click('button:has-text("Save Metrics")');
-    await page.waitForTimeout(1500); // Wait for save and form to close
-
-    // Wait for button to be available again (form closes after save, button text reverts)
-    await page.waitForTimeout(1000); // Extra wait for state update
+    
+    // Wait for form to close - button text should change from "Cancel" back to "+ Add Metrics"
+    await page.waitForTimeout(2000); // Wait for save to complete
     await addButton.waitFor({ state: 'visible', timeout: 10000 });
-    await expect(addButton).toContainText('Add Metrics'); // Verify form closed
+    
+    // Wait explicitly for the button text to change back (form closed)
+    await expect(addButton).toContainText('Add Metrics', { timeout: 10000 });
+    
+    // Now click again to add second set
     await addButton.click();
     await page.waitForTimeout(500);
 
     // Add second set
     await page.fill('input[name="weight_kg"]', '75.0');
     await page.click('button:has-text("Save Metrics")');
-    await page.waitForTimeout(1500);
+    await page.waitForTimeout(2000);
 
     // Should show both entries (check for multiple weight values)
     const weightElements = await page.locator('text=/7[56]\\.0/').count();

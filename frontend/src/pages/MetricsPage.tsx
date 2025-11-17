@@ -75,8 +75,8 @@ export default function MetricsPage() {
             <Scale className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-gray-900">Body Metrics & Progress</h1>
           </div>
-          <Button 
-            onClick={() => setShowForm(!showForm)} 
+          <Button
+            onClick={() => setShowForm(!showForm)}
             variant="primary"
             data-testid="add-metrics-button"
           >

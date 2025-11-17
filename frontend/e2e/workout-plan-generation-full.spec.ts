@@ -53,7 +53,7 @@ async function setupUserWithProfile(page: Page, email: string, password: string)
   if (page.url().includes('onboarding')) {
     await page.goto('/dashboard');
   }
-  
+
   return true;
 }
 
@@ -143,7 +143,7 @@ test.describe('Workout Plan Generation - Full Flow', () => {
   test('should complete full generation and review flow (Happy Path)', async ({ page }) => {
     // Setup: Create user - they'll be redirected to onboarding
     const setupSuccess = await setupUserWithProfile(page, testEmail, testPassword);
-    
+
     // Skip test if setup failed
     if (!setupSuccess) {
       console.log('⚠ Skipping happy path test - user setup failed');
@@ -243,13 +243,13 @@ test.describe('Workout Plan Generation - Full Flow', () => {
   test('should handle missing API key error gracefully', async ({ page }) => {
     // Setup: User without AI config
     const setupSuccess = await setupUserWithProfile(page, `${testEmail}-no-key`, testPassword);
-    
+
     // Skip test if setup failed (backend unavailable)
     if (!setupSuccess) {
       console.log('⚠ Skipping test - user setup failed');
       return;
     }
-    
+
     await completeProfileSetup(page);
     await addEquipment(page);
 
