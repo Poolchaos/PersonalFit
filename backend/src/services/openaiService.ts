@@ -275,7 +275,6 @@ VALIDATION CHECKLIST (ensure before responding):
 
   console.log('\n=== OpenAI Workout Generation Request ===');
   console.log('Timestamp:', new Date().toISOString());
-  console.log('Model: gpt-4o');
   console.log('User profile:', {
     experience_level: userProfile.experience_level,
     fitness_goals: userProfile.fitness_goals,
@@ -291,8 +290,13 @@ VALIDATION CHECKLIST (ensure before responding):
     console.log('Sending request to OpenAI...');
     const requestStartTime = Date.now();
 
+    // Use gpt-4o-mini as default - it's more widely available and cheaper
+    // Users can configure this in their AI settings if they have access to better models
+    const modelToUse = 'gpt-4o-mini';
+    console.log('Using model:', modelToUse);
+
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: modelToUse,
       messages: [
         {
           role: 'system',
@@ -330,25 +334,58 @@ VALIDATION CHECKLIST (ensure before responding):
     const { logOpenAIError } = await import('../utils/openaiValidator');
     logOpenAIError(error, 'generateWorkoutPlan');
 
-    // Pass through OpenAI-specific errors with more detail
-    if (error && typeof error === 'object' && 'error' in error) {
-      const openaiError = error as { error?: { message?: string; type?: string; code?: string } };
-      if (openaiError.error?.message) {
-        throw new Error(`OpenAI Error: ${openaiError.error.message}`);
+    // Enhanced error handling with full details
+    if (error && typeof error === 'object') {
+      // Check for OpenAI SDK error structure
+      const sdkError = error as {
+        status?: number;
+        code?: string;
+        type?: string;
+        message?: string;
+        error?: {
+          message?: string;
+          type?: string;
+          code?: string;
+          param?: string;
+        };
+      };
+
+      // Log the full error structure for debugging
+      console.error('Full error object:', JSON.stringify(sdkError, null, 2));
+
+      // Check for model access errors
+      if (sdkError.status === 404 || sdkError.code === 'model_not_found') {
+        throw new Error('The requested AI model is not available. Your API key may not have access to this model.');
+      }
+
+      // Check for authentication errors
+      if (sdkError.status === 401 || sdkError.code === 'invalid_api_key') {
+        throw new Error('Invalid or expired OpenAI API key. Please update your API key in profile settings.');
+      }
+
+      // Check for rate limit
+      if (sdkError.status === 429 || sdkError.code === 'rate_limit_exceeded') {
+        throw new Error('OpenAI rate limit exceeded. Please try again in a few moments.');
+      }
+
+      // Check for quota/billing issues
+      if (sdkError.status === 402 || sdkError.code === 'insufficient_quota') {
+        throw new Error('OpenAI API quota exceeded. Please check your OpenAI account billing.');
+      }
+
+      // Pass through the actual error message from OpenAI
+      if (sdkError.error?.message) {
+        throw new Error(`OpenAI Error: ${sdkError.error.message} (code: ${sdkError.error.code || 'unknown'})`);
+      }
+
+      if (sdkError.message) {
+        throw new Error(`OpenAI Error: ${sdkError.message} (status: ${sdkError.status || 'unknown'})`);
       }
     }
 
-    // Check for authentication/API key errors
+    // Fallback for Error instances
     if (error instanceof Error) {
-      if (error.message.includes('authenticate') || error.message.includes('Incorrect API key')) {
-        throw new Error('Invalid or expired OpenAI API key. Please update your API key in profile settings.');
-      }
-      if (error.message.includes('rate limit')) {
-        throw new Error('OpenAI rate limit exceeded. Please try again in a few moments.');
-      }
-      if (error.message.includes('quota')) {
-        throw new Error('OpenAI API quota exceeded. Please check your OpenAI account billing.');
-      }
+      throw new Error(`Failed to generate workout plan: ${error.message}`);
     }
 
     throw new Error('Failed to generate workout plan. Please check your OpenAI API configuration.');
