@@ -1,17 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, TrendingUp } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import Layout from '../components/Layout';
 import { HeroSection } from '../components/dashboard/HeroSection';
-import { WorkoutStats } from '../components/dashboard/WorkoutStats';
-import VolumeChart from '../components/charts/VolumeChart';
+import { TodayWorkoutCard } from '../components/dashboard/TodayWorkoutCard';
+import { TomorrowPreviewCard } from '../components/dashboard/TomorrowPreviewCard';
+import { WeeklyStatsCard } from '../components/dashboard/WeeklyStatsCard';
+import { XPProgressBar } from '../components/gamification/XPProgressBar';
+import { StreakCounter } from '../components/gamification/StreakCounter';
 import { PageTransition } from '../components/layout/PageTransition';
-import { Card, CardHeader, CardTitle, CardContent } from '../design-system';
-import { profileAPI, accountabilityAPI, sessionAPI, workoutAPI, progressAPI } from '../api';
+import { Card } from '../design-system';
+import { profileAPI, accountabilityAPI, workoutAPI, gamificationAPI } from '../api';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
     queryFn: profileAPI.getProfile,
@@ -22,19 +26,14 @@ export default function DashboardPage() {
     queryFn: accountabilityAPI.getStatus,
   });
 
-  const { data: sessionsData } = useQuery({
-    queryKey: ['sessions'],
-    queryFn: sessionAPI.getAll,
-  });
-
   const { data: workoutsData } = useQuery({
     queryKey: ['workouts'],
     queryFn: workoutAPI.getAll,
   });
 
-  const { data: progressData } = useQuery({
-    queryKey: ['progress'],
-    queryFn: progressAPI.getStats,
+  const { data: gamificationData } = useQuery({
+    queryKey: ['gamification'],
+    queryFn: gamificationAPI.getStats,
   });
 
   // Check if profile is incomplete
@@ -51,7 +50,29 @@ export default function DashboardPage() {
     }
   }, [isProfileIncomplete, navigate]);
 
-  // Show loading state while checking profile
+  // Extract today and tomorrow workouts from the active plan
+  const { todayWorkout, tomorrowWorkout } = useMemo(() => {
+    if (workoutsData?.workouts && workoutsData.workouts.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const activePlan: any = workoutsData.workouts.find((w: any) => w.is_active);
+      if (activePlan?.plan_data?.weekly_schedule) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const schedule: any[] = activePlan.plan_data.weekly_schedule;
+        const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+        const tomorrowDate = new Date();
+        tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+        const tomorrow = tomorrowDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+        return {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          todayWorkout: schedule.find((s: any) => s.day === today) || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tomorrowWorkout: schedule.find((s: any) => s.day === tomorrow) || null,
+        };
+      }
+    }
+    return { todayWorkout: null, tomorrowWorkout: null };
+  }, [workoutsData]);  // Show loading state while checking profile
   if (!profileData || isProfileIncomplete) {
     return (
       <Layout>
@@ -72,93 +93,79 @@ export default function DashboardPage() {
     );
   }
 
+  const todayXP = todayWorkout ? todayWorkout.workout.exercises.length * 10 : 0;
+  const tomorrowXP = tomorrowWorkout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
+  const isTodayCompleted = false; // TODO: Check from sessions data
+
+  const handleStartWorkout = () => {
+    navigate('/workouts');
+  };
+
+  // Get current week number
+  const getCurrentWeek = () => {
+    const onejan = new Date(new Date().getFullYear(), 0, 1);
+    return Math.ceil((((new Date().getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+  };
+
   return (
     <Layout>
       <PageTransition>
         <div>
-        {/* Hero Section */}
+        {/* Hero Section with Gamification */}
         <HeroSection />
 
-        {/* Workout Stats */}
+        {/* Gamification Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* XP Progress */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Your Progress</h3>
+            <XPProgressBar
+              currentXP={gamificationData?.xp || 0}
+              level={gamificationData?.level || 1}
+              showAnimation={true}
+            />
+          </Card>
+
+          {/* Streak Counter */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4">Consistency Streak</h3>
+            <StreakCounter
+              currentStreak={gamificationData?.current_streak || 0}
+              longestStreak={gamificationData?.longest_streak || 0}
+            />
+          </Card>
+        </div>
+
+        {/* Today & Tomorrow Workouts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Today's Workout - Takes 2 columns */}
+          <div className="lg:col-span-2">
+            <TodayWorkoutCard
+              workout={todayWorkout}
+              isCompleted={isTodayCompleted}
+              xpToEarn={todayXP}
+              onStart={handleStartWorkout}
+            />
+          </div>
+
+          {/* Tomorrow Preview */}
+          <div>
+            <TomorrowPreviewCard
+              workout={tomorrowWorkout}
+              xpToEarn={tomorrowXP}
+            />
+          </div>
+        </div>
+
+        {/* Weekly Stats */}
         <div className="mb-8">
-          <WorkoutStats
-            totalWorkouts={accountabilityData?.totals.workouts_completed || 0}
-            thisWeek={accountabilityData?.current_week.workouts_completed || 0}
-            totalVolume={progressData?.overall.total_volume_kg ? `${progressData.overall.total_volume_kg.toLocaleString()} kg` : '0 kg'}
-            consistency={progressData?.overall.completion_rate ? `${Math.round(progressData.overall.completion_rate)}%` : '0%'}
+          <WeeklyStatsCard
+            workoutsCompleted={accountabilityData?.current_week.workouts_completed || 0}
+            workoutsPlanned={accountabilityData?.current_week.workouts_planned || 0}
+            totalXP={gamificationData?.xp || 0}
+            currentStreak={gamificationData?.current_streak || 0}
+            weekNumber={getCurrentWeek()}
           />
-        </div>
-
-        {/* Volume Progression Chart */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Workout Volume Progression
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <VolumeChart workouts={workoutsData?.workouts || []} />
-          </CardContent>
-        </Card>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8">
-          <Card hover>
-            <div className="p-6">
-              <h3 className="text-sm font-medium text-neutral-500">Workouts This Week</h3>
-              <p className="mt-2 text-3xl font-bold text-neutral-900">
-                {accountabilityData?.current_week.workouts_completed || 0} / {accountabilityData?.current_week.workouts_planned || 0}
-              </p>
-            </div>
-          </Card>
-
-          <Card hover>
-            <div className="p-6">
-              <h3 className="text-sm font-medium text-neutral-500">Total Workouts</h3>
-              <p className="mt-2 text-3xl font-bold text-neutral-900">
-                {accountabilityData?.totals.workouts_completed || 0}
-              </p>
-            </div>
-          </Card>
-
-          <Card hover>
-            <div className="p-6">
-              <h3 className="text-sm font-medium text-neutral-500">Workouts Missed</h3>
-              <p className="mt-2 text-3xl font-bold text-neutral-900">
-                {accountabilityData?.current_week.workouts_missed || 0}
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <p><span className="font-medium">Name:</span> {profileData?.user.profile.first_name || 'Not set'} {profileData?.user.profile.last_name || ''}</p>
-                <p><span className="font-medium">Goals:</span> {profileData?.user.profile.fitness_goals?.join(', ') || 'Not set'}</p>
-                <p><span className="font-medium">Experience:</span> {profileData?.user.profile.experience_level || 'Not set'}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {sessionsData?.sessions.slice(0, 5).map((session) => (
-                <div key={session._id} className="py-2 border-b last:border-0">
-                  <p className="text-sm font-medium">{session.session_date}</p>
-                  <p className="text-xs text-neutral-600">{session.duration_minutes} minutes</p>
-                </div>
-              )) || <p className="text-sm text-neutral-500">No recent activity</p>}
-            </CardContent>
-          </Card>
         </div>
         </div>
       </PageTransition>
