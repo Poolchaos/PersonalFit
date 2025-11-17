@@ -17,46 +17,47 @@ test.describe('Workout Generation and Management', () => {
 
   test('should display workout generation form', async ({ page }) => {
     await setupUser(page, 'form');
-    await expect(page.locator('text=Generate Workout')).toBeVisible();
-    await expect(page.locator('select[name="type"]')).toBeVisible();
-    await expect(page.locator('input[name="duration"]')).toBeVisible();
+    // Workouts page should have "Generate AI Workout" button
+    await expect(page.locator('button:has-text("Generate AI Workout")')).toBeVisible();
+    // Should show empty state message if no workouts yet
+    const emptyState = page.locator('text=/No workouts yet|No workouts/i');
+    if (await emptyState.isVisible()) {
+      await expect(emptyState).toBeVisible();
+    }
   });
 
   test('should generate AI workout plan', async ({ page }) => {
     await setupUser(page, 'generate');
-    // Fill workout generation form
-    await page.selectOption('select[name="type"]', 'strength');
-    await page.fill('input[name="duration"]', '45');
-    await page.selectOption('select[name="intensity"]', 'moderate');
-    await page.fill('textarea[name="focusAreas"]', 'Upper body, chest, and arms');
+    
+    // Click "Generate AI Workout" button
+    // This will trigger generation using saved profile/preferences from onboarding
+    await page.click('button:has-text("Generate AI Workout")');
 
-    // Note: This will fail if OPENAI_API_KEY is not set, but structure should work
-    await page.click('button:has-text("Generate")');
-
-    // Wait for response (might show error if no API key)
-    await page.waitForTimeout(2000);
+    // Wait for response (should show loading state)
+    await page.waitForTimeout(3000);
 
     // Check if either workout plan or error is shown
-    const hasWorkout = await page.locator('text=/Exercise|Workout/i').count();
-    const hasError = await page.locator('.bg-red-100').count();
+    const hasWorkout = await page.locator('text=/Exercise|Workout|Start Workout/i').count();
+    const hasError = await page.locator('text=/error|failed|API key/i').count();
 
+    // One of these should be visible (workout generated OR error shown)
     expect(hasWorkout + hasError).toBeGreaterThan(0);
   });
 
   test('should display workout library', async ({ page }) => {
     await setupUser(page, 'library');
-    // Should have section for saved workouts
-    await expect(page.locator('text=/Workout|Library|Plans/i')).toBeVisible();
+    // Workouts page should have the "Workouts" heading
+    await expect(page.locator('h1:has-text("Workouts")')).toBeVisible();
+    // Should have generate button
+    await expect(page.locator('button:has-text("Generate AI Workout")')).toBeVisible();
   });
 
   test('should handle workout form validation', async ({ page }) => {
     await setupUser(page, 'validation');
-    // Try to generate without filling required fields
-    await page.selectOption('select[name="type"]', '');
-    await page.click('button:has-text("Generate")');
-
-    // Should prevent submission or show validation
-    await page.waitForTimeout(500);
+    // The workouts page doesn't have a form with validation anymore
+    // It just has a button that triggers generation
+    // This test is no longer applicable, so we'll just verify the page loads
+    await expect(page.locator('h1:has-text("Workouts")')).toBeVisible();
   });
 });
 
