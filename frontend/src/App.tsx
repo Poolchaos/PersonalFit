@@ -14,6 +14,7 @@ import GoalsPage from './pages/GoalsPage';
 import AccountabilityPage from './pages/AccountabilityPage';
 import WorkoutPlanReviewPage from './pages/WorkoutPlanReviewPage';
 import SchedulePage from './pages/SchedulePage';
+import WorkoutSessionPage from './pages/WorkoutSessionPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -137,6 +138,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <SchedulePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/workout-session/:workoutId?"
+            element={
+              <ProtectedRoute>
+                <WorkoutSessionPage />
               </ProtectedRoute>
             }
           />

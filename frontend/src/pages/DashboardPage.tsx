@@ -98,7 +98,7 @@ export default function DashboardPage() {
   const isTodayCompleted = false; // TODO: Check from sessions data
 
   const handleStartWorkout = () => {
-    navigate('/workouts');
+    navigate('/workout-session');
   };
 
   // Get current week number
