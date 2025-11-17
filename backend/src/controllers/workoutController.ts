@@ -215,7 +215,7 @@ export const getWorkoutPlans = async (
       .sort({ created_at: -1 })
       .select('-__v');
 
-    res.json({ plans });
+    res.json({ workouts: plans });
   } catch (error) {
     console.error('Get workout plans error:', error);
     res.status(500).json({ error: 'Internal server error' });
