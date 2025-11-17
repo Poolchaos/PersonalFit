@@ -11,6 +11,7 @@ import type {
   AccountabilityStatus,
   PhotoUploadResponse,
   Penalty,
+  ProgressStats,
 } from '../types';
 
 // Auth API
@@ -259,6 +260,14 @@ export const photosAPI = {
 
   delete: async (userId: string, photoType: string, timestamp: string): Promise<{ message: string }> => {
     const { data } = await apiClient.delete(`/api/photos/${userId}/${photoType}/${timestamp}`);
+    return data;
+  },
+};
+
+// Progress API
+export const progressAPI = {
+  getStats: async (): Promise<ProgressStats> => {
+    const { data } = await apiClient.get('/api/progress');
     return data;
   },
 };

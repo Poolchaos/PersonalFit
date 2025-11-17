@@ -179,3 +179,44 @@ export interface PhotoUploadResponse {
     type: 'front' | 'side' | 'back';
   };
 }
+
+export interface ProgressStats {
+  overall: {
+    total_sessions: number;
+    completed_sessions: number;
+    completion_rate: number;
+    total_exercises: number;
+    total_volume_kg: number;
+    total_workout_time_minutes: number;
+    current_streak_days: number;
+    longest_streak_days: number;
+    average_session_duration: number;
+  };
+  recent_performance: {
+    last_7_days: {
+      sessions: number;
+      completion_rate: number;
+      average_difficulty: number;
+    };
+    last_30_days: {
+      sessions: number;
+      completion_rate: number;
+      average_difficulty: number;
+    };
+  };
+  personal_records: Array<{
+    exercise_name: string;
+    record_type: string;
+    value: number;
+    unit: string;
+    achieved_date: string;
+  }>;
+  exercise_history: Array<{
+    exercise_name: string;
+    total_sessions: number;
+    total_volume_kg: number;
+    max_weight_kg: number;
+    max_reps: number;
+    last_performed: string;
+  }>;
+}

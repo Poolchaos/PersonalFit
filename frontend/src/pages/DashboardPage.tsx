@@ -8,7 +8,7 @@ import { WorkoutStats } from '../components/dashboard/WorkoutStats';
 import VolumeChart from '../components/charts/VolumeChart';
 import { PageTransition } from '../components/layout/PageTransition';
 import { Card, CardHeader, CardTitle, CardContent } from '../design-system';
-import { profileAPI, accountabilityAPI, sessionAPI, workoutAPI } from '../api';
+import { profileAPI, accountabilityAPI, sessionAPI, workoutAPI, progressAPI } from '../api';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -30,6 +30,11 @@ export default function DashboardPage() {
   const { data: workoutsData } = useQuery({
     queryKey: ['workouts'],
     queryFn: workoutAPI.getAll,
+  });
+
+  const { data: progressData } = useQuery({
+    queryKey: ['progress'],
+    queryFn: progressAPI.getStats,
   });
 
   // Check if profile is incomplete
@@ -79,8 +84,8 @@ export default function DashboardPage() {
           <WorkoutStats
             totalWorkouts={accountabilityData?.totals.workouts_completed || 0}
             thisWeek={accountabilityData?.current_week.workouts_completed || 0}
-            totalVolume="12,450 kg"
-            consistency="85%"
+            totalVolume={progressData?.overall.total_volume_kg ? `${progressData.overall.total_volume_kg.toLocaleString()} kg` : '0 kg'}
+            consistency={progressData?.overall.completion_rate ? `${Math.round(progressData.overall.completion_rate)}%` : '0%'}
           />
         </div>
 
