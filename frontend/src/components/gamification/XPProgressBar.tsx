@@ -4,24 +4,26 @@ import { TrendingUp, Award } from 'lucide-react';
 interface XPProgressBarProps {
   currentXP: number;
   level: number;
+  xpForNextLevel?: number;
+  levelProgress?: number;
   showAnimation?: boolean;
   size?: 'small' | 'medium' | 'large';
 }
 
-export function XPProgressBar({ currentXP, level, showAnimation = true, size = 'medium' }: XPProgressBarProps) {
-  // Calculate XP needed for current level (100 * level^1.5)
-  const xpForLevel = (lvl: number) => Math.floor(100 * Math.pow(lvl, 1.5));
+export function XPProgressBar({ 
+  currentXP, 
+  level, 
+  xpForNextLevel = 500,
+  levelProgress = 0,
+  showAnimation = true, 
+  size = 'medium' 
+}: XPProgressBarProps) {
+  console.log('⚡ XPProgressBar props:', { currentXP, level, xpForNextLevel, levelProgress, showAnimation, size });
+  
+  // Use backend-calculated values
+  const progressPercentage = Math.min(levelProgress, 100);
 
-  // XP needed for next level
-  const xpForNextLevel = xpForLevel(level + 1);
-  const xpForCurrentLevel = xpForLevel(level);
-
-  // XP progress within current level
-  const xpInCurrentLevel = Math.max(0, currentXP - xpForCurrentLevel);
-  const xpNeededForNextLevel = xpForNextLevel - xpForCurrentLevel;
-  const progressPercentage = Math.min((xpInCurrentLevel / xpNeededForNextLevel) * 100, 100);
-
-  const [animatedXP, setAnimatedXP] = useState(showAnimation ? 0 : xpInCurrentLevel);
+  const [animatedXP, setAnimatedXP] = useState(showAnimation ? 0 : currentXP);
 
   // Animate XP counter
   useEffect(() => {
@@ -31,13 +33,13 @@ export function XPProgressBar({ currentXP, level, showAnimation = true, size = '
 
     const duration = 1000; // 1 second animation
     const steps = 60;
-    const increment = xpInCurrentLevel / steps;
+    const increment = currentXP / steps;
     let current = 0;
 
     const timer = setInterval(() => {
       current += increment;
-      if (current >= xpInCurrentLevel) {
-        setAnimatedXP(xpInCurrentLevel);
+      if (current >= currentXP) {
+        setAnimatedXP(currentXP);
         clearInterval(timer);
       } else {
         setAnimatedXP(Math.floor(current));
@@ -45,7 +47,7 @@ export function XPProgressBar({ currentXP, level, showAnimation = true, size = '
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [xpInCurrentLevel, showAnimation]);
+  }, [currentXP, showAnimation]);
 
   const sizeClasses = {
     small: 'h-2',
@@ -76,7 +78,7 @@ export function XPProgressBar({ currentXP, level, showAnimation = true, size = '
           <div className="flex items-center gap-1 text-primary-600">
             <TrendingUp className={iconSizeClasses[size]} />
             <span className={`font-semibold ${textSizeClasses[size]}`}>
-              {animatedXP.toLocaleString()} / {xpNeededForNextLevel.toLocaleString()} XP
+              {animatedXP.toLocaleString()} / {xpForNextLevel.toLocaleString()} XP
             </span>
           </div>
         </div>
@@ -96,7 +98,7 @@ export function XPProgressBar({ currentXP, level, showAnimation = true, size = '
       </div>
 
       <p className={`text-neutral-600 ${textSizeClasses[size]}`}>
-        {xpNeededForNextLevel - xpInCurrentLevel} XP until level {level + 1}
+        {xpForNextLevel - currentXP} XP until level {level + 1}
       </p>
     </div>
   );

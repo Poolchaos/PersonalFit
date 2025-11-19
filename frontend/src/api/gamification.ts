@@ -3,10 +3,13 @@ import { apiClient } from './client';
 export interface GamificationStats {
   xp: number;
   level: number;
-  total_workouts_completed: number;
-  current_streak: number;
-  longest_streak: number;
-  last_workout_date?: string;
+  levelTitle?: string;
+  levelProgress?: number;
+  xpForNextLevel?: number;
+  totalWorkoutsCompleted: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastWorkoutDate?: string;
   achievements: string[];
 }
 
@@ -24,7 +27,9 @@ export const gamificationAPI = {
   // Get user's gamification stats
   getStats: async (): Promise<GamificationStats> => {
     const response = await apiClient.get('/api/gamification/stats');
-    return response.data;
+    console.log('🎮 Gamification API raw response:', response.data);
+    console.log('🎮 Gamification stats extracted:', response.data.stats);
+    return response.data.stats; // Extract stats from nested response
   },
 
   // Award XP for completing a workout

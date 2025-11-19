@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Calendar as CalendarIcon, TrendingUp, Dumbbell, Clock, Target, Award } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { WeeklyCalendar } from '../components/calendar/WeeklyCalendar';
 import { MonthlyCalendar } from '../components/calendar/MonthlyCalendar';
@@ -37,6 +38,7 @@ interface WorkoutDay {
 
 export default function SchedulePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [viewMode, setViewMode] = useState<ViewMode>('weekly');
   const [selectedDay, setSelectedDay] = useState<WorkoutDay | null>(null);
   const [showWorkoutModal, setShowWorkoutModal] = useState(false);
@@ -50,6 +52,45 @@ export default function SchedulePage() {
     queryKey: ['sessions'],
     queryFn: sessionAPI.getAll,
   });
+
+  // Manual completion mutation
+  const manualCompleteMutation = useMutation({
+    mutationFn: async ({ date, workout }: { date: string; workout: any }) => {
+      const sessionData = {
+        session_date: new Date(date).toISOString(),
+        completion_status: 'completed',
+        actual_duration_minutes: workout.duration_minutes,
+        exercises_completed: workout.exercises?.length || 0,
+        exercises_planned: workout.exercises?.length || 0,
+        notes: `Manually completed workout: ${workout.name}`,
+      };
+      return sessionAPI.create(sessionData);
+    },
+    onSuccess: (_, variables) => {
+      const xpEarned = variables.workout.exercises?.length * 10 || 0;
+      toast.success(`Workout completed! You earned ${xpEarned} XP!`, {
+        icon: '🎉',
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['accountability'] });
+      queryClient.invalidateQueries({ queryKey: ['gamification'] });
+      setShowWorkoutModal(false);
+      setSelectedDay(null);
+    },
+    onError: (error) => {
+      console.error('Manual completion error:', error);
+      toast.error('Failed to complete workout. Please try again.');
+    },
+  });
+
+  const handleManualComplete = () => {
+    if (!selectedDay?.workout) return;
+    manualCompleteMutation.mutate({
+      date: selectedDay.date,
+      workout: selectedDay.workout,
+    });
+  };
 
   // Transform workouts data into calendar format
   const workoutDays = useMemo((): WorkoutDay[] => {
@@ -83,8 +124,8 @@ export default function SchedulePage() {
       const isCompleted = sessionsData?.sessions?.some(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (session: any) => {
-          const sessionDate = new Date(session.date).toLocaleDateString('en-US');
-          return sessionDate === dateStr;
+          const sessionDate = new Date(session.session_date).toLocaleDateString('en-US');
+          return sessionDate === dateStr && session.completion_status === 'completed';
         }
       ) || false;
 
@@ -340,18 +381,47 @@ export default function SchedulePage() {
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-neutral-200">
-                {!selectedDay.isCompleted && (
-                  <Button
-                    onClick={() => {
-                      setShowWorkoutModal(false);
-                      navigate('/workout-session');
-                    }}
-                    variant="primary"
-                    className="flex-1"
-                  >
-                    Start Workout
-                  </Button>
+              <div className="flex flex-col gap-3 pt-4 border-t border-neutral-200">
+                {selectedDay.isCompleted ? (
+                  <div className="bg-success-50 border border-success-200 rounded-lg p-4 text-center">
+                    <p className="text-success-800 font-semibold flex items-center justify-center gap-2">
+                      <Award className="w-5 h-5" />
+                      Workout Completed! You earned {selectedDay.workout.xpEarned} XP
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {selectedDay.isToday ? (
+                      <Button
+                        onClick={() => {
+                          setShowWorkoutModal(false);
+                          navigate('/workout-session');
+                        }}
+                        variant="primary"
+                        className="flex-1"
+                      >
+                        Start Workout
+                      </Button>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm text-neutral-600 text-center">
+                          {new Date(selectedDay.date) < new Date()
+                            ? "Missed this workout? You can still complete it and earn XP!"
+                            : "This is a future workout. Come back on the scheduled day to start."}
+                        </p>
+                        {new Date(selectedDay.date) < new Date() && (
+                          <Button
+                            onClick={handleManualComplete}
+                            variant="primary"
+                            className="w-full"
+                            disabled={manualCompleteMutation.isPending}
+                          >
+                            {manualCompleteMutation.isPending ? 'Completing...' : 'Mark as Completed'}
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </>
                 )}
                 <Button
                   onClick={() => {

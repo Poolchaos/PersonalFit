@@ -186,7 +186,7 @@ export const sessionAPI = {
     id: string,
     sessionData: Partial<WorkoutSession>
   ): Promise<{ session: WorkoutSession }> => {
-    const { data } = await apiClient.put(`/api/sessions/${id}`, sessionData);
+    const { data } = await apiClient.patch(`/api/sessions/${id}`, sessionData);
     return data;
   },
 

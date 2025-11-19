@@ -24,9 +24,9 @@ export function XPBar() {
       <div className="w-32 h-2 bg-neutral-200 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${xpProgress}%` }}
+          animate={{ width: `${Math.min(xpProgress, 100)}%` }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="h-full bg-gradient-to-r from-xp-DEFAULT to-xp-light rounded-full"
+          className="h-full bg-gradient-to-r from-primary-500 to-primary-600 rounded-full"
         />
       </div>
 

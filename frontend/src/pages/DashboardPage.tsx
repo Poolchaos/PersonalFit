@@ -1,29 +1,27 @@
 import { useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { HeroSection } from '../components/dashboard/HeroSection';
 import { TodayWorkoutCard } from '../components/dashboard/TodayWorkoutCard';
+import { YesterdayMissedCard } from '../components/dashboard/YesterdayMissedCard';
 import { TomorrowPreviewCard } from '../components/dashboard/TomorrowPreviewCard';
 import { WeeklyStatsCard } from '../components/dashboard/WeeklyStatsCard';
 import { XPProgressBar } from '../components/gamification/XPProgressBar';
 import { StreakCounter } from '../components/gamification/StreakCounter';
 import { PageTransition } from '../components/layout/PageTransition';
 import { Card } from '../design-system';
-import { profileAPI, accountabilityAPI, workoutAPI, gamificationAPI } from '../api';
+import { profileAPI, workoutAPI, gamificationAPI, sessionAPI } from '../api';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: profileData } = useQuery({
     queryKey: ['profile'],
     queryFn: profileAPI.getProfile,
-  });
-
-  const { data: accountabilityData } = useQuery({
-    queryKey: ['accountability'],
-    queryFn: accountabilityAPI.getStatus,
   });
 
   const { data: workoutsData } = useQuery({
@@ -34,6 +32,17 @@ export default function DashboardPage() {
   const { data: gamificationData } = useQuery({
     queryKey: ['gamification'],
     queryFn: gamificationAPI.getStats,
+    staleTime: 0, // Always refetch gamification data
+    refetchOnMount: 'always', // Refetch when component mounts
+  });
+
+  useEffect(() => {
+    console.log('📊 Dashboard gamificationData state:', gamificationData);
+  }, [gamificationData]);
+
+  const { data: sessionsData } = useQuery({
+    queryKey: ['sessions'],
+    queryFn: sessionAPI.getAll,
   });
 
   // Check if profile is incomplete
@@ -51,7 +60,7 @@ export default function DashboardPage() {
   }, [isProfileIncomplete, navigate]);
 
   // Extract today and tomorrow workouts from the active plan
-  const { todayWorkout, tomorrowWorkout } = useMemo(() => {
+  const { todayWorkout, tomorrowWorkout, yesterdayWorkout } = useMemo(() => {
     if (workoutsData?.workouts && workoutsData.workouts.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const activePlan: any = workoutsData.workouts.find((w: any) => w.is_active);
@@ -62,17 +71,144 @@ export default function DashboardPage() {
         const tomorrowDate = new Date();
         tomorrowDate.setDate(tomorrowDate.getDate() + 1);
         const tomorrow = tomorrowDate.toLocaleDateString('en-US', { weekday: 'long' });
+        const yesterdayDate = new Date();
+        yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+        const yesterday = yesterdayDate.toLocaleDateString('en-US', { weekday: 'long' });
 
         return {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           todayWorkout: schedule.find((s: any) => s.day === today) || null,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           tomorrowWorkout: schedule.find((s: any) => s.day === tomorrow) || null,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          yesterdayWorkout: schedule.find((s: any) => s.day === yesterday) || null,
         };
       }
     }
-    return { todayWorkout: null, tomorrowWorkout: null };
-  }, [workoutsData]);  // Show loading state while checking profile
+    return { todayWorkout: null, tomorrowWorkout: null, yesterdayWorkout: null };
+  }, [workoutsData]);
+
+  const todayXP = todayWorkout ? todayWorkout.workout.exercises.length * 10 : 0;
+  const tomorrowXP = tomorrowWorkout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
+  const yesterdayXP = yesterdayWorkout ? yesterdayWorkout.workout.exercises.length * 10 : 0;
+
+  // Calculate planned workouts this week from the active plan
+  const workoutsPlannedThisWeek = useMemo(() => {
+    if (workoutsData?.workouts && workoutsData.workouts.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const activePlan: any = workoutsData.workouts.find((w: any) => w.is_active);
+      if (activePlan?.plan_data?.weekly_schedule) {
+        // Count non-rest days in the weekly schedule
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return activePlan.plan_data.weekly_schedule.filter((day: any) => 
+          day.workout && day.workout.type !== 'Rest Day'
+        ).length;
+      }
+    }
+    return 0;
+  }, [workoutsData]);
+
+  // Check if today's workout is completed from session data
+  const isTodayCompleted = useMemo(() => {
+    if (!sessionsData?.sessions) return false;
+    const today = new Date().toLocaleDateString('en-US');
+    return sessionsData.sessions.some(
+      (session: any) => {
+        const sessionDate = new Date(session.session_date).toLocaleDateString('en-US');
+        return sessionDate === today && session.completion_status === 'completed';
+      }
+    );
+  }, [sessionsData]);
+
+  // Check if yesterday's workout was completed
+  const isYesterdayCompleted = useMemo(() => {
+    if (!sessionsData?.sessions) return false;
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString('en-US');
+    return sessionsData.sessions.some(
+      (session: any) => {
+        const sessionDate = new Date(session.session_date).toLocaleDateString('en-US');
+        return sessionDate === yesterdayStr && session.completion_status === 'completed';
+      }
+    );
+  }, [sessionsData]);
+
+  // ALWAYS show yesterday's card if workout exists (for testing/retry)
+  const showYesterdayCard = yesterdayWorkout !== null;
+
+  // Manual completion mutation
+  const manualCompleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!yesterdayWorkout) return;
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const sessionData = {
+        session_date: yesterday.toISOString(),
+        completion_status: 'completed',
+        actual_duration_minutes: yesterdayWorkout.workout.duration_minutes,
+        exercises_completed: yesterdayWorkout.workout.exercises?.length || 0,
+        exercises_planned: yesterdayWorkout.workout.exercises?.length || 0,
+        notes: `Manually completed: ${yesterdayWorkout.workout.name}`,
+      };
+      return sessionAPI.create(sessionData);
+    },
+    onSuccess: () => {
+      toast.success(`Yesterday's workout completed! You earned ${yesterdayXP} XP!`, {
+        icon: '🎉',
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['accountability'] });
+      queryClient.invalidateQueries({ queryKey: ['gamification'] });
+    },
+    onError: (error) => {
+      console.error('Manual completion error:', error);
+      toast.error('Failed to complete workout. Please try again.');
+    },
+  });
+
+  const handleCompleteYesterday = () => {
+    manualCompleteMutation.mutate();
+  };
+
+  // Debug: Manual test completion
+  const testCompleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!todayWorkout) return;
+      const today = new Date();
+      const sessionData = {
+        session_date: today.toISOString(),
+        completion_status: 'completed',
+        actual_duration_minutes: todayWorkout?.workout.duration_minutes || 30,
+        exercises_completed: todayWorkout?.workout.exercises?.length || 5,
+        exercises_planned: todayWorkout?.workout.exercises?.length || 5,
+        notes: `Test completion: ${todayWorkout?.workout.name}`,
+      };
+      return sessionAPI.create(sessionData);
+    },
+    onSuccess: () => {
+      toast.success(`Workout completed! Check your XP!`, {
+        icon: '🎉',
+        duration: 4000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['accountability'] });
+      queryClient.invalidateQueries({ queryKey: ['gamification'] });
+    },
+    onError: (error) => {
+      console.error('Test completion error:', error);
+      toast.error('Failed to complete workout. Please try again.');
+    },
+  });
+
+  // Get current week number
+  const getCurrentWeek = () => {
+    const onejan = new Date(new Date().getFullYear(), 0, 1);
+    return Math.ceil((((new Date().getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+  };
+
+  // Show loading state while checking profile
   if (!profileData || isProfileIncomplete) {
     return (
       <Layout>
@@ -93,18 +229,8 @@ export default function DashboardPage() {
     );
   }
 
-  const todayXP = todayWorkout ? todayWorkout.workout.exercises.length * 10 : 0;
-  const tomorrowXP = tomorrowWorkout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
-  const isTodayCompleted = false; // TODO: Check from sessions data
-
   const handleStartWorkout = () => {
     navigate('/workout-session');
-  };
-
-  // Get current week number
-  const getCurrentWeek = () => {
-    const onejan = new Date(new Date().getFullYear(), 0, 1);
-    return Math.ceil((((new Date().getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
   };
 
   return (
@@ -122,6 +248,8 @@ export default function DashboardPage() {
             <XPProgressBar
               currentXP={gamificationData?.xp || 0}
               level={gamificationData?.level || 1}
+              xpForNextLevel={gamificationData?.xpForNextLevel || 500}
+              levelProgress={gamificationData?.levelProgress || 0}
               showAnimation={true}
             />
           </Card>
@@ -130,11 +258,24 @@ export default function DashboardPage() {
           <Card className="p-6">
             <h3 className="text-lg font-semibold text-neutral-900 mb-4">Consistency Streak</h3>
             <StreakCounter
-              currentStreak={gamificationData?.current_streak || 0}
-              longestStreak={gamificationData?.longest_streak || 0}
+              currentStreak={gamificationData?.currentStreak || 0}
+              longestStreak={gamificationData?.longestStreak || 0}
             />
           </Card>
         </div>
+
+        {/* DEBUG: Test Completion Button */}
+        {todayWorkout && !isTodayCompleted && (
+          <div className="mb-4">
+            <button
+              onClick={() => testCompleteMutation.mutate()}
+              disabled={testCompleteMutation.isPending}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+            >
+              {testCompleteMutation.isPending ? 'Completing...' : '🧪 Test Complete Today\'s Workout'}
+            </button>
+          </div>
+        )}
 
         {/* Today & Tomorrow Workouts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -157,13 +298,26 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Yesterday's Workout Card - Always show for testing */}
+        {showYesterdayCard && (
+          <div className="mb-8">
+            <YesterdayMissedCard
+              workout={yesterdayWorkout}
+              xpAvailable={yesterdayXP}
+              onComplete={handleCompleteYesterday}
+              isCompleting={manualCompleteMutation.isPending}
+              isCompleted={isYesterdayCompleted}
+            />
+          </div>
+        )}
+
         {/* Weekly Stats */}
         <div className="mb-8">
           <WeeklyStatsCard
-            workoutsCompleted={accountabilityData?.current_week.workouts_completed || 0}
-            workoutsPlanned={accountabilityData?.current_week.workouts_planned || 0}
+            workoutsCompleted={gamificationData?.totalWorkoutsCompleted || 0}
+            workoutsPlanned={workoutsPlannedThisWeek}
             totalXP={gamificationData?.xp || 0}
-            currentStreak={gamificationData?.current_streak || 0}
+            currentStreak={gamificationData?.currentStreak || 0}
             weekNumber={getCurrentWeek()}
           />
         </div>

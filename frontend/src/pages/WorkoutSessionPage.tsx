@@ -69,10 +69,12 @@ export default function WorkoutSessionPage() {
   const saveSessionMutation = useMutation({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mutationFn: (sessionData: any) => sessionAPI.create(sessionData),
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate and refetch gamification data immediately
+      await queryClient.invalidateQueries({ queryKey: ['gamification'] });
+      await queryClient.refetchQueries({ queryKey: ['gamification'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['accountability'] });
-      queryClient.invalidateQueries({ queryKey: ['gamification'] });
     },
   });
 
@@ -180,10 +182,12 @@ export default function WorkoutSessionPage() {
       }));
 
     const sessionData = {
-      workout_plan_id: workoutId || 'today',
-      date: new Date().toISOString(),
-      duration_minutes: sessionDuration,
-      exercises_completed: completedExercisesList,
+      plan_id: workoutId || undefined,
+      session_date: new Date().toISOString(),
+      completion_status: 'completed',
+      actual_duration_minutes: sessionDuration,
+      exercises_completed: completedExercisesList.length,
+      exercises_planned: exercises.length,
       notes: `Completed ${completedExercisesList.length} exercises`,
     };
 

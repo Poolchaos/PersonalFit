@@ -3,8 +3,15 @@ import { validationResult } from 'express-validator';
 import mongoose from 'mongoose';
 import WorkoutSession from '../models/WorkoutSession';
 import ExerciseLog from '../models/ExerciseLog';
+import User from '../models/User';
 import { AuthRequest } from '../middleware/auth';
 import { updateStreakOnCompletion } from '../services/accountabilityService';
+import {
+  calculateLevel,
+  calculateWorkoutXp,
+  updateStreak,
+  checkAchievements,
+} from '../services/gamificationService';
 
 export const createSession = async (
   req: AuthRequest,
@@ -23,6 +30,81 @@ export const createSession = async (
     });
 
     await session.save();
+
+    // If the session is completed, award XP and update gamification
+    if (session.completion_status === 'completed') {
+      const user = await User.findById(req.user?.userId);
+
+      if (user) {
+        // Initialize gamification if not present
+        if (!user.gamification) {
+          user.gamification = {
+            xp: 0,
+            level: 1,
+            total_workouts_completed: 0,
+            current_streak: 0,
+            longest_streak: 0,
+            achievements: [],
+          };
+        }
+
+        const isFirstWorkout = user.gamification.total_workouts_completed === 0;
+
+        // Update streak
+        const streakUpdate = updateStreak({
+          lastWorkoutDate: user.gamification.last_workout_date,
+          workoutDate: session.session_date,
+          currentStreak: user.gamification.current_streak,
+        });
+
+        user.gamification.current_streak = streakUpdate.newStreak;
+        user.gamification.last_workout_date = session.session_date;
+
+        // Update longest streak if applicable
+        if (streakUpdate.newStreak > (user.gamification.longest_streak || 0)) {
+          user.gamification.longest_streak = streakUpdate.newStreak;
+        }
+
+        // Calculate XP earned
+        const xpResult = calculateWorkoutXp({
+          isFirstWorkout,
+          currentStreak: user.gamification.current_streak,
+          hadPersonalRecord: false, // TODO: Track PRs in future
+        });
+
+        // Update user stats
+        user.gamification.xp += xpResult.totalXp;
+        user.gamification.total_workouts_completed += 1;
+
+        const oldLevel = user.gamification.level;
+        const newLevel = calculateLevel(user.gamification.xp);
+        user.gamification.level = newLevel;
+
+        // Check for new achievements
+        const newAchievements = checkAchievements({
+          currentAchievements: user.gamification.achievements,
+          stats: {
+            totalWorkouts: user.gamification.total_workouts_completed,
+            currentStreak: user.gamification.current_streak,
+            totalPRs: 0,
+            level: newLevel,
+          },
+        });
+
+        if (newAchievements.length > 0) {
+          user.gamification.achievements.push(...newAchievements);
+        }
+
+        await user.save();
+
+        console.log(`XP awarded for session ${session._id}:`, {
+          xpAwarded: xpResult.totalXp,
+          breakdown: xpResult.breakdown,
+          newLevel,
+          leveledUp: newLevel > oldLevel,
+        });
+      }
+    }
 
     res.status(201).json({ session });
   } catch (error) {
