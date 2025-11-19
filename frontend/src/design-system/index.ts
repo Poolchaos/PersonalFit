@@ -9,6 +9,8 @@ export {
   MetricCardSkeleton,
   StreakCardSkeleton
 } from './components/Skeleton';
+export { ProgressRing } from './components/ProgressRing';
+export { Confetti } from './components/Confetti';
 export { cn } from './utils/cn';
 export { colors } from './tokens/colors';
 

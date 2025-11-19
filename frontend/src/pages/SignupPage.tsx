@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authAPI } from '../api';
 import { useAuthStore } from '../store/authStore';
 import type { SignupData } from '../types';
@@ -10,6 +10,7 @@ import { AlertCircle } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [formData, setFormData] = useState<SignupData>({
     email: '',
@@ -21,6 +22,8 @@ export default function SignupPage() {
   const signupMutation = useMutation({
     mutationFn: authAPI.signup,
     onSuccess: (data) => {
+      // Clear all cached data from previous user
+      queryClient.clear();
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/onboarding');
     },

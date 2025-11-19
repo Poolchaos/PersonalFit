@@ -45,14 +45,12 @@ export default function DashboardPage() {
     queryFn: sessionAPI.getAll,
   });
 
-  // Check if profile is incomplete
+  // Check if profile is incomplete (only redirect if truly incomplete, not just missing optional data)
   const isProfileIncomplete =
     profileData &&
-    (!profileData.user.profile.first_name ||
-      !profileData.user.profile.fitness_goals ||
-      profileData.user.profile.fitness_goals.length === 0);
+    (!profileData.user.profile.first_name || !profileData.user.profile.last_name);
 
-  // Auto-redirect to onboarding for new users
+  // Auto-redirect to onboarding for genuinely new users (no name means they never completed step 1)
   useEffect(() => {
     if (isProfileIncomplete) {
       navigate('/onboarding', { replace: true });

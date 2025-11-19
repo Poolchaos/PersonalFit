@@ -45,9 +45,11 @@ export function OnboardingWizard() {
     preferences: {},
   });
 
-  // Load existing data when profile/equipment loads
+  // Load existing data when profile/equipment loads (only if re-onboarding, not for new users)
   useEffect(() => {
-    if (existingProfile?.user) {
+    // Only populate form if user has actually completed onboarding before
+    // Check if profile has meaningful data (not just defaults)
+    if (existingProfile?.user?.profile?.first_name && existingProfile?.user?.profile?.last_name) {
       const user = existingProfile.user;
       setData((prev) => ({
         ...prev,
@@ -75,8 +77,7 @@ export function OnboardingWizard() {
         equipment: equipmentNames,
       }));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [existingProfile, existingEquipment]);
 
   const updateProfileMutation = useMutation({
     mutationFn: profileAPI.updateProfile,

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
-import { Card } from '../design-system';
+import { Card, Confetti } from '../design-system';
 import { workoutAPI, sessionAPI } from '../api';
 import { getExerciseImage } from '../utils/imageHelpers';
 import toast from 'react-hot-toast';
@@ -257,6 +257,9 @@ export default function WorkoutSessionPage() {
   return (
     <Layout>
       <PageTransition>
+        {/* Confetti Effect */}
+        <Confetti active={showCelebration} />
+
         <div className="max-w-4xl mx-auto">
           {/* Celebration Overlay */}
           <AnimatePresence>

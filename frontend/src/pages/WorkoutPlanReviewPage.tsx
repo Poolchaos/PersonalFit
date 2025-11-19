@@ -132,6 +132,8 @@ export default function WorkoutPlanReviewPage() {
 
   const handleAccept = () => {
     setIsAccepted(true);
+    // Invalidate profile query to ensure dashboard has fresh data
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
     setTimeout(() => {
       navigate('/dashboard');
     }, 1500);

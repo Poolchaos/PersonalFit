@@ -9,8 +9,12 @@ export async function registerAndLogin(page: Page, email: string, password: stri
   await page.fill('input[id="password"]', password);
   await page.fill('input[id="confirmPassword"]', password);
   await page.click('button[type="submit"]');
-  // New users are redirected to onboarding (correct behavior)
-  await expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10000 });
+
+  // New users are redirected to onboarding
+  await expect(page).toHaveURL('/onboarding', { timeout: 10000 });
+
+  // Verify we're authenticated by checking for the onboarding wizard
+  await expect(page.locator('text=Welcome to PersonalFit!').first()).toBeVisible({ timeout: 5000 });
 }
 
 /**
@@ -28,6 +32,14 @@ export async function login(page: Page, email: string, password: string) {
  * Helper to logout
  */
 export async function logout(page: Page) {
+  // Try profile dropdown (desktop) first
+  const profileDropdownTrigger = page.locator('[class*="cursor-pointer"]').filter({ hasText: /^[A-Z]{2}$/ });
+  if (await profileDropdownTrigger.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await profileDropdownTrigger.click();
+    await page.waitForTimeout(500);
+  }
+
+  // Click logout button
   await page.click('button:has-text("Logout")');
   await expect(page).toHaveURL('/login');
 }
