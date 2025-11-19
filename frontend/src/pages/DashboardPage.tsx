@@ -100,7 +100,7 @@ export default function DashboardPage() {
       if (activePlan?.plan_data?.weekly_schedule) {
         // Count non-rest days in the weekly schedule
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return activePlan.plan_data.weekly_schedule.filter((day: any) => 
+        return activePlan.plan_data.weekly_schedule.filter((day: any) =>
           day.workout && day.workout.type !== 'Rest Day'
         ).length;
       }

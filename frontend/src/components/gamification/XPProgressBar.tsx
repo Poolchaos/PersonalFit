@@ -10,16 +10,16 @@ interface XPProgressBarProps {
   size?: 'small' | 'medium' | 'large';
 }
 
-export function XPProgressBar({ 
-  currentXP, 
-  level, 
+export function XPProgressBar({
+  currentXP,
+  level,
   xpForNextLevel = 500,
   levelProgress = 0,
-  showAnimation = true, 
-  size = 'medium' 
+  showAnimation = true,
+  size = 'medium'
 }: XPProgressBarProps) {
   console.log('⚡ XPProgressBar props:', { currentXP, level, xpForNextLevel, levelProgress, showAnimation, size });
-  
+
   // Use backend-calculated values
   const progressPercentage = Math.min(levelProgress, 100);
 
