@@ -9,6 +9,9 @@ import { TodayWorkoutCard } from '../components/dashboard/TodayWorkoutCard';
 import { YesterdayMissedCard } from '../components/dashboard/YesterdayMissedCard';
 import { TomorrowPreviewCard } from '../components/dashboard/TomorrowPreviewCard';
 import { WeeklyStatsCard } from '../components/dashboard/WeeklyStatsCard';
+import { ActivityHeatmap } from '../components/dashboard/ActivityHeatmap';
+import { WeeklyProgress } from '../components/dashboard/WeeklyProgress';
+import { QuickActions } from '../components/dashboard/QuickActions';
 import { XPProgressBar } from '../components/gamification/XPProgressBar';
 import { StreakCounter } from '../components/gamification/StreakCounter';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -310,7 +313,27 @@ export default function DashboardPage() {
         )}
 
         {/* Weekly Stats */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <WeeklyProgress
+            sessionsThisWeek={gamificationData?.totalWorkoutsCompleted || 0}
+            sessionsLastWeek={0} // TODO: Calculate from sessions data
+            plannedThisWeek={workoutsPlannedThisWeek}
+            totalXP={gamificationData?.xp || 0}
+          />
+          
+          <ActivityHeatmap
+            sessions={sessionsData?.sessions || []}
+            weeksToShow={12}
+          />
+        </div>
+
+        {/* Quick Actions */}
         <div className="mb-8">
+          <QuickActions />
+        </div>
+
+        {/* Original Weekly Stats Card (for reference) */}
+        <div className="mb-8 hidden">
           <WeeklyStatsCard
             workoutsCompleted={gamificationData?.totalWorkoutsCompleted || 0}
             workoutsPlanned={workoutsPlannedThisWeek}
