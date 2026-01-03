@@ -22,7 +22,7 @@ Self-hosted • Privacy-first • Full control over your data
 > ✅ **Allowed**: Personal use, learning, research, non-profit organizations
 > ❌ **Not Allowed**: Commercial use, SaaS integration, reselling
 >
-> **For commercial licensing, contact:** phillipjuan.vdb@gmail.com
+> **For commercial licensing, contact:** phillipjuanvanderberg@gmail.com
 
 See the [LICENSE](LICENSE) file for full terms.
 
@@ -269,7 +269,7 @@ This project is licensed under the **PolyForm Noncommercial License 1.0.0**.
 ### Commercial Use
 If you want to use PersonalFit commercially, you need a paid license.
 
-**Contact:** phillipjuan.vdb@gmail.com
+**Contact:** phillipjuanvanderberg@gmail.com
 
 Available license tiers:
 - **Startup License** — For companies with < $1M annual revenue
@@ -287,7 +287,7 @@ Contributions are welcome! Please note that by contributing, you agree that your
 ## 📧 Contact
 
 **Phillip-Juan van der Berg**
-📧 phillipjuan.vdb@gmail.com
+📧 phillipjuanvanderberg@gmail.com
 
 ---
 

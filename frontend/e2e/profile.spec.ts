@@ -1,5 +1,5 @@
 ﻿/**
- * Copyright (c) 2025-2026 Artemis Innovations. All Rights Reserved.
+ * Copyright (c) 2025-2026 Phillip-Juan van der Berg. All Rights Reserved.
  * 
  * This file is part of PersonalFit.
  * 
@@ -7,7 +7,7 @@
  * You may not use this file except in compliance with the License.
  * 
  * Commercial use requires a separate paid license.
- * Contact: licensing@artemis-innovations.com
+ * Contact: phillipjuanvanderberg@gmail.com
  * 
  * See the LICENSE file for the full license text.
  */
