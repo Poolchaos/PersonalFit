@@ -1,35 +1,90 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
-import { equipmentAPI } from '../api';
+import { equipmentAPI, queryKeys } from '../api';
 import type { Equipment } from '../types';
 import { Card, CardHeader, CardTitle, CardContent, Button } from '../design-system';
 import { Dumbbell, Plus, Trash2 } from 'lucide-react';
 import { PageTransition } from '../components/layout/PageTransition';
 import { getEquipmentImage } from '../utils/imageHelpers';
 
+interface EquipmentResponse {
+  equipment: Equipment[];
+}
+
 export default function EquipmentPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
 
   const { data } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: queryKeys.equipment.list(),
     queryFn: equipmentAPI.getAll,
   });
 
   const createMutation = useMutation({
     mutationFn: equipmentAPI.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+    // Optimistic update for instant feedback
+    onMutate: async (newEquipment) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.equipment.list() });
+      const previousData = queryClient.getQueryData<EquipmentResponse>(queryKeys.equipment.list());
+
+      // Create optimistic equipment entry
+      const optimisticEquipment: Equipment = {
+        _id: `temp-${Date.now()}`,
+        user_id: '',
+        equipment_name: newEquipment.equipment_name || '',
+        equipment_type: newEquipment.equipment_type || 'other',
+        quantity: newEquipment.quantity || 1,
+        condition: newEquipment.condition || 'good',
+        notes: newEquipment.notes || '',
+        is_available: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<EquipmentResponse>(queryKeys.equipment.list(), (old) => ({
+        equipment: [...(old?.equipment || []), optimisticEquipment],
+      }));
+
       setShowForm(false);
+      return { previousData };
+    },
+    onError: (_err, _newEquipment, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.equipment.list(), context.previousData);
+      }
+      toast.error('Failed to add equipment');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.list() });
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: equipmentAPI.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+    // Optimistic delete
+    onMutate: async (equipmentId) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.equipment.list() });
+      const previousData = queryClient.getQueryData<EquipmentResponse>(queryKeys.equipment.list());
+
+      queryClient.setQueryData<EquipmentResponse>(queryKeys.equipment.list(), (old) => ({
+        equipment: (old?.equipment || []).filter((item) => item._id !== equipmentId),
+      }));
+
+      return { previousData };
+    },
+    onError: (_err, _equipmentId, context) => {
+      // Rollback on error
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.equipment.list(), context.previousData);
+      }
+      toast.error('Failed to delete equipment');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.equipment.list() });
     },
   });
 

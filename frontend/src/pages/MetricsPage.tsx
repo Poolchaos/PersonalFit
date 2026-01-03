@@ -5,7 +5,7 @@ import { Scale, TrendingUp, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
-import { metricsAPI, photosAPI } from '../api';
+import { metricsAPI, photosAPI, queryKeys } from '../api';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/components/Card';
 import { Button } from '../design-system/components/Button';
 import { Input } from '../design-system/components/Input';
@@ -14,6 +14,10 @@ import WeightChart from '../components/charts/WeightChart';
 import { getProgressImage } from '../utils/imageHelpers';
 import type { BodyMetrics } from '../types';
 
+interface MetricsResponse {
+  metrics: BodyMetrics[];
+}
+
 export default function MetricsPage() {
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
@@ -21,15 +25,44 @@ export default function MetricsPage() {
   const [photoType, setPhotoType] = useState<'front' | 'side' | 'back'>('front');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['metrics'],
+    queryKey: queryKeys.metrics.history(),
     queryFn: metricsAPI.getAll,
   });
 
   const createMetricsMutation = useMutation({
     mutationFn: metricsAPI.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+    // Optimistic update for metrics
+    onMutate: async (newMetrics) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.metrics.history() });
+      const previousData = queryClient.getQueryData<MetricsResponse>(queryKeys.metrics.history());
+
+      const optimisticMetric: BodyMetrics = {
+        _id: `temp-${Date.now()}`,
+        user_id: '',
+        measurement_date: newMetrics.measurement_date || new Date().toISOString(),
+        weight_kg: newMetrics.weight_kg || 0,
+        body_fat_percentage: newMetrics.body_fat_percentage || 0,
+        notes: newMetrics.notes || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      queryClient.setQueryData<MetricsResponse>(queryKeys.metrics.history(), (old) => ({
+        metrics: [optimisticMetric, ...(old?.metrics || [])],
+      }));
+
       setShowForm(false);
+      toast.success('📊 Metrics recorded!');
+      return { previousData };
+    },
+    onError: (_err, _newMetrics, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(queryKeys.metrics.history(), context.previousData);
+      }
+      toast.error('Failed to save metrics');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.metrics.history() });
     },
   });
 
@@ -37,7 +70,7 @@ export default function MetricsPage() {
     mutationFn: ({ file, type, date }: { file: File; type: 'front' | 'side' | 'back'; date: string }) =>
       photosAPI.upload(file, type, date),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['metrics'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.metrics.history() });
       toast.success('📸 Photo uploaded successfully!');
       setPhotoFile(null);
     },

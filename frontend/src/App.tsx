@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { useAuthStore } from './store/authStore';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import OnboardingPage from './pages/OnboardingPage';
@@ -32,8 +33,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Toaster
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Toaster
         position="top-right"
         toastOptions={{
           duration: 4000,
@@ -153,6 +155,7 @@ function App() {
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
