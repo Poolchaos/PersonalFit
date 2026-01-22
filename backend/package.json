@@ -14,7 +14,8 @@
         "format:check": "prettier --check \"src/**/*.ts\"",
         "test": "dotenv -e .env.test -- jest --runInBand --passWithNoTests",
         "test:watch": "dotenv -e .env.test -- jest --watch --runInBand --passWithNoTests",
-        "test:coverage": "dotenv -e .env.test -- jest --coverage --runInBand --passWithNoTests"
+        "test:coverage": "dotenv -e .env.test -- jest --coverage --runInBand --passWithNoTests",
+        "test:ocr": "dotenv -e .env -- ts-node scripts/test-vision-ocr.ts"
     },
     "keywords": [
         "fitness",
