@@ -282,6 +282,25 @@ Available license tiers:
 
 Contributions are welcome! Please note that by contributing, you agree that your contributions will be licensed under the same PolyForm Noncommercial License.
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+---
+
+## 🐛 Found a Bug?
+
+If you're using PersonalFit and encounter any issues, please help us improve by reporting them!
+
+**How to report:**
+1. Check if the issue already exists in [GitHub Issues](https://github.com/Poolchaos/PersonalFit/issues)
+2. If not, [create a new issue](https://github.com/Poolchaos/PersonalFit/issues/new)
+3. Include:
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - Your environment (OS, Docker version, browser)
+   - Any error messages or screenshots
+
+**Your feedback helps make PersonalFit better for everyone!**
+
 ---
 
 ## 📧 Contact
