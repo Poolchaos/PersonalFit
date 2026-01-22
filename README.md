@@ -75,9 +75,9 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 
 ---
 
-## 🆕 Medicine & Supplement Manager (Phase 1 & 2)
+## 🆕 Medicine & Supplement Manager (Complete)
 
-**Phase 1 (Complete):**
+**Phase 1:**
 - 📋 Add medications/supplements with dosage, frequency, inventory tracking
 - 🏥 Support for prescriptions, OTC, and supplements
 - ❤️ Map medications to fitness metrics (heart rate, blood pressure, sleep, energy, etc.)
@@ -86,13 +86,14 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 - 🔄 Plan regeneration with medications context in AI prompts
 - 🧅 Onboarding integration — collect medications during signup
 
-**Phase 2 (AI Vision - In Progress):**
+**Phase 2 (AI Vision & Analytics):**
 - 📸 Scan medication bottle labels with camera or photo upload
 - 🤖 Claude Vision API for automatic label OCR extraction
 - 📊 Confidence scoring for extracted data with manual review/correction flow
 - 🔗 Correlation analysis dashboard showing medication impact on fitness metrics
 - 💡 Smart insights: "Vitamin D appears to improve sleep by 23%"
-- 🎯 Use extracted data to auto-fill medication forms
+- 🎯 AI-powered parsing from onboarding notes with batch import
+- ✨ Auto-fill medication forms from extracted/parsed data
 
 ---
 
