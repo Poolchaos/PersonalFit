@@ -73,6 +73,7 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/workouts', label: 'Workouts' },
     { path: '/schedule', label: 'Schedule' },
+    { path: '/medications', label: 'Medications' },
     { path: '/metrics', label: 'Metrics' },
     { path: '/accountability', label: 'Goals' },
     { path: '/equipment', label: 'Equipment' },

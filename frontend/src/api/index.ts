@@ -30,6 +30,7 @@ import type {
 
 export { gamificationAPI } from './gamification';
 export type { GamificationStats, XPGainResponse } from './gamification';
+export { medicationAPI, medicationQueryKeys } from './medications';
 export { queryKeys, invalidationKeys } from './queryKeys';
 
 // Auth API

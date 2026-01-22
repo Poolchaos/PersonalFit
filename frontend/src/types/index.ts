@@ -284,3 +284,116 @@ export interface ProgressStats {
     last_performed: string;
   }>;
 }
+
+// Medication types
+export interface Medication {
+  _id: string;
+  user_id: string;
+  name: string;
+  type: 'prescription' | 'supplement' | 'otc';
+  dosage: {
+    amount: number;
+    unit: 'mg' | 'ml' | 'iu' | 'mcg' | 'g' | 'tablets' | 'capsules';
+    form: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'topical' | 'powder' | 'other';
+  };
+  frequency: {
+    times_per_day: number;
+    specific_times?: string[];
+    days_of_week?: number[];
+    with_food?: boolean;
+    notes?: string;
+  };
+  inventory: {
+    current_count: number;
+    refill_threshold: number;
+    last_refill_date?: string;
+  };
+  health_tags: string[];
+  warnings: string[];
+  affects_metrics: string[];
+  bottle_image_url?: string;
+  manually_verified: boolean;
+  is_active: boolean;
+  start_date: string;
+  end_date?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DoseLog {
+  _id: string;
+  user_id: string;
+  medication_id: string;
+  scheduled_time: string;
+  taken_at?: string;
+  status: 'pending' | 'taken' | 'skipped' | 'missed';
+  dosage_amount?: number;
+  notes?: string;
+  side_effects?: string[];
+  mood_before?: 1 | 2 | 3 | 4 | 5;
+  mood_after?: 1 | 2 | 3 | 4 | 5;
+  energy_before?: 1 | 2 | 3 | 4 | 5;
+  energy_after?: 1 | 2 | 3 | 4 | 5;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TodaysDose {
+  scheduled_time: string;
+  status: 'pending' | 'taken' | 'skipped' | 'missed';
+  log?: DoseLog;
+}
+
+export interface TodaysMedication {
+  medication: Medication;
+  doses: TodaysDose[];
+}
+
+export interface AdherenceStats {
+  total_scheduled: number;
+  total_taken: number;
+  total_skipped: number;
+  total_missed: number;
+  adherence_rate: number;
+  current_streak: number;
+  longest_streak: number;
+}
+
+export interface CreateMedicationInput {
+  name: string;
+  type: 'prescription' | 'supplement' | 'otc';
+  dosage: {
+    amount: number;
+    unit: 'mg' | 'ml' | 'iu' | 'mcg' | 'g' | 'tablets' | 'capsules';
+    form: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'topical' | 'powder' | 'other';
+  };
+  frequency: {
+    times_per_day: number;
+    specific_times?: string[];
+    days_of_week?: number[];
+    with_food?: boolean;
+    notes?: string;
+  };
+  inventory?: {
+    current_count: number;
+    refill_threshold?: number;
+  };
+  health_tags?: string[];
+  warnings?: string[];
+  affects_metrics?: string[];
+  start_date?: string;
+  end_date?: string;
+}
+
+export interface LogDoseInput {
+  scheduled_time: string;
+  status: 'taken' | 'skipped';
+  taken_at?: string;
+  dosage_amount?: number;
+  notes?: string;
+  side_effects?: string[];
+  mood_before?: 1 | 2 | 3 | 4 | 5;
+  mood_after?: 1 | 2 | 3 | 4 | 5;
+  energy_before?: 1 | 2 | 3 | 4 | 5;
+  energy_after?: 1 | 2 | 3 | 4 | 5;
+}

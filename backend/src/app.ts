@@ -31,6 +31,7 @@ import photoRoutes from './routes/photoRoutes';
 import gamificationRoutes from './routes/gamificationRoutes';
 import prRoutes from './routes/prRoutes';
 import dailyChallengeRoutes from './routes/dailyChallengeRoutes';
+import medicationRoutes from './routes/medicationRoutes';
 
 const app: Application = express();
 
@@ -104,6 +105,7 @@ app.use('/api/photos', photoRoutes);
 app.use('/api/gamification', gamificationRoutes);
 app.use('/api/prs', prRoutes);
 app.use('/api/challenges', dailyChallengeRoutes);
+app.use('/api/medications', medicationRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
