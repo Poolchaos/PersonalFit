@@ -109,10 +109,10 @@ export async function getMedications(
   userId: string,
   activeOnly: boolean = true
 ): Promise<IMedication[]> {
-  const query: Record<string, unknown> = { 
-    user_id: new mongoose.Types.ObjectId(userId) 
+  const query: Record<string, unknown> = {
+    user_id: new mongoose.Types.ObjectId(userId)
   };
-  
+
   if (activeOnly) {
     query.is_active = true;
   }
@@ -207,7 +207,7 @@ export async function logDose(
   input: LogDoseInput
 ): Promise<IDoseLog> {
   const medication = await getMedicationById(userId, input.medication_id);
-  
+
   if (!medication) {
     throw new Error('Medication not found');
   }
@@ -229,7 +229,7 @@ export async function logDose(
     existing.mood_after = input.mood_after;
     existing.energy_before = input.energy_before;
     existing.energy_after = input.energy_after;
-    
+
     await existing.save();
     return existing;
   }
@@ -304,7 +304,7 @@ export async function getTodaysDoses(userId: string): Promise<{
   const medications = await getMedications(userId, true);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
@@ -314,13 +314,13 @@ export async function getTodaysDoses(userId: string): Promise<{
     // Check if this medication is scheduled for today
     const dayOfWeek = today.getDay();
     const daysOfWeek = medication.frequency.days_of_week || [0, 1, 2, 3, 4, 5, 6];
-    
+
     if (!daysOfWeek.includes(dayOfWeek)) {
       continue;
     }
 
     // Get specific times or generate default times
-    const times = medication.frequency.specific_times?.length 
+    const times = medication.frequency.specific_times?.length
       ? medication.frequency.specific_times
       : generateDefaultTimes(medication.frequency.times_per_day);
 
@@ -380,8 +380,8 @@ export async function getAdherenceStats(
   const total_missed = logs.filter(l => l.status === 'missed').length;
   const total_scheduled = logs.length;
 
-  const adherence_rate = total_scheduled > 0 
-    ? Math.round((total_taken / total_scheduled) * 100) 
+  const adherence_rate = total_scheduled > 0
+    ? Math.round((total_taken / total_scheduled) * 100)
     : 100;
 
   // Calculate streaks
@@ -464,7 +464,7 @@ export async function refillMedication(
  */
 function generateDefaultTimes(timesPerDay: number): string[] {
   const times: string[] = [];
-  
+
   switch (timesPerDay) {
     case 1:
       times.push('08:00');

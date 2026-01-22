@@ -28,6 +28,7 @@ import { WeeklyProgress } from '../components/dashboard/WeeklyProgress';
 import { QuickActions } from '../components/dashboard/QuickActions';
 import { XPProgressBar } from '../components/gamification/XPProgressBar';
 import { StreakCounter } from '../components/gamification/StreakCounter';
+import { MedicationsWidget } from '../components/dashboard/MedicationsWidget';
 import { PageTransition } from '../components/layout/PageTransition';
 import { Card } from '../design-system';
 import { profileAPI, workoutAPI, gamificationAPI, sessionAPI, queryKeys } from '../api';
@@ -313,6 +314,11 @@ export default function DashboardPage() {
             />
           </div>
         )}
+
+        {/* Medications Widget */}
+        <div className="mb-8">
+          <MedicationsWidget />
+        </div>
 
         {/* Weekly Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

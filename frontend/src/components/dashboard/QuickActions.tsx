@@ -13,7 +13,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { Calendar, Target, Trophy, TrendingUp } from 'lucide-react';
+import { Calendar, Target, TrendingUp, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
@@ -38,20 +38,20 @@ export function QuickActions() {
       bgColor: 'bg-primary-50',
     },
     {
+      icon: Pill,
+      label: 'Medications',
+      description: 'Track meds & supplements',
+      path: '/medications',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
       icon: Target,
       label: 'Set Goals',
       description: 'Update your fitness targets',
       path: '/accountability',
       color: 'text-success-dark',
       bgColor: 'bg-success-50',
-    },
-    {
-      icon: Trophy,
-      label: 'Achievements',
-      description: 'View your progress',
-      path: '/accountability',
-      color: 'text-achievement-dark',
-      bgColor: 'bg-achievement-50',
     },
     {
       icon: TrendingUp,

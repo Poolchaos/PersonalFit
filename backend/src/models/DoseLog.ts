@@ -17,25 +17,25 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IDoseLog extends Document {
   user_id: mongoose.Types.ObjectId;
   medication_id: mongoose.Types.ObjectId;
-  
+
   // When it was scheduled vs taken
   scheduled_time: Date;
   taken_at?: Date;
-  
+
   // Status
   status: 'pending' | 'taken' | 'skipped' | 'missed';
-  
+
   // Context
   dosage_amount?: number;  // In case they took a different amount
   notes?: string;
   side_effects?: string[];
-  
+
   // For correlations
   mood_before?: 1 | 2 | 3 | 4 | 5;
   mood_after?: 1 | 2 | 3 | 4 | 5;
   energy_before?: 1 | 2 | 3 | 4 | 5;
   energy_after?: 1 | 2 | 3 | 4 | 5;
-  
+
   created_at: Date;
   updated_at: Date;
 }

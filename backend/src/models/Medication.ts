@@ -18,14 +18,14 @@ export interface IMedication extends Document {
   user_id: mongoose.Types.ObjectId;
   name: string;
   type: 'prescription' | 'supplement' | 'otc';
-  
+
   // Dosage
   dosage: {
     amount: number;
     unit: 'mg' | 'ml' | 'iu' | 'mcg' | 'g' | 'tablets' | 'capsules';
     form: 'tablet' | 'capsule' | 'liquid' | 'injection' | 'topical' | 'powder' | 'other';
   };
-  
+
   // Schedule
   frequency: {
     times_per_day: number;
@@ -34,29 +34,29 @@ export interface IMedication extends Document {
     with_food?: boolean;
     notes?: string;
   };
-  
+
   // Inventory
   inventory: {
     current_count: number;
     refill_threshold: number;
     last_refill_date?: Date;
   };
-  
+
   // Health context
   health_tags: string[];
   warnings: string[];
   affects_metrics: string[];
-  
+
   // OCR metadata (for Phase 2)
   bottle_image_url?: string;
   ocr_extracted_at?: Date;
   manually_verified: boolean;
-  
+
   // Status
   is_active: boolean;
   start_date: Date;
   end_date?: Date;
-  
+
   created_at: Date;
   updated_at: Date;
 }

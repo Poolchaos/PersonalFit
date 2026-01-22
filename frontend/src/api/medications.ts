@@ -126,8 +126,8 @@ export const medicationQueryKeys = {
   detail: (id: string) => [...medicationQueryKeys.all, 'detail', id] as const,
   today: () => [...medicationQueryKeys.all, 'today'] as const,
   refills: () => [...medicationQueryKeys.all, 'refills'] as const,
-  logs: (id: string, startDate?: string, endDate?: string) => 
+  logs: (id: string, startDate?: string, endDate?: string) =>
     [...medicationQueryKeys.all, 'logs', id, { startDate, endDate }] as const,
-  stats: (id: string, days?: number) => 
+  stats: (id: string, days?: number) =>
     [...medicationQueryKeys.all, 'stats', id, { days }] as const,
 };

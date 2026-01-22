@@ -136,7 +136,7 @@ export const deleteMedication = async (
 ): Promise<void> => {
   try {
     const permanent = req.query.permanent === 'true';
-    
+
     let success: boolean;
     if (permanent) {
       success = await medicationService.permanentlyDeleteMedication(
@@ -202,11 +202,11 @@ export const getDoseLogs = async (
   res: Response
 ): Promise<void> => {
   try {
-    const startDate = req.query.start_date 
-      ? new Date(req.query.start_date as string) 
+    const startDate = req.query.start_date
+      ? new Date(req.query.start_date as string)
       : undefined;
-    const endDate = req.query.end_date 
-      ? new Date(req.query.end_date as string) 
+    const endDate = req.query.end_date
+      ? new Date(req.query.end_date as string)
       : undefined;
 
     const logs = await medicationService.getDoseLogs(
@@ -249,7 +249,7 @@ export const getAdherenceStats = async (
 ): Promise<void> => {
   try {
     const days = req.query.days ? parseInt(req.query.days as string, 10) : 30;
-    
+
     const stats = await medicationService.getAdherenceStats(
       req.user!.userId,
       req.params.id,
