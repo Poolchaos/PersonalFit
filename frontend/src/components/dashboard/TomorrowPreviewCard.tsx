@@ -14,32 +14,15 @@
 
 import { Card } from '../../design-system';
 import { Calendar, Clock, Target, Zap, ArrowRight } from 'lucide-react';
-
-interface Exercise {
-  name: string;
-  sets?: number;
-  reps?: number | null;
-  duration_seconds?: number | null;
-  target_muscles: string[];
-}
-
-interface TomorrowWorkout {
-  day: string;
-  workout: {
-    name: string;
-    duration_minutes: number;
-    focus: string;
-    exercises: Exercise[];
-  };
-}
+import type { ScheduleDay } from '../../types';
 
 interface TomorrowPreviewCardProps {
-  workout: TomorrowWorkout | null;
+  workout: ScheduleDay | null;
   xpToEarn: number;
 }
 
 export function TomorrowPreviewCard({ workout, xpToEarn }: TomorrowPreviewCardProps) {
-  if (!workout) {
+  if (!workout?.workout) {
     return (
       <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100">
         <div className="p-6 text-center">

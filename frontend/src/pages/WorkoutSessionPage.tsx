@@ -32,14 +32,14 @@ import { Card, Confetti } from '../design-system';
 import { workoutAPI, sessionAPI } from '../api';
 import { getExerciseImage } from '../utils/imageHelpers';
 import toast from 'react-hot-toast';
-import type { ScheduleDay, ScheduleExercise, WorkoutPlan, WorkoutSession } from '../types';
+import type { ScheduleDay, ScheduleExercise, WorkoutPlan, ExerciseLog } from '../types';
 
 interface SessionCreateData {
   plan_id?: string;
   session_date: string;
   completion_status: 'planned' | 'completed' | 'skipped' | 'partial';
   actual_duration_minutes: number;
-  exercises_completed: number;
+  exercises_completed: ExerciseLog[];
   exercises_planned: number;
   notes?: string;
 }
@@ -193,12 +193,18 @@ export default function WorkoutSessionPage() {
   const completeWorkout = async () => {
     const sessionDuration = Math.round((new Date().getTime() - sessionStartTime.getTime()) / 1000 / 60);
 
-    const completedExercisesList = completedExercises
+    const completedExercisesList: ExerciseLog[] = completedExercises
       .filter(ex => ex.sets.some(set => set.completed))
       .map(ex => ({
-        exercise: exercises.find((e: ScheduleExercise) => e.name === ex.exerciseId),
-        setsCompleted: ex.sets.filter(set => set.completed).length,
-        totalSets: ex.sets.length,
+        exercise_name: ex.exerciseId,
+        sets_completed: ex.sets
+          .filter(set => set.completed)
+          .map((set, idx) => ({
+            set_number: idx + 1,
+            reps: set.reps,
+            weight_kg: set.weight,
+          })),
+        notes: undefined,
       }));
 
     const sessionData: SessionCreateData = {
@@ -206,7 +212,7 @@ export default function WorkoutSessionPage() {
       session_date: new Date().toISOString(),
       completion_status: 'completed',
       actual_duration_minutes: sessionDuration,
-      exercises_completed: completedExercisesList.length,
+      exercises_completed: completedExercisesList,
       exercises_planned: exercises.length,
       notes: `Completed ${completedExercisesList.length} exercises`,
     };
@@ -324,7 +330,7 @@ export default function WorkoutSessionPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-3xl font-bold text-neutral-900">
-                  {todayWorkout.workout_name || `${todayWorkout.focus} Workout`}
+                  {todayWorkout.name || `${todayWorkout.focus} Workout`}
                 </h1>
                 <p className="text-neutral-600">
                   Exercise {currentExerciseIndex + 1} of {exercises.length}
@@ -473,7 +479,6 @@ export default function WorkoutSessionPage() {
                             <p className="font-semibold text-neutral-900">Set {setIndex + 1}</p>
                             <p className="text-sm text-neutral-600">
                               {currentExercise.reps || 10} reps
-                              {currentExercise.weight && ` Ã— ${currentExercise.weight}lbs`}
                             </p>
                           </div>
                         </div>

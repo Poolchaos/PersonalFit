@@ -16,34 +16,17 @@ import { Card } from '../../design-system';
 import { Calendar, Clock, Target, Zap, TrendingUp, ChevronRight, Play } from 'lucide-react';
 import { formatDuration } from '../../utils/formatDuration';
 import { getWorkoutTypeImage, getEmptyStateImage } from '../../utils/imageHelpers';
-
-interface Exercise {
-  name: string;
-  sets?: number;
-  reps?: number | null;
-  duration_seconds?: number | null;
-  target_muscles: string[];
-}
-
-interface TodayWorkout {
-  day: string;
-  workout: {
-    name: string;
-    duration_minutes: number;
-    focus: string;
-    exercises: Exercise[];
-  };
-}
+import type { ScheduleDay } from '../../types';
 
 interface TodayWorkoutCardProps {
-  workout: TodayWorkout | null;
+  workout: ScheduleDay | null;
   isCompleted: boolean;
   xpToEarn: number;
   onStart: () => void;
 }
 
 export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: TodayWorkoutCardProps) {
-  if (!workout) {
+  if (!workout?.workout) {
     return (
       <Card className="relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 border-2 border-dashed border-neutral-300">
         <div

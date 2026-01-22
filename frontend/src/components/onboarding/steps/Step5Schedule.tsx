@@ -12,7 +12,7 @@
  * See the LICENSE file for the full license text.
  */
 
-import { Input } from '../../design-system';
+import { Input } from '../../../design-system';
 import type { StepContentProps } from './types';
 
 const DAYS_OPTIONS = [1, 2, 3, 4, 5, 6, 7];
@@ -52,7 +52,7 @@ export function Step5Schedule({ data, setData }: StepContentProps) {
           type="number"
           placeholder="60"
           value={data.preferences.preferred_workout_duration || ''}
-          onChange={(e) =>
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             setData({ ...data, preferences: { ...data.preferences, preferred_workout_duration: Number(e.target.value) } })
           }
         />

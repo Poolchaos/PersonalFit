@@ -17,21 +17,12 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { profileAPI, equipmentAPI, workoutAPI, aiConfigAPI, queryKeys } from '../../api';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '../../design-system';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '../../design-system';
 import { ChevronRight, ChevronLeft, Sparkles, Key, User, Target, Dumbbell, Calendar, Zap } from 'lucide-react';
 import type { Equipment } from '../../types';
 import { GeneratingWorkoutLoader } from './GeneratingWorkoutLoader';
 import type { OnboardingData } from './types';
 import { validateStep } from './validation';
-import {
-  Step0APIKey,
-  Step1Profile,
-  Step2Modality,
-  Step3Goals,
-  Step4Experience,
-  Step5Schedule,
-  Step6Equipment,
-} from './steps';
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
@@ -392,7 +383,7 @@ export function OnboardingWizard() {
                     type="password"
                     placeholder={hasExistingKey ? "Leave empty to use existing key" : "sk-..."}
                     value={data.openai_token || ''}
-                    onChange={(e) => {
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                       setData({ ...data, openai_token: e.target.value });
                       setTokenTested(false); // Reset verification when key changes
                     }}
@@ -447,13 +438,13 @@ export function OnboardingWizard() {
                   label="First Name"
                   placeholder="John"
                   value={data.profile.first_name || ''}
-                  onChange={(e) => setData({ ...data, profile: { ...data.profile, first_name: e.target.value } })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, profile: { ...data.profile, first_name: e.target.value } })}
                 />
                 <Input
                   label="Last Name"
                   placeholder="Doe"
                   value={data.profile.last_name || ''}
-                  onChange={(e) => setData({ ...data, profile: { ...data.profile, last_name: e.target.value } })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, profile: { ...data.profile, last_name: e.target.value } })}
                 />
               </div>
 
@@ -463,14 +454,14 @@ export function OnboardingWizard() {
                   type="number"
                   placeholder="175"
                   value={data.profile.height_cm || ''}
-                  onChange={(e) => setData({ ...data, profile: { ...data.profile, height_cm: Number(e.target.value) } })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, profile: { ...data.profile, height_cm: Number(e.target.value) } })}
                 />
                 <Input
                   label="Weight (kg)"
                   type="number"
                   placeholder="70"
                   value={data.profile.weight_kg || ''}
-                  onChange={(e) => setData({ ...data, profile: { ...data.profile, weight_kg: Number(e.target.value) } })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData({ ...data, profile: { ...data.profile, weight_kg: Number(e.target.value) } })}
                 />
               </div>
 
@@ -690,7 +681,7 @@ export function OnboardingWizard() {
                   type="number"
                   placeholder="60"
                   value={data.preferences.preferred_workout_duration || ''}
-                  onChange={(e) =>
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setData({ ...data, preferences: { ...data.preferences, preferred_workout_duration: Number(e.target.value) } })
                   }
                 />

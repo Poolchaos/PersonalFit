@@ -24,7 +24,7 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { Card, Modal, Button } from '../design-system';
 import { workoutAPI, sessionAPI } from '../api';
 import { getEmptyStateImage } from '../utils/imageHelpers';
-import type { ScheduleDay, ScheduleWorkout, WorkoutPlan, WorkoutSession } from '../types';
+import type { ScheduleDay, WorkoutPlan, WorkoutSession } from '../types';
 
 type ViewMode = 'weekly' | 'monthly';
 
@@ -72,18 +72,17 @@ export default function SchedulePage() {
   // Manual completion mutation
   const manualCompleteMutation = useMutation({
     mutationFn: async ({ date, workout }: { date: string; workout: WorkoutDay['workout'] }) => {
-      const sessionData = {
+      const sessionData: Partial<WorkoutSession> = {
         session_date: new Date(date).toISOString(),
         completion_status: 'completed',
         actual_duration_minutes: workout?.duration_minutes || 0,
-        exercises_completed: workout?.exercises?.length || 0,
-        exercises_planned: workout?.exercises?.length || 0,
+        exercises_completed: [], // Empty array - will be populated by backend
         notes: `Manually completed workout: ${workout?.name}`,
       };
       return sessionAPI.create(sessionData);
     },
     onSuccess: (_, variables) => {
-      const xpEarned = variables.workout.exercises?.length * 10 || 0;
+      const xpEarned = variables.workout?.exercises?.length ? variables.workout.exercises.length * 10 : 0;
       toast.success(`Workout completed! You earned ${xpEarned} XP!`, {
         icon: 'ðŸŽ‰',
         duration: 4000,
@@ -150,11 +149,20 @@ export default function SchedulePage() {
           date: dateStr,
           dayName,
           workout: {
-            name: scheduledWorkout.workout.name || scheduledWorkout.workout.workout_name || `${scheduledWorkout.workout.focus} Day`,
+            name: scheduledWorkout.workout.name || `${scheduledWorkout.workout.focus} Day`,
             duration_minutes: duration,
             focus: scheduledWorkout.workout.focus || 'Full Body',
             xpEarned,
-            exercises: exercises,
+            exercises: exercises.map(ex => ({
+              name: ex.name,
+              sets: ex.sets || 3,
+              reps: ex.reps || 10,
+              duration_seconds: ex.duration_seconds,
+              rest_seconds: ex.rest_seconds,
+              equipment: ex.equipment_needed,
+              target_muscles: ex.target_muscles,
+              instructions: ex.instructions,
+            })),
           },
           isCompleted,
           isToday: dateStr === today.toLocaleDateString('en-US'),

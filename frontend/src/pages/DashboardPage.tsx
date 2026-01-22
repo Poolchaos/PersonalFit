@@ -96,9 +96,9 @@ export default function DashboardPage() {
     return { todayWorkout: null, tomorrowWorkout: null, yesterdayWorkout: null };
   }, [workoutsData]);
 
-  const todayXP = todayWorkout ? todayWorkout.workout.exercises.length * 10 : 0;
-  const tomorrowXP = tomorrowWorkout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
-  const yesterdayXP = yesterdayWorkout ? yesterdayWorkout.workout.exercises.length * 10 : 0;
+  const todayXP = todayWorkout?.workout ? todayWorkout.workout.exercises.length * 10 : 0;
+  const tomorrowXP = tomorrowWorkout?.workout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
+  const yesterdayXP = yesterdayWorkout?.workout ? yesterdayWorkout.workout.exercises.length * 10 : 0;
 
   // Calculate planned workouts this week from the active plan
   const workoutsPlannedThisWeek = useMemo(() => {
@@ -146,15 +146,14 @@ export default function DashboardPage() {
   // Manual completion mutation
   const manualCompleteMutation = useMutation({
     mutationFn: async () => {
-      if (!yesterdayWorkout) return;
+      if (!yesterdayWorkout?.workout) return;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const sessionData = {
+      const sessionData: Partial<WorkoutSession> = {
         session_date: yesterday.toISOString(),
         completion_status: 'completed',
         actual_duration_minutes: yesterdayWorkout.workout.duration_minutes,
-        exercises_completed: yesterdayWorkout.workout.exercises?.length || 0,
-        exercises_planned: yesterdayWorkout.workout.exercises?.length || 0,
+        exercises_completed: [], // Empty array - will be populated by backend
         notes: `Manually completed: ${yesterdayWorkout.workout.name}`,
       };
       return sessionAPI.create(sessionData);
