@@ -12,27 +12,26 @@
  * See the LICENSE file for the full license text.
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { medicationAPI, medicationQueryKeys, profileAPI, queryKeys, workoutAPI } from '../api';
 import type { Medication, TodaysMedication, CreateMedicationInput } from '../types';
-import { Card, CardContent, Button } from '../design-system';
+import { Card, CardContent, Button, Modal } from '../design-system';
 import {
   Pill,
   Plus,
-  X,
   Clock,
   AlertTriangle,
   Package,
-  ChevronRight,
   Trash2,
   Edit,
+  X,
 } from 'lucide-react';
 import { PageTransition } from '../components/layout/PageTransition';
-import MedicationForm from '../components/medications/MedicationForm';
+import MedicationForm, { type MedicationFormHandle } from '../components/medications/MedicationForm';
 import MedicationDoseCard from '../components/medications/MedicationDoseCard';
 
 export default function MedicationsPage() {
@@ -43,6 +42,7 @@ export default function MedicationsPage() {
   const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills'>('today');
   const [dismissedOnboardingNote, setDismissedOnboardingNote] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const formRef = useRef<MedicationFormHandle>(null);
 
   // Fetch user profile to check for onboarding medications notes
   const { data: profileData } = useQuery({
@@ -411,10 +411,10 @@ export default function MedicationsPage() {
                     {allMedications.map((med: Medication) => (
                       <Card key={med._id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-4 flex-1 min-w-0">
                               <div
-                                className={`p-3 rounded-full ${
+                                className={`p-3 rounded-full flex-shrink-0 ${
                                   med.type === 'prescription'
                                     ? 'bg-purple-100 text-purple-600'
                                     : med.type === 'supplement'
@@ -424,37 +424,40 @@ export default function MedicationsPage() {
                               >
                                 <Pill className="w-5 h-5" />
                               </div>
-                              <div>
-                                <h3 className="font-semibold text-gray-900">{med.name}</h3>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap mb-1">
+                                  <h3 className="font-semibold text-gray-900">{med.name}</h3>
+                                  <span
+                                    className={`text-xs px-2 py-1 rounded-full ${
+                                      med.type === 'prescription'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : med.type === 'supplement'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-blue-100 text-blue-700'
+                                    }`}
+                                  >
+                                    {med.type}
+                                  </span>
+                                  {med.inventory.current_count <= med.inventory.refill_threshold && (
+                                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full flex items-center gap-1">
+                                      <AlertTriangle className="w-3 h-3" />
+                                      Low: {med.inventory.current_count}
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-sm text-gray-500">
                                   {med.dosage.amount} {med.dosage.unit} • {med.frequency.times_per_day}x daily
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {med.inventory.current_count <= med.inventory.refill_threshold && (
-                                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full flex items-center gap-1">
-                                  <AlertTriangle className="w-3 h-3" />
-                                  Low: {med.inventory.current_count}
-                                </span>
-                              )}
-                              <span
-                                className={`text-xs px-2 py-1 rounded-full ${
-                                  med.type === 'prescription'
-                                    ? 'bg-purple-100 text-purple-700'
-                                    : med.type === 'supplement'
-                                    ? 'bg-green-100 text-green-700'
-                                    : 'bg-blue-100 text-blue-700'
-                                }`}
-                              >
-                                {med.type}
-                              </span>
+                            <div className="flex items-center gap-1 flex-shrink-0">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setEditingMedication(med)}
+                                className="hover:bg-blue-50"
                               >
-                                <Edit className="w-4 h-4" />
+                                <Edit className="w-4 h-4 text-blue-600" />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -464,10 +467,10 @@ export default function MedicationsPage() {
                                     deleteMutation.mutate(med._id);
                                   }
                                 }}
+                                className="hover:bg-red-50"
                               >
-                                <Trash2 className="w-4 h-4 text-red-500" />
+                                <Trash2 className="w-4 h-4 text-red-600" />
                               </Button>
-                              <ChevronRight className="w-5 h-5 text-gray-400" />
                             </div>
                           </div>
                         </CardContent>
@@ -523,37 +526,45 @@ export default function MedicationsPage() {
           </div>
 
           {/* Add/Edit Medication Modal */}
-          {(showForm || editingMedication) && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold">
-                      {editingMedication ? 'Edit Medication' : 'Add Medication'}
-                    </h2>
-                    <button
-                      onClick={() => {
-                        setShowForm(false);
-                        setEditingMedication(null);
-                      }}
-                      className="text-gray-400 hover:text-gray-600"
-                    >
-                      <X className="w-6 h-6" />
-                    </button>
-                  </div>
-                  <MedicationForm
-                    initialData={editingMedication || undefined}
-                    onSubmit={editingMedication ? handleUpdateMedication : handleCreateMedication}
-                    onCancel={() => {
-                      setShowForm(false);
-                      setEditingMedication(null);
-                    }}
-                    isLoading={createMutation.isPending || updateMutation.isPending}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <Modal
+            isOpen={showForm || !!editingMedication}
+            onClose={() => {
+              setShowForm(false);
+              setEditingMedication(null);
+            }}
+            title={editingMedication ? 'Edit Medication' : 'Add Medication'}
+            size="lg"
+            footer={
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingMedication(null);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => formRef.current?.submitForm()}
+                  disabled={createMutation.isPending || updateMutation.isPending}
+                >
+                  {createMutation.isPending || updateMutation.isPending
+                    ? 'Saving...'
+                    : editingMedication
+                    ? 'Update Medication'
+                    : 'Add Medication'}
+                </Button>
+              </>
+            }
+          >
+            <MedicationForm
+              ref={formRef}
+              initialData={editingMedication || undefined}
+              onSubmit={editingMedication ? handleUpdateMedication : handleCreateMedication}
+              isLoading={createMutation.isPending || updateMutation.isPending}
+            />
+          </Modal>
         </div>
       </PageTransition>
     </Layout>

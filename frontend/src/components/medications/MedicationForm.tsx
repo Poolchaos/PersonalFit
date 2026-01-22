@@ -13,14 +13,17 @@
  */
 
 import { useForm } from 'react-hook-form';
-import { Button } from '../../design-system';
+import { forwardRef, useImperativeHandle } from 'react';
 import BottleImageUpload, { type OCRResult } from './BottleImageUpload';
 import type { Medication, CreateMedicationInput } from '../../types';
+
+export interface MedicationFormHandle {
+  submitForm: () => void;
+}
 
 interface MedicationFormProps {
   initialData?: Medication;
   onSubmit: (data: CreateMedicationInput) => void;
-  onCancel: () => void;
   isLoading: boolean;
 }
 
@@ -49,18 +52,16 @@ const DAYS_OF_WEEK = [
   { value: 6, label: 'Sat' },
 ];
 
-export default function MedicationForm({
-  initialData,
-  onSubmit,
-  onCancel,
-  isLoading,
-}: MedicationFormProps) {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    formState: { errors },
+const MedicationForm = forwardRef<MedicationFormHandle, MedicationFormProps>(
+  ({ initialData, onSubmit, isLoading }, ref) => {
+    "use no memo"; // Disable React Compiler due to react-hook-form watch() incompatibility
+
+    const {
+      register,
+      handleSubmit,
+      setValue,
+      formState: { errors },
+      watch,
   } = useForm<CreateMedicationInput>({
     defaultValues: initialData
       ? {
@@ -89,6 +90,13 @@ export default function MedicationForm({
 
   const selectedDays = watch('frequency.days_of_week') || [];
   const selectedMetrics = watch('affects_metrics') || [];
+  const selectedType = watch('type');
+
+  useImperativeHandle(ref, () => ({
+    submitForm: () => {
+      handleSubmit(onSubmit)();
+    },
+  }));
 
   const handleOCRExtracted = (result: OCRResult) => {
     // Auto-fill form with extracted data
@@ -164,7 +172,7 @@ export default function MedicationForm({
               <label
                 key={type}
                 className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                  watch('type') === type
+                  selectedType === type
                     ? type === 'prescription'
                       ? 'bg-purple-100 border-purple-500 text-purple-700'
                       : type === 'supplement'
@@ -349,15 +357,10 @@ export default function MedicationForm({
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-3 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isLoading} className="flex-1">
-          {isLoading ? 'Saving...' : initialData ? 'Update Medication' : 'Add Medication'}
-        </Button>
-      </div>
     </form>
   );
-}
+});
+
+MedicationForm.displayName = 'MedicationForm';
+
+export default MedicationForm;

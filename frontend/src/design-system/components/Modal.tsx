@@ -52,7 +52,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
@@ -61,37 +61,35 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
       />
 
       {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div
-          className={`relative bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]} transform transition-all z-10`}
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200">
-            <h2 className="text-xl font-bold text-neutral-900">{title}</h2>
-            <button
-              onClick={onClose}
-              className="text-neutral-400 hover:text-neutral-600 transition-colors p-1"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="px-6 py-4">
-            {children}
-          </div>
-
-          {/* Footer */}
-          {footer && (
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 bg-neutral-50 rounded-b-xl">
-              {footer}
-            </div>
-          )}
+      <div
+        className={`relative bg-white rounded-xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] flex flex-col transform transition-all z-10`}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 flex-shrink-0">
+          <h2 className="text-xl font-bold text-neutral-900">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-neutral-400 hover:text-neutral-600 transition-colors p-1"
+            aria-label="Close modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Content - Scrollable */}
+        <div className="px-6 py-4 overflow-y-auto flex-1">
+          {children}
+        </div>
+
+        {/* Footer - Fixed */}
+        {footer && (
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-200 bg-neutral-50 rounded-b-xl flex-shrink-0">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );
