@@ -31,6 +31,7 @@ import {
   createMedicationWithImage,
   updateBottleImage,
 } from '../controllers/medicationController';
+import { getCorrelations, triggerAnalysis } from '../controllers/correlationController';
 import { authenticate } from '../middleware/auth';
 
 // Configure multer for image uploads
@@ -273,5 +274,9 @@ router.put(
   upload.single('bottle_image'),
   updateBottleImage
 );
+
+// Correlation analysis endpoints
+router.get('/correlations', getCorrelations);
+router.post('/correlations/analyze', triggerAnalysis);
 
 export default router;

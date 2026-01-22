@@ -1,7 +1,7 @@
 /**
  * Test script for Claude Vision OCR functionality
- * 
- * Usage: 
+ *
+ * Usage:
  * 1. Set ANTHROPIC_API_KEY in .env
  * 2. Run: npx ts-node scripts/test-vision-ocr.ts
  */
@@ -22,20 +22,20 @@ async function testOCR() {
 
   try {
     const result = await extractMedicationFromImage(testImageBase64);
-    
+
     console.log('✅ OCR Extraction Successful!\n');
     console.log('📋 Extracted Data:');
     console.log(JSON.stringify(result, null, 2));
     console.log('\n✨ Test completed successfully!');
-    
+
   } catch (error: any) {
     console.error('❌ OCR Test Failed:');
     console.error(error.message);
-    
+
     if (error.message.includes('API key')) {
       console.log('\n💡 Tip: Make sure ANTHROPIC_API_KEY is set in your .env file');
     }
-    
+
     process.exit(1);
   }
 }

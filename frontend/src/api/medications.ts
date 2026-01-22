@@ -117,6 +117,18 @@ export const medicationAPI = {
     });
     return data;
   },
+
+  // Get correlation insights
+  getCorrelations: async (): Promise<{ data: any[] }> => {
+    const { data } = await apiClient.get('/api/medications/correlations');
+    return data;
+  },
+
+  // Trigger correlation analysis
+  triggerAnalysis: async (): Promise<{ success: boolean; message: string }> => {
+    const { data } = await apiClient.post('/api/medications/correlations/analyze');
+    return data;
+  },
 };
 
 // Query keys for React Query
@@ -130,4 +142,5 @@ export const medicationQueryKeys = {
     [...medicationQueryKeys.all, 'logs', id, { startDate, endDate }] as const,
   stats: (id: string, days?: number) =>
     [...medicationQueryKeys.all, 'stats', id, { days }] as const,
+  correlations: () => [...medicationQueryKeys.all, 'correlations'] as const,
 };

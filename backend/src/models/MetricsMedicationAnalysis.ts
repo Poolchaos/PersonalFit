@@ -93,7 +93,10 @@ const analyzeSchema = new Schema<IMetricsMedicationAnalysis>(
     },
   },
   {
-    timestamps: true,
+    timestamps: {
+      createdAt: 'created_at',
+      updatedAt: 'updated_at',
+    },
   }
 );
 

@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { medicationAPI, medicationQueryKeys, profileAPI, queryKeys, workoutAPI } from '../api';
 import type { Medication, TodaysMedication, CreateMedicationInput } from '../types';
-import { Card, CardContent, Button, Modal } from '../design-system';
+import { Card, CardContent, Button, Modal, ConfirmModal } from '../design-system';
 import {
   Pill,
   Plus,
@@ -39,6 +39,7 @@ export default function MedicationsPage() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [deletingMedication, setDeletingMedication] = useState<Medication | null>(null);
   const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills'>('today');
   const [dismissedOnboardingNote, setDismissedOnboardingNote] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
@@ -462,11 +463,7 @@ export default function MedicationsPage() {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  if (confirm('Are you sure you want to remove this medication?')) {
-                                    deleteMutation.mutate(med._id);
-                                  }
-                                }}
+                                onClick={() => setDeletingMedication(med)}
                                 className="hover:bg-red-50"
                               >
                                 <Trash2 className="w-4 h-4 text-red-600" />
@@ -565,6 +562,22 @@ export default function MedicationsPage() {
               isLoading={createMutation.isPending || updateMutation.isPending}
             />
           </Modal>
+
+          <ConfirmModal
+            isOpen={!!deletingMedication}
+            onClose={() => setDeletingMedication(null)}
+            onConfirm={() => {
+              if (deletingMedication) {
+                deleteMutation.mutate(deletingMedication._id);
+                setDeletingMedication(null);
+              }
+            }}
+            title="Remove Medication"
+            message={`Are you sure you want to remove ${deletingMedication?.name}? This action cannot be undone.`}
+            confirmText="Remove"
+            variant="danger"
+            loading={deleteMutation.isPending}
+          />
         </div>
       </PageTransition>
     </Layout>
