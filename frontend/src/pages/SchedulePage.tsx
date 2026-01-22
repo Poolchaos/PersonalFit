@@ -84,7 +84,6 @@ export default function SchedulePage() {
     onSuccess: (_, variables) => {
       const xpEarned = variables.workout?.exercises?.length ? variables.workout.exercises.length * 10 : 0;
       toast.success(`Workout completed! You earned ${xpEarned} XP!`, {
-        icon: 'ðŸŽ‰',
         duration: 4000,
       });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -314,7 +313,7 @@ export default function SchedulePage() {
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
                   <CalendarIcon className="w-4 h-4 text-primary-500" />
                   <span className="font-medium">{selectedDay.dayName}</span>
-                  <span className="text-neutral-400">â€¢</span>
+                  <span className="text-neutral-400">·</span>
                   <span>{selectedDay.date}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-neutral-600">

@@ -51,7 +51,10 @@ apiClient.interceptors.response.use(
 
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Skip token refresh for auth endpoints (login, signup, refresh)
+    const isAuthEndpoint = originalRequest.url?.includes('/api/auth/');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       try {

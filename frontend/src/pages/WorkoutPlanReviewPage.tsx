@@ -31,6 +31,8 @@ import {
   Edit,
   Zap,
   Calendar,
+  Lightbulb,
+  Frown,
 } from 'lucide-react';
 
 // Type for the actual backend response structure
@@ -122,7 +124,7 @@ export default function WorkoutPlanReviewPage() {
             />
           </div>
           <div className="relative z-10">
-            <div className="text-6xl mb-4">ðŸ˜•</div>
+            <div className="mb-4"><Frown className="w-16 h-16 text-neutral-400 mx-auto" /></div>
             <h2 className="text-2xl font-bold mb-2">No Workout Plan Found</h2>
             <p className="text-neutral-600 mb-6">
               We couldn't find your generated workout plan. Please try generating a new one.
@@ -333,8 +335,9 @@ export default function WorkoutPlanReviewPage() {
                                   </div>
                                 )}
                               </div>
-                              <p className="text-xs text-neutral-600 italic">
-                                ðŸ’¡ {exercise.instructions}
+                              <p className="text-xs text-neutral-600 italic flex items-start gap-1">
+                                <Lightbulb className="w-3 h-3 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                <span>{exercise.instructions}</span>
                               </p>
                             </div>
                           ))}

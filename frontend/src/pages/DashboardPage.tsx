@@ -160,7 +160,6 @@ export default function DashboardPage() {
     },
     onSuccess: () => {
       toast.success(`Yesterday's workout completed! You earned ${yesterdayXP} XP!`, {
-        icon: 'ðŸŽ‰',
         duration: 4000,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
@@ -194,7 +193,6 @@ export default function DashboardPage() {
   //   },
   //   onSuccess: () => {
   //     toast.success(`Workout completed! Check your XP!`, {
-  //       icon: 'ðŸŽ‰',
   //       duration: 4000,
   //     });
   //     queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -277,7 +275,7 @@ export default function DashboardPage() {
               disabled={testCompleteMutation.isPending}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
-              {testCompleteMutation.isPending ? 'Completing...' : 'ðŸ§ª Test Complete Today\'s Workout'}
+              {testCompleteMutation.isPending ? 'Completing...' : 'Test Complete Today\'s Workout'}
             </button>
           </div>
         )} */}

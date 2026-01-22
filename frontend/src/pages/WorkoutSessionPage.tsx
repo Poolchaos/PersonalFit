@@ -24,7 +24,9 @@ import {
   Zap,
   Trophy,
   Flame,
-  X
+  X,
+  Moon,
+  PartyPopper,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -128,7 +130,7 @@ export default function WorkoutSessionPage() {
       setTimeout(() => {
         setIsRestTimerActive(false);
         toast.success('Rest time over! Ready for your next set?', {
-          icon: 'ðŸ’ª',
+
           duration: 3000,
         });
       }, 0);
@@ -258,7 +260,7 @@ export default function WorkoutSessionPage() {
         <PageTransition>
           <div className="max-w-2xl mx-auto mt-12">
             <Card className="p-8 text-center">
-              <div className="text-6xl mb-4">ðŸ˜´</div>
+              <div className="mb-4"><Moon className="w-16 h-16 text-indigo-400 mx-auto" /></div>
               <h2 className="text-2xl font-bold text-neutral-900 mb-3">No Workout Scheduled</h2>
               <p className="text-neutral-600 mb-6">
                 Today is a rest day! Take time to recover and come back stronger.
@@ -304,9 +306,9 @@ export default function WorkoutSessionPage() {
                   <motion.div
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="text-8xl mb-6"
+                    className="mb-6"
                   >
-                    ðŸŽ‰
+                    <PartyPopper className="w-20 h-20 text-yellow-400 mx-auto" />
                   </motion.div>
                   <h2 className="text-4xl font-bold text-white mb-4">Workout Complete!</h2>
                   <div className="flex items-center justify-center gap-4 text-white text-xl mb-6">
@@ -400,7 +402,7 @@ export default function WorkoutSessionPage() {
                     <div className="text-5xl font-bold text-blue-600 mb-4">
                       {Math.floor(restTimeRemaining / 60)}:{(restTimeRemaining % 60).toString().padStart(2, '0')}
                     </div>
-                    <p className="text-neutral-600 mb-4">Take a breather, you're doing great! ðŸ’ª</p>
+                    <p className="text-neutral-600 mb-4">Take a breather, you're doing great!</p>
                     <button
                       onClick={skipRestTimer}
                       className="btn-secondary"

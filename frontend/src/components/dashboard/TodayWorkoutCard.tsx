@@ -13,7 +13,7 @@
  */
 
 import { Card } from '../../design-system';
-import { Calendar, Clock, Target, Zap, TrendingUp, ChevronRight, Play } from 'lucide-react';
+import { Calendar, Clock, Target, Zap, TrendingUp, ChevronRight, Play, PartyPopper } from 'lucide-react';
 import { formatDuration } from '../../utils/formatDuration';
 import { getWorkoutTypeImage, getEmptyStateImage } from '../../utils/imageHelpers';
 import type { ScheduleDay } from '../../types';
@@ -153,8 +153,8 @@ export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: To
                     <p className="font-medium text-neutral-900">{exercise.name}</p>
                     <p className="text-xs text-neutral-500">
                       {exercise.sets && `${exercise.sets} sets`}
-                      {exercise.reps && ` Ã— ${exercise.reps} reps`}
-                      {exercise.duration_seconds && ` â€¢ ${formatDuration(exercise.duration_seconds)}`}
+                      {exercise.reps && ` x ${exercise.reps} reps`}
+                      {exercise.duration_seconds && ` · ${formatDuration(exercise.duration_seconds)}`}
                     </p>
                   </div>
                 </div>
@@ -195,8 +195,8 @@ export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: To
 
         {isCompleted && (
           <div className="bg-success-100 border-2 border-success-300 rounded-xl p-4 text-center">
-            <p className="text-success-800 font-semibold">
-              ðŸŽ‰ Great work! You earned {xpToEarn} XP today!
+            <p className="text-success-800 font-semibold flex items-center justify-center gap-2">
+              <PartyPopper className="w-5 h-5" /> Great work! You earned {xpToEarn} XP today!
             </p>
           </div>
         )}

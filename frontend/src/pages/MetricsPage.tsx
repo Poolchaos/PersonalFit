@@ -66,7 +66,7 @@ export default function MetricsPage() {
       }));
 
       setShowForm(false);
-      toast.success('ðŸ“Š Metrics recorded!');
+      toast.success('Metrics recorded!');
       return { previousData };
     },
     onError: (_err, _newMetrics, context) => {
@@ -85,7 +85,7 @@ export default function MetricsPage() {
       photosAPI.upload(file, type, date),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.metrics.history() });
-      toast.success('ðŸ“¸ Photo uploaded successfully!');
+      toast.success('Photo uploaded successfully!');
       setPhotoFile(null);
     },
     onError: () => {

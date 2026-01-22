@@ -35,7 +35,7 @@ router.post(
   [
     body('workout_modality')
       .optional()
-      .isIn(['strength', 'hiit', 'flexibility', 'cardio'])
+      .isIn(['strength', 'hiit', 'flexibility', 'cardio', 'hybrid'])
       .withMessage('Invalid workout modality'),
     body('fitness_goals').optional().isArray().withMessage('Fitness goals must be an array'),
     body('experience_level').optional().isString(),

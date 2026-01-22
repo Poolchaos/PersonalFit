@@ -119,7 +119,7 @@ export function YesterdayMissedCard({ workout, xpAvailable, onComplete, isComple
             {isCompleting
               ? 'Completing...'
               : isCompleted
-                ? 'ðŸ§ª Test: Complete Again'
+                ? 'Test: Complete Again'
                 : 'Complete This Workout'}
           </span>
         </button>
