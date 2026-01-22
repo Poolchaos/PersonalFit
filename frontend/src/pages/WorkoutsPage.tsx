@@ -47,7 +47,7 @@ export default function WorkoutsPage() {
     mutationFn: workoutAPI.generate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workouts'] });
-      toast.success('ðŸŽ‰ AI workout generated successfully!');
+      toast.success('AI workout generated successfully!');
     },
     onError: (error: unknown) => {
       const err = error as { response?: { data?: { error?: string }; status?: number } };

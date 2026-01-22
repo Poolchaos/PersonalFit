@@ -13,33 +13,16 @@
  */
 
 import { Card } from '../../design-system';
-import { Calendar, Clock, Target, Zap, ArrowRight } from 'lucide-react';
-
-interface Exercise {
-  name: string;
-  sets?: number;
-  reps?: number | null;
-  duration_seconds?: number | null;
-  target_muscles: string[];
-}
-
-interface TomorrowWorkout {
-  day: string;
-  workout: {
-    name: string;
-    duration_minutes: number;
-    focus: string;
-    exercises: Exercise[];
-  };
-}
+import { Calendar, Clock, Target, Zap, ArrowRight, Dumbbell } from 'lucide-react';
+import type { ScheduleDay } from '../../types';
 
 interface TomorrowPreviewCardProps {
-  workout: TomorrowWorkout | null;
+  workout: ScheduleDay | null;
   xpToEarn: number;
 }
 
 export function TomorrowPreviewCard({ workout, xpToEarn }: TomorrowPreviewCardProps) {
-  if (!workout) {
+  if (!workout?.workout) {
     return (
       <Card className="bg-gradient-to-br from-neutral-50 to-neutral-100">
         <div className="p-6 text-center">
@@ -61,7 +44,7 @@ export function TomorrowPreviewCard({ workout, xpToEarn }: TomorrowPreviewCardPr
               <Calendar className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-xs text-purple-600 font-medium">Tomorrow â€¢ {workout.day}</p>
+              <p className="text-xs text-purple-600 font-medium">Tomorrow · {workout.day}</p>
               <h3 className="font-bold text-neutral-900">{workout.workout.name}</h3>
             </div>
           </div>
@@ -123,8 +106,8 @@ export function TomorrowPreviewCard({ workout, xpToEarn }: TomorrowPreviewCardPr
 
         {/* Motivational message */}
         <div className="mt-4 p-3 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-lg">
-          <p className="text-xs text-purple-900 font-medium text-center">
-            ðŸ’ª Get ready to crush it tomorrow!
+          <p className="text-xs text-purple-900 font-medium text-center flex items-center justify-center gap-1">
+            <Dumbbell className="w-3 h-3" /> Get ready to crush it tomorrow!
           </p>
         </div>
       </div>

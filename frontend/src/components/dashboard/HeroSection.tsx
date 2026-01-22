@@ -71,7 +71,7 @@ export function HeroSection() {
         transition={{ duration: 0.4 }}
       >
         <h1 className="text-3xl md:text-4xl font-bold mb-2">
-          Welcome back, {firstName}! ðŸ‘‹
+          Welcome back, {firstName}!
         </h1>
         <p className="text-primary-100 text-lg">
           Let's crush today's workout

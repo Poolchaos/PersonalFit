@@ -23,8 +23,6 @@ export function useGamification() {
     refetchOnMount: 'always',
   });
 
-  console.log('ðŸŽ® useGamification hook data:', gamificationData);
-
   const level = gamificationData?.level || 1;
   const xp = gamificationData?.xp || 0;
   const currentStreak = gamificationData?.currentStreak || 0;

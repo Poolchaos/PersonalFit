@@ -24,7 +24,9 @@ import {
   Zap,
   Trophy,
   Flame,
-  X
+  X,
+  Moon,
+  PartyPopper,
 } from 'lucide-react';
 import Layout from '../components/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -32,14 +34,14 @@ import { Card, Confetti } from '../design-system';
 import { workoutAPI, sessionAPI } from '../api';
 import { getExerciseImage } from '../utils/imageHelpers';
 import toast from 'react-hot-toast';
-import type { ScheduleDay, ScheduleExercise, WorkoutPlan, WorkoutSession } from '../types';
+import type { ScheduleDay, ScheduleExercise, WorkoutPlan, ExerciseLog } from '../types';
 
 interface SessionCreateData {
   plan_id?: string;
   session_date: string;
   completion_status: 'planned' | 'completed' | 'skipped' | 'partial';
   actual_duration_minutes: number;
-  exercises_completed: number;
+  exercises_completed: ExerciseLog[];
   exercises_planned: number;
   notes?: string;
 }
@@ -128,7 +130,7 @@ export default function WorkoutSessionPage() {
       setTimeout(() => {
         setIsRestTimerActive(false);
         toast.success('Rest time over! Ready for your next set?', {
-          icon: 'ðŸ’ª',
+
           duration: 3000,
         });
       }, 0);
@@ -193,12 +195,18 @@ export default function WorkoutSessionPage() {
   const completeWorkout = async () => {
     const sessionDuration = Math.round((new Date().getTime() - sessionStartTime.getTime()) / 1000 / 60);
 
-    const completedExercisesList = completedExercises
+    const completedExercisesList: ExerciseLog[] = completedExercises
       .filter(ex => ex.sets.some(set => set.completed))
       .map(ex => ({
-        exercise: exercises.find((e: ScheduleExercise) => e.name === ex.exerciseId),
-        setsCompleted: ex.sets.filter(set => set.completed).length,
-        totalSets: ex.sets.length,
+        exercise_name: ex.exerciseId,
+        sets_completed: ex.sets
+          .filter(set => set.completed)
+          .map((set, idx) => ({
+            set_number: idx + 1,
+            reps: set.reps,
+            weight_kg: set.weight,
+          })),
+        notes: undefined,
       }));
 
     const sessionData: SessionCreateData = {
@@ -206,7 +214,7 @@ export default function WorkoutSessionPage() {
       session_date: new Date().toISOString(),
       completion_status: 'completed',
       actual_duration_minutes: sessionDuration,
-      exercises_completed: completedExercisesList.length,
+      exercises_completed: completedExercisesList,
       exercises_planned: exercises.length,
       notes: `Completed ${completedExercisesList.length} exercises`,
     };
@@ -252,7 +260,7 @@ export default function WorkoutSessionPage() {
         <PageTransition>
           <div className="max-w-2xl mx-auto mt-12">
             <Card className="p-8 text-center">
-              <div className="text-6xl mb-4">ðŸ˜´</div>
+              <div className="mb-4"><Moon className="w-16 h-16 text-indigo-400 mx-auto" /></div>
               <h2 className="text-2xl font-bold text-neutral-900 mb-3">No Workout Scheduled</h2>
               <p className="text-neutral-600 mb-6">
                 Today is a rest day! Take time to recover and come back stronger.
@@ -298,9 +306,9 @@ export default function WorkoutSessionPage() {
                   <motion.div
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                    className="text-8xl mb-6"
+                    className="mb-6"
                   >
-                    ðŸŽ‰
+                    <PartyPopper className="w-20 h-20 text-yellow-400 mx-auto" />
                   </motion.div>
                   <h2 className="text-4xl font-bold text-white mb-4">Workout Complete!</h2>
                   <div className="flex items-center justify-center gap-4 text-white text-xl mb-6">
@@ -324,7 +332,7 @@ export default function WorkoutSessionPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-3xl font-bold text-neutral-900">
-                  {todayWorkout.workout_name || `${todayWorkout.focus} Workout`}
+                  {todayWorkout.name || `${todayWorkout.focus} Workout`}
                 </h1>
                 <p className="text-neutral-600">
                   Exercise {currentExerciseIndex + 1} of {exercises.length}
@@ -394,7 +402,7 @@ export default function WorkoutSessionPage() {
                     <div className="text-5xl font-bold text-blue-600 mb-4">
                       {Math.floor(restTimeRemaining / 60)}:{(restTimeRemaining % 60).toString().padStart(2, '0')}
                     </div>
-                    <p className="text-neutral-600 mb-4">Take a breather, you're doing great! ðŸ’ª</p>
+                    <p className="text-neutral-600 mb-4">Take a breather, you're doing great!</p>
                     <button
                       onClick={skipRestTimer}
                       className="btn-secondary"
@@ -473,7 +481,6 @@ export default function WorkoutSessionPage() {
                             <p className="font-semibold text-neutral-900">Set {setIndex + 1}</p>
                             <p className="text-sm text-neutral-600">
                               {currentExercise.reps || 10} reps
-                              {currentExercise.weight && ` Ã— ${currentExercise.weight}lbs`}
                             </p>
                           </div>
                         </div>

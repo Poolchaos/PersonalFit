@@ -14,27 +14,10 @@
 
 import { Card } from '../../design-system';
 import { AlertCircle, Calendar, Clock, Target, Zap } from 'lucide-react';
-
-interface Exercise {
-  name: string;
-  sets?: number;
-  reps?: number;
-  duration_seconds?: number;
-  target_muscles?: string[];
-}
-
-interface YesterdayWorkout {
-  day: string;
-  workout: {
-    name: string;
-    duration_minutes: number;
-    focus: string;
-    exercises: Exercise[];
-  };
-}
+import type { ScheduleDay } from '../../types';
 
 interface YesterdayMissedCardProps {
-  workout: YesterdayWorkout | null;
+  workout: ScheduleDay | null;
   xpAvailable: number;
   onComplete: () => void;
   isCompleting: boolean;
@@ -42,7 +25,7 @@ interface YesterdayMissedCardProps {
 }
 
 export function YesterdayMissedCard({ workout, xpAvailable, onComplete, isCompleting, isCompleted = false }: YesterdayMissedCardProps) {
-  if (!workout) return null;
+  if (!workout?.workout) return null;
 
   // Different styles based on completion status
   const cardStyles = isCompleted
@@ -136,7 +119,7 @@ export function YesterdayMissedCard({ workout, xpAvailable, onComplete, isComple
             {isCompleting
               ? 'Completing...'
               : isCompleted
-                ? 'ðŸ§ª Test: Complete Again'
+                ? 'Test: Complete Again'
                 : 'Complete This Workout'}
           </span>
         </button>

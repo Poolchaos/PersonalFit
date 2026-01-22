@@ -13,7 +13,7 @@
  */
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TrendingUp } from 'lucide-react';
+import { Sparkles, TrendingUp, PartyPopper, Dumbbell } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface StepCompletionCelebrationProps {
@@ -126,9 +126,9 @@ export function StepCompletionCelebration({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-2xl font-bold text-neutral-900 mb-2"
+              className="text-2xl font-bold text-neutral-900 mb-2 flex items-center justify-center gap-2"
             >
-              Step Complete! ðŸŽ‰
+              Step Complete! <PartyPopper className="w-6 h-6 text-yellow-500" />
             </motion.h2>
 
             <motion.p
@@ -155,9 +155,9 @@ export function StepCompletionCelebration({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
-              className="text-sm text-neutral-500 mt-4"
+              className="text-sm text-neutral-500 mt-4 flex items-center justify-center gap-1"
             >
-              Keep going! You're doing great! ðŸ’ª
+              Keep going! You're doing great! <Dumbbell className="w-4 h-4" />
             </motion.p>
           </motion.div>
         </motion.div>

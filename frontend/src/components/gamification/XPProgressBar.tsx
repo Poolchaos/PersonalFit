@@ -32,8 +32,6 @@ export function XPProgressBar({
   showAnimation = true,
   size = 'medium'
 }: XPProgressBarProps) {
-  console.log('âš¡ XPProgressBar props:', { currentXP, level, xpForNextLevel, levelProgress, showAnimation, size });
-
   // Use backend-calculated values
   const progressPercentage = Math.min(levelProgress, 100);
 

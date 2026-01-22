@@ -120,7 +120,7 @@ export function StreakWidget() {
                       : 'bg-neutral-100 text-neutral-400'
                   }`}
                 >
-                  {isComplete ? 'âœ“' : 'â€¢'}
+                  {isComplete ? '✓' : '·'}
                 </motion.div>
               );
             })}

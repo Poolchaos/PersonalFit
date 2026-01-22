@@ -16,6 +16,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 import { authAPI } from '../api';
 import { useAuthStore } from '../store/authStore';
 import type { LoginCredentials } from '../types';
@@ -35,6 +36,10 @@ export default function LoginPage() {
     onSuccess: (data) => {
       setAuth(data.user, data.accessToken, data.refreshToken);
       navigate('/dashboard');
+    },
+    onError: (error: Error & { response?: { data?: { message?: string } } }) => {
+      const message = error.response?.data?.message || 'Invalid email or password';
+      toast.error(message);
     },
   });
 
@@ -69,7 +74,7 @@ export default function LoginPage() {
               id="password"
               type="password"
               required
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+              placeholder="••••••••"
               value={credentials.password}
               onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             />
@@ -104,7 +109,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center text-white text-sm">
           <p>Your self-hosted fitness companion</p>
-          <p className="mt-1">Zero cost â€¢ Full privacy â€¢ Complete control</p>
+          <p className="mt-1">Zero cost • Full privacy • Complete control</p>
         </div>
       </div>
     </div>

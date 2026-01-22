@@ -13,37 +13,20 @@
  */
 
 import { Card } from '../../design-system';
-import { Calendar, Clock, Target, Zap, TrendingUp, ChevronRight, Play } from 'lucide-react';
+import { Calendar, Clock, Target, Zap, TrendingUp, ChevronRight, Play, PartyPopper } from 'lucide-react';
 import { formatDuration } from '../../utils/formatDuration';
 import { getWorkoutTypeImage, getEmptyStateImage } from '../../utils/imageHelpers';
-
-interface Exercise {
-  name: string;
-  sets?: number;
-  reps?: number | null;
-  duration_seconds?: number | null;
-  target_muscles: string[];
-}
-
-interface TodayWorkout {
-  day: string;
-  workout: {
-    name: string;
-    duration_minutes: number;
-    focus: string;
-    exercises: Exercise[];
-  };
-}
+import type { ScheduleDay } from '../../types';
 
 interface TodayWorkoutCardProps {
-  workout: TodayWorkout | null;
+  workout: ScheduleDay | null;
   isCompleted: boolean;
   xpToEarn: number;
   onStart: () => void;
 }
 
 export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: TodayWorkoutCardProps) {
-  if (!workout) {
+  if (!workout?.workout) {
     return (
       <Card className="relative overflow-hidden bg-gradient-to-br from-neutral-50 to-neutral-100 border-2 border-dashed border-neutral-300">
         <div
@@ -170,8 +153,8 @@ export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: To
                     <p className="font-medium text-neutral-900">{exercise.name}</p>
                     <p className="text-xs text-neutral-500">
                       {exercise.sets && `${exercise.sets} sets`}
-                      {exercise.reps && ` Ã— ${exercise.reps} reps`}
-                      {exercise.duration_seconds && ` â€¢ ${formatDuration(exercise.duration_seconds)}`}
+                      {exercise.reps && ` x ${exercise.reps} reps`}
+                      {exercise.duration_seconds && ` · ${formatDuration(exercise.duration_seconds)}`}
                     </p>
                   </div>
                 </div>
@@ -212,8 +195,8 @@ export function TodayWorkoutCard({ workout, isCompleted, xpToEarn, onStart }: To
 
         {isCompleted && (
           <div className="bg-success-100 border-2 border-success-300 rounded-xl p-4 text-center">
-            <p className="text-success-800 font-semibold">
-              ðŸŽ‰ Great work! You earned {xpToEarn} XP today!
+            <p className="text-success-800 font-semibold flex items-center justify-center gap-2">
+              <PartyPopper className="w-5 h-5" /> Great work! You earned {xpToEarn} XP today!
             </p>
           </div>
         )}

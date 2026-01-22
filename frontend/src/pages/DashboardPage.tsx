@@ -54,9 +54,6 @@ export default function DashboardPage() {
     refetchOnMount: 'always', // Refetch when component mounts
   });
 
-  useEffect(() => {
-    console.log('ðŸ“Š Dashboard gamificationData state:', gamificationData);
-  }, [gamificationData]);
 
   const { data: sessionsData } = useQuery({
     queryKey: queryKeys.sessions.all,
@@ -99,9 +96,9 @@ export default function DashboardPage() {
     return { todayWorkout: null, tomorrowWorkout: null, yesterdayWorkout: null };
   }, [workoutsData]);
 
-  const todayXP = todayWorkout ? todayWorkout.workout.exercises.length * 10 : 0;
-  const tomorrowXP = tomorrowWorkout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
-  const yesterdayXP = yesterdayWorkout ? yesterdayWorkout.workout.exercises.length * 10 : 0;
+  const todayXP = todayWorkout?.workout ? todayWorkout.workout.exercises.length * 10 : 0;
+  const tomorrowXP = tomorrowWorkout?.workout ? tomorrowWorkout.workout.exercises.length * 10 : 0;
+  const yesterdayXP = yesterdayWorkout?.workout ? yesterdayWorkout.workout.exercises.length * 10 : 0;
 
   // Calculate planned workouts this week from the active plan
   const workoutsPlannedThisWeek = useMemo(() => {
@@ -149,22 +146,20 @@ export default function DashboardPage() {
   // Manual completion mutation
   const manualCompleteMutation = useMutation({
     mutationFn: async () => {
-      if (!yesterdayWorkout) return;
+      if (!yesterdayWorkout?.workout) return;
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
-      const sessionData = {
+      const sessionData: Partial<WorkoutSession> = {
         session_date: yesterday.toISOString(),
         completion_status: 'completed',
         actual_duration_minutes: yesterdayWorkout.workout.duration_minutes,
-        exercises_completed: yesterdayWorkout.workout.exercises?.length || 0,
-        exercises_planned: yesterdayWorkout.workout.exercises?.length || 0,
+        exercises_completed: [], // Empty array - will be populated by backend
         notes: `Manually completed: ${yesterdayWorkout.workout.name}`,
       };
       return sessionAPI.create(sessionData);
     },
     onSuccess: () => {
       toast.success(`Yesterday's workout completed! You earned ${yesterdayXP} XP!`, {
-        icon: 'ðŸŽ‰',
         duration: 4000,
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.sessions.all });
@@ -198,7 +193,6 @@ export default function DashboardPage() {
   //   },
   //   onSuccess: () => {
   //     toast.success(`Workout completed! Check your XP!`, {
-  //       icon: 'ðŸŽ‰',
   //       duration: 4000,
   //     });
   //     queryClient.invalidateQueries({ queryKey: ['sessions'] });
@@ -281,7 +275,7 @@ export default function DashboardPage() {
               disabled={testCompleteMutation.isPending}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
             >
-              {testCompleteMutation.isPending ? 'Completing...' : 'ðŸ§ª Test Complete Today\'s Workout'}
+              {testCompleteMutation.isPending ? 'Completing...' : 'Test Complete Today\'s Workout'}
             </button>
           </div>
         )} */}

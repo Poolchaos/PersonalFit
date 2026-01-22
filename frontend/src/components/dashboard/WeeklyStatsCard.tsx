@@ -13,7 +13,7 @@
  */
 
 import { Card } from '../../design-system';
-import { TrendingUp, Flame, Target, Award, Calendar } from 'lucide-react';
+import { TrendingUp, Flame, Target, Award, Calendar, Zap, PartyPopper, Dumbbell } from 'lucide-react';
 
 interface WeeklyStatsCardProps {
   workoutsCompleted: number;
@@ -34,10 +34,10 @@ export function WeeklyStatsCard({
 
   // Determine streak color and message
   const getStreakStyle = () => {
-    if (currentStreak >= 30) return { color: 'text-purple-600', bg: 'bg-purple-100', emoji: 'ðŸ”¥', label: 'LEGENDARY' };
-    if (currentStreak >= 7) return { color: 'text-orange-600', bg: 'bg-orange-100', emoji: 'ðŸ”¥', label: 'ON FIRE' };
-    if (currentStreak >= 3) return { color: 'text-yellow-600', bg: 'bg-yellow-100', emoji: 'âš¡', label: 'HEATING UP' };
-    return { color: 'text-blue-600', bg: 'bg-blue-100', emoji: 'ðŸ’ª', label: 'BUILDING' };
+    if (currentStreak >= 30) return { color: 'text-purple-600', bg: 'bg-purple-100', icon: Flame, label: 'LEGENDARY' };
+    if (currentStreak >= 7) return { color: 'text-orange-600', bg: 'bg-orange-100', icon: Flame, label: 'ON FIRE' };
+    if (currentStreak >= 3) return { color: 'text-yellow-600', bg: 'bg-yellow-100', icon: Zap, label: 'HEATING UP' };
+    return { color: 'text-blue-600', bg: 'bg-blue-100', icon: TrendingUp, label: 'BUILDING' };
   };
 
   const streakStyle = getStreakStyle();
@@ -101,7 +101,7 @@ export function WeeklyStatsCard({
               </p>
               <p className="text-2xl font-bold text-orange-900 flex items-center gap-1">
                 {currentStreak}
-                <span className="text-lg">{streakStyle.emoji}</span>
+                <streakStyle.icon className="w-5 h-5" />
               </p>
             </div>
           </div>
@@ -123,23 +123,23 @@ export function WeeklyStatsCard({
           <div className="mt-4 p-3 bg-gradient-to-r from-success-100 to-green-100 rounded-lg border border-success-300">
             <p className="text-sm text-success-800 font-semibold text-center flex items-center justify-center gap-2">
               <TrendingUp className="w-4 h-4" />
-              Perfect week! Keep the momentum going! ðŸŽ‰
+              Perfect week! Keep the momentum going! <PartyPopper className="w-4 h-4" />
             </p>
           </div>
         )}
 
         {completionRate >= 75 && completionRate < 100 && (
           <div className="mt-4 p-3 bg-gradient-to-r from-primary-100 to-blue-100 rounded-lg border border-primary-300">
-            <p className="text-sm text-primary-800 font-semibold text-center">
-              Great progress! You're crushing it! ðŸ’ª
+            <p className="text-sm text-primary-800 font-semibold text-center flex items-center justify-center gap-2">
+              Great progress! You're crushing it! <Dumbbell className="w-4 h-4" />
             </p>
           </div>
         )}
 
         {completionRate < 75 && completionRate > 0 && (
           <div className="mt-4 p-3 bg-gradient-to-r from-yellow-100 to-orange-100 rounded-lg border border-yellow-300">
-            <p className="text-sm text-yellow-800 font-semibold text-center">
-              Keep pushing! Every workout counts! ðŸ”¥
+            <p className="text-sm text-yellow-800 font-semibold text-center flex items-center justify-center gap-2">
+              Keep pushing! Every workout counts! <Flame className="w-4 h-4" />
             </p>
           </div>
         )}

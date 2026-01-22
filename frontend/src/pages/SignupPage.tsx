@@ -106,7 +106,7 @@ export default function SignupPage() {
               id="password"
               type="password"
               required
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+              placeholder="••••••••"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               error={validationErrors.length > 0 && formData.password.length > 0 ? validationErrors.join(', ') : undefined}
@@ -118,7 +118,7 @@ export default function SignupPage() {
               id="confirmPassword"
               type="password"
               required
-              placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+              placeholder="••••••••"
               value={formData.confirmPassword || ''}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               success={passwordsMatch ? 'Passwords match' : undefined}

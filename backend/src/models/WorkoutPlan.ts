@@ -16,7 +16,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IWorkoutPlan extends Document {
   user_id: mongoose.Types.ObjectId;
-  workout_modality: 'strength' | 'hiit' | 'flexibility' | 'cardio';
+  workout_modality: 'strength' | 'hiit' | 'flexibility' | 'cardio' | 'hybrid';
   plan_data: {
     plan_overview: {
       duration_weeks: number;
@@ -52,7 +52,7 @@ export interface IWorkoutPlan extends Document {
     user_goals?: string[];
     experience_level?: string;
     equipment_used?: string[];
-    workout_modality?: 'strength' | 'hiit' | 'flexibility' | 'cardio';
+    workout_modality?: 'strength' | 'hiit' | 'flexibility' | 'cardio' | 'hybrid';
   };
   is_active: boolean;
   created_at: Date;
@@ -69,7 +69,7 @@ const workoutPlanSchema = new Schema<IWorkoutPlan>(
     },
     workout_modality: {
       type: String,
-      enum: ['strength', 'hiit', 'flexibility', 'cardio'],
+      enum: ['strength', 'hiit', 'flexibility', 'cardio', 'hybrid'],
       default: 'strength',
       required: true,
     },
@@ -83,7 +83,7 @@ const workoutPlanSchema = new Schema<IWorkoutPlan>(
       equipment_used: [String],
       workout_modality: {
         type: String,
-        enum: ['strength', 'hiit', 'flexibility', 'cardio'],
+        enum: ['strength', 'hiit', 'flexibility', 'cardio', 'hybrid'],
       },
     },
     is_active: {

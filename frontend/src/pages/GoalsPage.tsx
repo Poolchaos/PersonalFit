@@ -14,7 +14,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Target, TrendingUp, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { Target, TrendingUp, Plus, Trash2, CheckCircle2, PartyPopper } from 'lucide-react';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/components/Card';
@@ -262,7 +262,8 @@ export default function GoalsPage() {
                     {progress >= 100 && (
                       <div className="mt-4 flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-md">
                         <CheckCircle2 className="h-5 w-5" />
-                        <span className="font-medium">Goal achieved! ðŸŽ‰</span>
+                        <span className="font-medium">Goal achieved!</span>
+                        <PartyPopper className="h-5 w-5" />
                       </div>
                     )}
                   </CardContent>

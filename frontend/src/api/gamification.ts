@@ -41,8 +41,6 @@ export const gamificationAPI = {
   // Get user's gamification stats
   getStats: async (): Promise<GamificationStats> => {
     const response = await apiClient.get('/api/gamification/stats');
-    console.log('ðŸŽ® Gamification API raw response:', response.data);
-    console.log('ðŸŽ® Gamification stats extracted:', response.data.stats);
     return response.data.stats; // Extract stats from nested response
   },
 

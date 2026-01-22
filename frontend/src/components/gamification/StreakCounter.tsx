@@ -46,8 +46,8 @@ export function StreakCounter({
   };
 
   const getStreakMessage = () => {
-    if (isLegendary) return 'ðŸ† LEGENDARY STREAK!';
-    if (isOnFire) return 'ðŸ”¥ ON FIRE!';
+    if (isLegendary) return 'LEGENDARY STREAK!';
+    if (isOnFire) return 'ON FIRE!';
     if (currentStreak >= 3) return 'Great momentum!';
     if (currentStreak === 0) return 'Start your streak today!';
     return 'Keep it going!';
@@ -97,7 +97,7 @@ export function StreakCounter({
 
       {currentStreak > 0 && currentStreak < 7 && (
         <p className="text-xs text-neutral-500">
-          {7 - currentStreak} more day{7 - currentStreak !== 1 ? 's' : ''} to reach ðŸ”¥ ON FIRE status!
+          {7 - currentStreak} more day{7 - currentStreak !== 1 ? 's' : ''} to reach ON FIRE status!
         </p>
       )}
     </div>

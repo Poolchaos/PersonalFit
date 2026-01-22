@@ -14,12 +14,15 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { workoutAPI } from '../api';
-import { Card, CardHeader, CardTitle, CardContent, Button } from '../design-system';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { workoutAPI, profileAPI, equipmentAPI, queryKeys } from '../api';
+import { Card, CardHeader, CardTitle, CardContent, Button, Modal } from '../design-system';
 import { getEmptyStateImage } from '../utils/imageHelpers';
 import { formatDuration } from '../utils/formatDuration';
 import { WeeklyScheduleGrid } from '../components/workout/WeeklyScheduleGrid';
+import { GeneratingWorkoutLoader } from '../components/onboarding/GeneratingWorkoutLoader';
+import toast from 'react-hot-toast';
+import type { Equipment } from '../types';
 import {
   Sparkles,
   Dumbbell,
@@ -31,6 +34,8 @@ import {
   Edit,
   Zap,
   Calendar,
+  Lightbulb,
+  Frown,
 } from 'lucide-react';
 
 // Type for the actual backend response structure
@@ -74,15 +79,56 @@ interface GeneratedPlan {
   created_at: string;
 }
 
+interface CustomizeSettings {
+  workout_modality: 'strength' | 'cardio' | 'hybrid';
+  workout_frequency: number;
+  preferred_workout_duration: number;
+}
+
 export default function WorkoutPlanReviewPage() {
   const navigate = useNavigate();
   const [isAccepted, setIsAccepted] = useState(false);
   const [activeTab, setActiveTab] = useState<'exercises' | 'schedule'>('schedule');
+  const [showCustomizeModal, setShowCustomizeModal] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const queryClient = useQueryClient();
+
+  // Fetch profile and equipment for regeneration
+  const { data: profileData } = useQuery({
+    queryKey: queryKeys.profile.all,
+    queryFn: profileAPI.getProfile,
+  });
+
+  const { data: equipmentData } = useQuery({
+    queryKey: queryKeys.equipment.all,
+    queryFn: equipmentAPI.getAll,
+  });
+
+  // Initialize customization settings from current plan or profile
+  const [customizeSettings, setCustomizeSettings] = useState<CustomizeSettings>({
+    workout_modality: 'strength',
+    workout_frequency: 3,
+    preferred_workout_duration: 45,
+  });
+
+  // Regenerate workout mutation
+  const regenerateMutation = useMutation({
+    mutationFn: workoutAPI.generate,
+    onSuccess: (newData) => {
+      queryClient.setQueryData(['workouts'], newData);
+      setIsRegenerating(false);
+      setShowCustomizeModal(false);
+      toast.success('New workout plan generated!');
+    },
+    onError: (error: unknown) => {
+      setIsRegenerating(false);
+      const err = error as { response?: { data?: { error?: string } } };
+      toast.error(err.response?.data?.error || 'Failed to generate new plan. Please try again.');
+    },
+  });
 
   // First, try to get the cached plan data from the onboarding wizard
   const cachedData = queryClient.getQueryData(['workouts']);
-  console.log('WorkoutPlanReviewPage - Cached data:', cachedData);
 
   // If no cached data, fetch from API
   const { data: fetchedData, isLoading } = useQuery({
@@ -93,11 +139,6 @@ export default function WorkoutPlanReviewPage() {
 
   const data = cachedData || fetchedData;
 
-  // Debug: Log what we received
-  console.log('WorkoutPlanReviewPage - Final data:', data);
-  console.log('WorkoutPlanReviewPage - Data type:', typeof data);
-  console.log('WorkoutPlanReviewPage - Data keys:', data ? Object.keys(data) : 'no data');
-
   // Get the most recent workout plan (the one just generated)
   // Backend generate endpoint returns { plan: {...} }
   // Backend getAll endpoint returns { workouts: [...] }
@@ -105,7 +146,24 @@ export default function WorkoutPlanReviewPage() {
     (data as unknown as { plan?: GeneratedPlan })?.plan ||
     (data as unknown as { workouts?: GeneratedPlan[] })?.workouts?.[0];
 
-  console.log('WorkoutPlanReviewPage - Extracted plan:', plan);
+  // Update customizeSettings when plan loads
+  useState(() => {
+    if (plan?.generation_context) {
+      setCustomizeSettings({
+        workout_modality: (plan.generation_context.workout_modality as 'strength' | 'cardio' | 'hybrid') || 'strength',
+        workout_frequency: plan.plan_data.plan_overview.sessions_per_week || 3,
+        preferred_workout_duration: Math.round(
+          plan.plan_data.weekly_schedule.reduce((sum, day) => sum + day.workout.duration_minutes, 0) /
+          plan.plan_data.weekly_schedule.filter(d => d.workout).length
+        ) || 45,
+      });
+    }
+  });
+
+  // Show generating loader while regenerating
+  if (isRegenerating) {
+    return <GeneratingWorkoutLoader />;
+  }
 
   if (isLoading) {
     return (
@@ -130,7 +188,7 @@ export default function WorkoutPlanReviewPage() {
             />
           </div>
           <div className="relative z-10">
-            <div className="text-6xl mb-4">ðŸ˜•</div>
+            <div className="mb-4"><Frown className="w-16 h-16 text-neutral-400 mx-auto" /></div>
             <h2 className="text-2xl font-bold mb-2">No Workout Plan Found</h2>
             <p className="text-neutral-600 mb-6">
               We couldn't find your generated workout plan. Please try generating a new one.
@@ -154,14 +212,50 @@ export default function WorkoutPlanReviewPage() {
   };
 
   const handleCustomize = () => {
-    // Redirect to onboarding to adjust preferences and regenerate
-    navigate('/onboarding');
+    // Update customizeSettings from current plan before opening modal
+    if (plan?.generation_context) {
+      setCustomizeSettings({
+        workout_modality: (plan.generation_context.workout_modality as 'strength' | 'cardio' | 'hybrid') || 'strength',
+        workout_frequency: plan.plan_data.plan_overview.sessions_per_week || 3,
+        preferred_workout_duration: Math.round(
+          plan.plan_data.weekly_schedule.reduce((sum, day) => sum + day.workout.duration_minutes, 0) /
+          plan.plan_data.weekly_schedule.filter(d => d.workout).length
+        ) || 45,
+      });
+    }
+    setShowCustomizeModal(true);
   };
 
   const handleRegenerate = () => {
-    // Clear cached data and redirect to onboarding
-    queryClient.removeQueries({ queryKey: ['workouts'] });
-    navigate('/onboarding');
+    // Regenerate using existing profile settings
+    setIsRegenerating(true);
+    const equipment = equipmentData?.equipment?.map((eq: Equipment) => eq.equipment_name) || [];
+    regenerateMutation.mutate({
+      workout_modality: plan?.generation_context?.workout_modality || 'strength',
+      fitness_goals: profileData?.user?.profile?.fitness_goals,
+      experience_level: profileData?.user?.profile?.experience_level,
+      workout_frequency: plan?.plan_data?.plan_overview?.sessions_per_week,
+      preferred_workout_duration: Math.round(
+        (plan?.plan_data?.weekly_schedule?.reduce((sum, day) => sum + day.workout.duration_minutes, 0) || 45) /
+        (plan?.plan_data?.weekly_schedule?.length || 1)
+      ),
+      equipment,
+    });
+  };
+
+  const handleCustomizeSubmit = () => {
+    // Regenerate with customized settings
+    setIsRegenerating(true);
+    setShowCustomizeModal(false);
+    const equipment = equipmentData?.equipment?.map((eq: Equipment) => eq.equipment_name) || [];
+    regenerateMutation.mutate({
+      workout_modality: customizeSettings.workout_modality,
+      fitness_goals: profileData?.user?.profile?.fitness_goals,
+      experience_level: profileData?.user?.profile?.experience_level,
+      workout_frequency: customizeSettings.workout_frequency,
+      preferred_workout_duration: customizeSettings.preferred_workout_duration,
+      equipment,
+    });
   };
 
   // Calculate stats from the weekly schedule
@@ -178,6 +272,100 @@ export default function WorkoutPlanReviewPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 py-8">
       <div className="max-w-6xl mx-auto px-4">
+        {/* Customize Modal */}
+        <Modal
+          isOpen={showCustomizeModal}
+          onClose={() => setShowCustomizeModal(false)}
+          title="Customize Your Plan"
+        >
+          <div className="space-y-6">
+            {/* Workout Type */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-3">
+                Training Focus
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: 'strength', label: 'Strength', icon: Dumbbell },
+                  { value: 'cardio', label: 'Cardio', icon: Zap },
+                  { value: 'hybrid', label: 'Hybrid', icon: Target },
+                ].map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    onClick={() => setCustomizeSettings({ ...customizeSettings, workout_modality: value as 'strength' | 'cardio' | 'hybrid' })}
+                    className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                      customizeSettings.workout_modality === value
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-neutral-200 hover:border-primary-300'
+                    }`}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="font-medium text-sm">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Sessions Per Week */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-3">
+                Sessions Per Week: <span className="text-primary-600 font-bold">{customizeSettings.workout_frequency}</span>
+              </label>
+              <input
+                type="range"
+                min="1"
+                max="7"
+                value={customizeSettings.workout_frequency}
+                onChange={(e) => setCustomizeSettings({ ...customizeSettings, workout_frequency: parseInt(e.target.value) })}
+                className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+              />
+              <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                <span>1 day</span>
+                <span>7 days</span>
+              </div>
+            </div>
+
+            {/* Duration Per Session */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-3">
+                Session Duration: <span className="text-primary-600 font-bold">{customizeSettings.preferred_workout_duration} min</span>
+              </label>
+              <input
+                type="range"
+                min="15"
+                max="90"
+                step="5"
+                value={customizeSettings.preferred_workout_duration}
+                onChange={(e) => setCustomizeSettings({ ...customizeSettings, preferred_workout_duration: parseInt(e.target.value) })}
+                className="w-full h-2 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+              />
+              <div className="flex justify-between text-xs text-neutral-500 mt-1">
+                <span>15 min</span>
+                <span>90 min</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowCustomizeModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={handleCustomizeSubmit}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Generate New Plan
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
         {/* Success celebration overlay */}
         {isAccepted && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
@@ -341,8 +529,9 @@ export default function WorkoutPlanReviewPage() {
                                   </div>
                                 )}
                               </div>
-                              <p className="text-xs text-neutral-600 italic">
-                                ðŸ’¡ {exercise.instructions}
+                              <p className="text-xs text-neutral-600 italic flex items-start gap-1">
+                                <Lightbulb className="w-3 h-3 text-yellow-500 flex-shrink-0 mt-0.5" />
+                                <span>{exercise.instructions}</span>
                               </p>
                             </div>
                           ))}

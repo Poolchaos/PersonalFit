@@ -129,9 +129,9 @@ export function WeeklyScheduleGrid({ schedule, totalXP }: WeeklyScheduleGridProp
                           <span className="px-2 py-0.5 bg-primary-200 text-primary-800 rounded-full font-medium whitespace-nowrap flex-shrink-0">
                             {dayData.workout.focus}
                           </span>
-                          <span className="text-neutral-400 flex-shrink-0">â€¢</span>
+                          <span className="text-neutral-400 flex-shrink-0">·</span>
                           <span className="whitespace-nowrap flex-shrink-0">{dayData.workout.duration_minutes} min</span>
-                          <span className="text-neutral-400 flex-shrink-0">â€¢</span>
+                          <span className="text-neutral-400 flex-shrink-0">·</span>
                           <span className="whitespace-nowrap flex-shrink-0">{dayData.workout.exercises.length} exercises</span>
                         </div>
                       </div>
