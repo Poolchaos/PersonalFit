@@ -33,6 +33,7 @@ export interface UserProfile {
   injuries?: string[];
   injuries_and_restrictions?: string;
   current_activities?: string;
+  onboarding_medications_notes?: string;
 }
 
 export interface UserPreferences {

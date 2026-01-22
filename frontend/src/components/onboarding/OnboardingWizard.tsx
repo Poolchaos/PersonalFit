@@ -184,6 +184,13 @@ export function OnboardingWizard() {
         await updateProfileMutation.mutateAsync(data.profile);
       }
 
+      // Save onboarding medications notes if provided
+      if (data.medications?.has_medications && data.medications?.list) {
+        await updateProfileMutation.mutateAsync({
+          onboarding_medications_notes: data.medications.list,
+        });
+      }
+
       // Update preferences
       if (Object.keys(data.preferences).length > 0) {
         await updatePreferencesMutation.mutateAsync(data.preferences);
@@ -272,7 +279,7 @@ export function OnboardingWizard() {
         return {
           icon: <Pill className="w-16 h-16 text-primary-500" />,
           title: 'Medications & Supplements',
-          imageUrl: '/images/onboarding/step-5-medications.jpg',
+          imageUrl: '/images/onboarding/step-6-medications.jpg', // Medications image
           imageAlt: 'Person taking medications with fitness tracking',
         };
       case 6:
@@ -327,19 +334,21 @@ export function OnboardingWizard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left side - Image/Illustration */}
             <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg overflow-hidden min-h-[400px]">
-              <img
-                src={stepContent.imageUrl}
-                alt={stepContent.imageAlt}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  // Fallback to icon if image fails to load
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling;
-                  if (fallback) (fallback as HTMLElement).style.display = 'flex';
-                }}
-              />
-              {/* Fallback icon display */}
-              <div className="hidden flex-col items-center justify-center p-8 w-full h-full">
+              {stepContent.imageUrl ? (
+                <img
+                  src={stepContent.imageUrl}
+                  alt={stepContent.imageAlt}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // Fallback to icon if image fails to load
+                    e.currentTarget.style.display = 'none';
+                    const fallback = e.currentTarget.nextElementSibling;
+                    if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              {/* Fallback icon display - shown when no image URL or image fails to load */}
+              <div className={`flex flex-col items-center justify-center p-8 w-full h-full ${stepContent.imageUrl ? 'hidden' : ''}`}>
                 <div className="mb-4">
                   {stepContent.icon}
                 </div>

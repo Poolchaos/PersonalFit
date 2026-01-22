@@ -313,3 +313,146 @@ export const refillMedication = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * Extract medication info from bottle image using Claude Vision
+ * POST /api/medications/extract-from-image
+ */
+export const extractFromBottleImage = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+
+    const { extractMedicationFromImage } = await import('../services/visionService');
+
+    // Convert buffer to base64
+    const imageBase64 = req.file.buffer.toString('base64');
+    const mimeType = (req.file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif') || 'image/jpeg';
+
+    // Extract medication info from image
+    const extractedData = await extractMedicationFromImage(imageBase64, mimeType);
+
+    res.json({
+      success: true,
+      data: extractedData,
+      message: 'Medication information extracted. Please review and correct as needed.',
+    });
+  } catch (error) {
+    console.error('Extract from bottle image error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to extract medication information';
+    res.status(400).json({ error: errorMessage });
+  }
+};
+
+/**
+ * Save a medication with bottle image
+ * POST /api/medications/with-image
+ */
+export const createMedicationWithImage = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    const { uploadPhoto } = await import('../services/storageService');
+
+    // Upload bottle image if provided
+    let bottleImageUrl: string | undefined;
+    if (req.file) {
+      const uploadResult = await uploadPhoto(
+        req.user!.userId,
+        req.file,
+        'medication-bottle'
+      );
+      bottleImageUrl = uploadResult.url;
+    }
+
+    // Create medication with image URL
+    const medicationData = {
+      ...req.body,
+      bottle_image_url: bottleImageUrl,
+      ocr_extracted_at: req.body.ocr_extracted_at ? new Date(req.body.ocr_extracted_at) : undefined,
+    };
+
+    const medication = await medicationService.createMedication(
+      req.user!.userId,
+      medicationData
+    );
+
+    res.status(201).json({ medication });
+  } catch (error) {
+    console.error('Create medication with image error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Update medication with new bottle image
+ * PUT /api/medications/:id/bottle-image
+ */
+export const updateBottleImage = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: 'No image file provided' });
+      return;
+    }
+
+    const { uploadPhoto, deletePhoto } = await import('../services/storageService');
+    const Medication = require('../models/Medication').default;
+
+    // Get existing medication
+    const medication = await Medication.findOne({
+      _id: req.params.id,
+      user_id: req.user!.userId,
+    });
+
+    if (!medication) {
+      res.status(404).json({ error: 'Medication not found' });
+      return;
+    }
+
+    // Delete old image if exists
+    if (medication.bottle_image_url) {
+      try {
+        const oldFilename = medication.bottle_image_url.split('/').pop();
+        if (oldFilename) {
+          await deletePhoto(oldFilename);
+        }
+      } catch (error) {
+        console.error('Failed to delete old bottle image:', error);
+      }
+    }
+
+    // Upload new image
+    const uploadResult = await uploadPhoto(
+      req.user!.userId,
+      req.file,
+      'medication-bottle'
+    );
+
+    // Update medication
+    medication.bottle_image_url = uploadResult.url;
+    if (req.body.ocr_extracted_at) {
+      medication.ocr_extracted_at = new Date(req.body.ocr_extracted_at);
+    }
+    await medication.save();
+
+    res.json({ medication });
+  } catch (error) {
+    console.error('Update bottle image error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};

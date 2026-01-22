@@ -14,6 +14,7 @@
 
 import { Router } from 'express';
 import { body, query } from 'express-validator';
+import multer from 'multer';
 import {
   getMedications,
   getMedication,
@@ -26,8 +27,25 @@ import {
   getAdherenceStats,
   getMedicationsNeedingRefill,
   refillMedication,
+  extractFromBottleImage,
+  createMedicationWithImage,
+  updateBottleImage,
 } from '../controllers/medicationController';
 import { authenticate } from '../middleware/auth';
+
+// Configure multer for image uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
+});
 
 const router = Router();
 
@@ -214,6 +232,46 @@ router.post(
       .withMessage('Refill count must be at least 1'),
   ],
   refillMedication
+);
+
+// Vision/OCR Routes (Phase 2)
+// Extract medication info from bottle image
+router.post(
+  '/extract-from-image',
+  upload.single('image'),
+  extractFromBottleImage
+);
+
+// Create medication with bottle image
+router.post(
+  '/with-image',
+  upload.single('bottle_image'),
+  [
+    body('name').notEmpty().trim().withMessage('Medication name is required'),
+    body('type')
+      .isIn(['prescription', 'supplement', 'otc'])
+      .withMessage('Type must be prescription, supplement, or otc'),
+    body('dosage.amount')
+      .isFloat({ min: 0.001 })
+      .withMessage('Dosage amount must be a positive number'),
+    body('dosage.unit')
+      .isIn(['mg', 'ml', 'iu', 'mcg', 'g', 'tablets', 'capsules'])
+      .withMessage('Invalid dosage unit'),
+    body('dosage.form')
+      .isIn(['tablet', 'capsule', 'liquid', 'injection', 'topical', 'powder', 'other'])
+      .withMessage('Invalid dosage form'),
+    body('frequency.times_per_day')
+      .isInt({ min: 1, max: 24 })
+      .withMessage('Times per day must be between 1 and 24'),
+  ],
+  createMedicationWithImage
+);
+
+// Update medication with new bottle image
+router.put(
+  '/:id/bottle-image',
+  upload.single('bottle_image'),
+  updateBottleImage
 );
 
 export default router;

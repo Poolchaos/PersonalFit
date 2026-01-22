@@ -14,6 +14,7 @@
 
 import { useForm } from 'react-hook-form';
 import { Button } from '../../design-system';
+import BottleImageUpload, { type OCRResult } from './BottleImageUpload';
 import type { Medication, CreateMedicationInput } from '../../types';
 
 interface MedicationFormProps {
@@ -89,6 +90,25 @@ export default function MedicationForm({
   const selectedDays = watch('frequency.days_of_week') || [];
   const selectedMetrics = watch('affects_metrics') || [];
 
+  const handleOCRExtracted = (result: OCRResult) => {
+    // Auto-fill form with extracted data
+    setValue('name', result.medication_name);
+    setValue('dosage.amount', result.dosage.amount);
+    setValue('dosage.unit', result.dosage.unit);
+    setValue('dosage.form', result.dosage.form);
+    setValue('frequency.times_per_day', result.frequency.times_per_day);
+    if (result.frequency.notes) {
+      setValue('frequency.notes', result.frequency.notes);
+    }
+    setValue('warnings', result.warnings);
+    setValue('health_tags', result.health_tags);
+  };
+
+  const handleOCRError = (error: string) => {
+    console.error('OCR Error:', error);
+    // Show error but allow manual entry
+  };
+
   const toggleDay = (day: number) => {
     const current = selectedDays;
     const newDays = current.includes(day)
@@ -111,6 +131,13 @@ export default function MedicationForm({
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      {/* Bottle Image Upload with OCR */}
+      <BottleImageUpload
+        onExtracted={handleOCRExtracted}
+        onError={handleOCRError}
+        isLoading={isLoading}
+      />
+
       {/* Basic Info */}
       <div className="space-y-4">
         <h3 className="font-semibold text-gray-900 border-b pb-2">Basic Information</h3>

@@ -14,9 +14,10 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
-import { medicationAPI, medicationQueryKeys } from '../api';
+import { medicationAPI, medicationQueryKeys, profileAPI, queryKeys, workoutAPI } from '../api';
 import type { Medication, TodaysMedication, CreateMedicationInput } from '../types';
 import { Card, CardContent, Button } from '../design-system';
 import {
@@ -36,9 +37,20 @@ import MedicationDoseCard from '../components/medications/MedicationDoseCard';
 
 export default function MedicationsPage() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills'>('today');
+  const [dismissedOnboardingNote, setDismissedOnboardingNote] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+
+  // Fetch user profile to check for onboarding medications notes
+  const { data: profileData } = useQuery({
+    queryKey: queryKeys.profile.all,
+    queryFn: profileAPI.getProfile,
+  });
+
+  const onboardingMedicationsNotes = profileData?.user?.profile?.onboarding_medications_notes;
 
   // Fetch today's doses
   const { data: todaysData, isLoading: loadingToday } = useQuery({
@@ -135,6 +147,21 @@ export default function MedicationsPage() {
     },
   });
 
+  // Regenerate workout plan mutation
+  const regeneratePlanMutation = useMutation({
+    mutationFn: () => workoutAPI.generate(),
+    onSuccess: () => {
+      toast.success('Your workout plan has been regenerated with your updated medications!');
+      setShowRegenerateConfirm(false);
+      queryClient.invalidateQueries({ queryKey: queryKeys.workouts.all });
+      // Navigate to workout plan review page
+      setTimeout(() => navigate('/workout-plan-review'), 1000);
+    },
+    onError: () => {
+      toast.error('Failed to regenerate plan. Please try again.');
+    },
+  });
+
   const handleCreateMedication = (data: CreateMedicationInput) => {
     createMutation.mutate(data);
   };
@@ -173,6 +200,53 @@ export default function MedicationsPage() {
     <Layout>
       <PageTransition>
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Onboarding Medications Note Banner */}
+          {onboardingMedicationsNotes && !dismissedOnboardingNote && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-blue-900 mb-1">
+                      Medications from Your Setup
+                    </h3>
+                    <p className="text-sm text-blue-800 mb-2">
+                      We found these medications from your onboarding:
+                    </p>
+                    <div className="bg-white rounded p-2 text-sm text-gray-700 mb-3 border border-blue-100 whitespace-pre-wrap">
+                      {onboardingMedicationsNotes}
+                    </div>
+                    <p className="text-xs text-blue-700 mb-3">
+                      You can add detailed information for each medication below, or edit them anytime.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setShowForm(true);
+                          setDismissedOnboardingNote(true);
+                        }}
+                      >
+                        Add Details to Medications
+                      </Button>
+                      <button
+                        onClick={() => setDismissedOnboardingNote(true)}
+                        className="text-xs text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Dismiss
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setDismissedOnboardingNote(true)}
+                    className="text-blue-400 hover:text-blue-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -184,11 +258,64 @@ export default function MedicationsPage() {
                 Track your medications, supplements, and adherence
               </p>
             </div>
-            <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add Medication
-            </Button>
+            <div className="flex gap-2">
+              {allMedications.length > 0 && (
+                <Button
+                  onClick={() => setShowRegenerateConfirm(true)}
+                  variant="outline"
+                  loading={regeneratePlanMutation.isPending}
+                  className="flex items-center gap-2"
+                  title="Regenerate your workout plan based on updated medications"
+                >
+                  Regenerate Plan
+                </Button>
+              )}
+              <Button onClick={() => setShowForm(true)} className="flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                Add Medication
+              </Button>
+            </div>
           </div>
+
+          {/* Regenerate Plan Confirmation Modal */}
+          {showRegenerateConfirm && (
+            <Card className="bg-amber-50 border-amber-200">
+              <CardContent className="p-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-amber-900 mb-2">
+                      Regenerate Your Workout Plan?
+                    </h3>
+                    <p className="text-sm text-amber-800 mb-4">
+                      Based on your updated medications, we can regenerate your workout plan to ensure it's optimized for your current health profile. This will replace your current plan.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => regeneratePlanMutation.mutate()}
+                        loading={regeneratePlanMutation.isPending}
+                      >
+                        Yes, Regenerate Plan
+                      </Button>
+                      <button
+                        onClick={() => setShowRegenerateConfirm(false)}
+                        className="px-3 py-1.5 text-sm text-amber-700 hover:bg-amber-100 rounded transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowRegenerateConfirm(false)}
+                    className="text-amber-400 hover:text-amber-600"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Quick Stats */}
           <div className="grid grid-cols-3 gap-4">

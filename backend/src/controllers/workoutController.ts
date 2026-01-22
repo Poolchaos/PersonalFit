@@ -118,6 +118,19 @@ export const createWorkoutPlan = async (
       }
     }
 
+    // Fetch active medications for this user
+    const { Medication } = await import('../models/Medication');
+    const activeMedications = await Medication.find({
+      user_id: req.user?.userId,
+      is_active: true,
+    });
+
+    const medicationsText = activeMedications.length > 0
+      ? activeMedications
+          .map((med: any) => `${med.name} ${med.dosage.amount}${med.dosage.unit}, ${med.frequency.times_per_day}x daily`)
+          .join('; ')
+      : user.profile?.onboarding_medications_notes || '';
+
     // Generate workout plan using configured AI provider with request body params or user profile fallback
     const workoutPlan = await aiProvider.generateWorkoutPlan({
       userProfile: {
@@ -128,6 +141,7 @@ export const createWorkoutPlan = async (
         injuries: user.profile?.injuries,
         injuries_and_restrictions: user.profile?.injuries_and_restrictions,
         current_activities: user.profile?.current_activities,
+        medications: medicationsText,
       },
       equipment: equipmentList,
       workoutModality: workout_modality,

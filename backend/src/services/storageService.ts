@@ -94,7 +94,7 @@ export const validateFile = (
 export const generateFilename = (
   userId: string,
   originalFilename: string,
-  photoType: 'front' | 'side' | 'back'
+  photoType: 'front' | 'side' | 'back' | 'medication-bottle'
 ): string => {
   const timestamp = Date.now();
   const extension = originalFilename.split('.').pop()?.toLowerCase() || 'jpg';
@@ -107,7 +107,7 @@ export const generateFilename = (
 export const uploadPhoto = async (
   userId: string,
   file: Express.Multer.File,
-  photoType: 'front' | 'side' | 'back'
+  photoType: 'front' | 'side' | 'back' | 'medication-bottle'
 ): Promise<{ url: string; filename: string }> => {
   const validation = validateFile(file);
   if (!validation.valid) {

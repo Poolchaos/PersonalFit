@@ -19,7 +19,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../store/authStore';
 import { MobileBottomNav } from './navigation/MobileBottomNav';
 import { XPBar } from './gamification/XPBar';
-import { LogOut, Menu, X, User, Settings, ChevronDown } from 'lucide-react';
+import { LogOut, Menu, X, User, Settings, ChevronDown, Heart } from 'lucide-react';
 
 interface LayoutProps {
   children: ReactNode;
@@ -32,7 +32,9 @@ export default function Layout({ children }: LayoutProps) {
   const { user, clearAuth } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [healthDropdownOpen, setHealthDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const healthDropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,16 +42,19 @@ export default function Layout({ children }: LayoutProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setProfileDropdownOpen(false);
       }
+      if (healthDropdownRef.current && !healthDropdownRef.current.contains(event.target as Node)) {
+        setHealthDropdownOpen(false);
+      }
     };
 
-    if (profileDropdownOpen) {
+    if (profileDropdownOpen || healthDropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [profileDropdownOpen]);
+  }, [profileDropdownOpen, healthDropdownOpen]);
 
   const handleLogout = () => {
     // Clear all cached data when logging out
@@ -73,9 +78,12 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/workouts', label: 'Workouts' },
     { path: '/schedule', label: 'Schedule' },
+    { path: '/accountability', label: 'Goals' },
+  ];
+
+  const healthMenuItems = [
     { path: '/medications', label: 'Medications' },
     { path: '/metrics', label: 'Metrics' },
-    { path: '/accountability', label: 'Goals' },
     { path: '/equipment', label: 'Equipment' },
   ];
 
@@ -110,6 +118,44 @@ export default function Layout({ children }: LayoutProps) {
                     </Link>
                   ))}
                 </div>
+              </div>
+
+              {/* Health Dropdown - Outside overflow container */}
+              <div className="hidden md:block relative mr-1" ref={healthDropdownRef}>
+                <button
+                  onClick={() => setHealthDropdownOpen(!healthDropdownOpen)}
+                  className={`inline-flex items-center gap-1 px-3 lg:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                    healthMenuItems.some(item => location.pathname === item.path)
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+                  }`}
+                >
+                  <Heart className="w-4 h-4" />
+                  Health
+                  <ChevronDown className={`w-4 h-4 transition-transform ${healthDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Health Dropdown Menu */}
+                {healthDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-1 z-50">
+                    {healthMenuItems.map((item) => (
+                      <button
+                        key={item.path}
+                        onClick={() => {
+                          navigate(item.path);
+                          setHealthDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                          location.pathname === item.path
+                            ? 'bg-primary-50 text-primary-600 font-medium'
+                            : 'text-neutral-700 hover:bg-neutral-50'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Mobile Hamburger Menu Button */}

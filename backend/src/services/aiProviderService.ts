@@ -27,6 +27,7 @@ export interface WorkoutGenerationParams {
     medical_conditions?: string[];
     injuries_and_restrictions?: string;
     current_activities?: string;
+    medications?: string;
   };
   equipment: string[];
   workoutModality: 'strength' | 'hiit' | 'flexibility' | 'cardio';

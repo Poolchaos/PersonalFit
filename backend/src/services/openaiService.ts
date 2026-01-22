@@ -32,6 +32,8 @@ export interface WorkoutPlanRequest {
     height_cm?: number;
     weight_kg?: number;
     current_activities?: string;
+    medications?: string;
+    onboarding_medications_notes?: string;
   };
   preferences: {
     preferred_workout_days?: string[];
@@ -90,6 +92,7 @@ export const generateWorkoutPlan = async (
 ): Promise<WorkoutPlan> => {
   const openai = openaiClient || defaultOpenAI;
   const { userProfile, preferences, availableEquipment, workoutModality = 'strength', weeklySchedule } = request;
+  const medicationsText = userProfile.medications;
 
   // Build modality-specific context
   let modalityGuidance = '';
@@ -181,6 +184,7 @@ User Profile:
 - Current Regular Activities: ${userProfile.current_activities || 'None reported'}
 - Medical Conditions: ${userProfile.medical_conditions?.join(', ') || 'None reported'}
 - Injuries: ${userProfile.injuries?.join(', ') || 'None reported'}
+- Medications & Supplements: ${medicationsText || userProfile.onboarding_medications_notes || 'None reported'}
 - Height: ${userProfile.height_cm ? `${userProfile.height_cm} cm` : 'Not specified'}
 - Weight: ${userProfile.weight_kg ? `${userProfile.weight_kg} kg` : 'Not specified'}
 
@@ -204,6 +208,19 @@ Examples of restrictions to respect:
 - "Missing limb" â†’ Design unilateral alternatives and balance-focused modifications
 
 USER SAFETY IS PARAMOUNT. When programming, constantly ask: "Could this exercise harm someone with these specific conditions?" If yes, EXCLUDE IT.
+` : ''}
+
+${medicationsText || userProfile.onboarding_medications_notes ? `
+⚠️ MEDICATION CONSIDERATIONS ⚠️
+User is taking: ${medicationsText || userProfile.onboarding_medications_notes}
+
+IMPORTANT MEDICATION-RELATED CONSIDERATIONS:
+1. Some medications affect heart rate, blood pressure, or energy levels
+2. Certain supplements may impact performance or recovery
+3. Beta-blockers may reduce maximum heart rate capacity
+4. Stimulants may increase heart rate and caffeine sensitivity
+5. Consider reduced intensity or modified duration if medications affect energy/cardiac response
+6. If unsure about a medication's effects on exercise, suggest moderate intensity as default
 ` : ''}
 
 Weekly Schedule Requirements:

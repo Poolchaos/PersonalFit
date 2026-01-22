@@ -25,6 +25,7 @@ interface Config {
   jwt_refresh_secret: string;
   jwt_refresh_expires_in: string;
   openai_api_key: string;
+  anthropic_api_key: string;
   encryption_secret: string;
   cors_origin: string;
   minio_endpoint: string;
@@ -44,6 +45,7 @@ const config: Config = {
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || '',
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   openai_api_key: process.env.OPENAI_API_KEY || '',
+  anthropic_api_key: process.env.ANTHROPIC_API_KEY || '',
   encryption_secret: process.env.ENCRYPTION_SECRET || process.env.JWT_SECRET || '',
   cors_origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   minio_endpoint: process.env.MINIO_ENDPOINT || 'localhost',

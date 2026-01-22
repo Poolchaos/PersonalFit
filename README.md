@@ -57,8 +57,30 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 - **📅 Smart Scheduling** — Visual calendar, weekly preview, progress tracking
 - **💪 Workout Management** — Multiple plans, session logging, active plan system
 - **📊 Progress Tracking** — Body metrics, charts, progress photos with S3 storage
+- **� Medicine & Supplement Manager** — Track medications, dosages, frequencies, health impacts
 - **🔐 Privacy-First** — Self-hosted, your data on your server
 - **🛡️ Production-Ready** — Rate limiting, security headers, 170+ tests
+
+---
+
+## 🆕 Medicine & Supplement Manager (Phase 1 & 2)
+
+**Phase 1 (Complete):**
+- 📋 Add medications/supplements with dosage, frequency, inventory tracking
+- 🏥 Support for prescriptions, OTC, and supplements
+- ❤️ Map medications to fitness metrics (heart rate, blood pressure, sleep, energy, etc.)
+- ⚠️ Track warnings and contraindications
+- 📅 Adherence logging with mood/energy tracking before/after doses
+- 🔄 Plan regeneration with medications context in AI prompts
+- 🧅 Onboarding integration — collect medications during signup
+
+**Phase 2 (AI Vision - In Progress):**
+- 📸 Scan medication bottle labels with camera or photo upload
+- 🤖 Claude Vision API for automatic label OCR extraction
+- 📊 Confidence scoring for extracted data with manual review/correction flow
+- 🔗 Correlation analysis dashboard showing medication impact on fitness metrics
+- 💡 Smart insights: "Vitamin D appears to improve sleep by 23%"
+- 🎯 Use extracted data to auto-fill medication forms
 
 ---
 
@@ -101,6 +123,8 @@ JWT_SECRET=your-super-secret-jwt-key
 JWT_REFRESH_SECRET=your-refresh-secret
 ENCRYPTION_SECRET=your-32-char-encryption-key
 CORS_ORIGIN=http://localhost:5173
+OPENAI_API_KEY=sk-... # Required for AI workout generation
+ANTHROPIC_API_KEY=sk-ant-... # Required for Phase 2 bottle label OCR
 ```
 
 **frontend/.env:**

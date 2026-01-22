@@ -32,6 +32,7 @@ export interface IUser extends Document {
     injuries?: string[];
     injuries_and_restrictions?: string; // Detailed description of injuries, impairments, and exercise restrictions
     current_activities?: string; // Description of existing regular activities (e.g., "Daily 30min uphill walk with dog")
+    onboarding_medications_notes?: string; // Simple text notes from onboarding medications step
   };
   preferences: {
     preferred_workout_days?: string[];
@@ -107,6 +108,7 @@ const userSchema = new Schema<IUser>(
       injuries: [String],
       injuries_and_restrictions: String,
       current_activities: String,
+      onboarding_medications_notes: String,
     },
     preferences: {
       preferred_workout_days: [String],
