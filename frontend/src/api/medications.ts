@@ -20,6 +20,8 @@ import type {
   AdherenceStats,
   CreateMedicationInput,
   LogDoseInput,
+  AdherenceOverview,
+  MedicationAdherenceDetails,
 } from '../types';
 
 export const medicationAPI = {
@@ -139,6 +141,25 @@ export const medicationAPI = {
     const { data } = await apiClient.post('/api/medications/parse-notes', { notes });
     return data;
   },
+
+  // Get adherence overview
+  getAdherenceOverview: async (days = 30): Promise<AdherenceOverview> => {
+    const { data } = await apiClient.get('/api/medications/adherence', {
+      params: { days },
+    });
+    return data;
+  },
+
+  // Get single medication adherence details
+  getMedicationAdherence: async (
+    medicationId: string,
+    days = 30
+  ): Promise<MedicationAdherenceDetails> => {
+    const { data } = await apiClient.get(`/api/medications/${medicationId}/adherence`, {
+      params: { days },
+    });
+    return data;
+  },
 };
 
 // Query keys for React Query
@@ -153,4 +174,7 @@ export const medicationQueryKeys = {
   stats: (id: string, days?: number) =>
     [...medicationQueryKeys.all, 'stats', id, { days }] as const,
   correlations: () => [...medicationQueryKeys.all, 'correlations'] as const,
+  adherence: (days?: number) => [...medicationQueryKeys.all, 'adherence', { days }] as const,
+  medicationAdherence: (id: string, days?: number) =>
+    [...medicationQueryKeys.all, 'medicationAdherence', id, { days }] as const,
 };

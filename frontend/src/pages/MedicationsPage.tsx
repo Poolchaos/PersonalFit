@@ -29,12 +29,14 @@ import {
   Trash2,
   Edit,
   X,
+  BarChart3,
 } from 'lucide-react';
 import { PageTransition } from '../components/layout/PageTransition';
 import MedicationForm, { type MedicationFormHandle } from '../components/medications/MedicationForm';
 import MedicationDoseCard from '../components/medications/MedicationDoseCard';
 import MedicationParsingModal from '../components/medications/MedicationParsingModal';
 import MedicationReminderBanner from '../components/medications/MedicationReminderBanner';
+import AdherenceTab from '../components/medications/AdherenceTab';
 
 export default function MedicationsPage() {
   const queryClient = useQueryClient();
@@ -43,7 +45,7 @@ export default function MedicationsPage() {
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const [deletingMedication, setDeletingMedication] = useState<Medication | null>(null);
   const [showParsingModal, setShowParsingModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills'>('today');
+  const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills' | 'adherence'>('today');
   const [dismissedOnboardingNote, setDismissedOnboardingNote] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const formRef = useRef<MedicationFormHandle>(null);
@@ -381,6 +383,7 @@ export default function MedicationsPage() {
             {[
               { key: 'today', label: "Today's Doses", icon: Clock },
               { key: 'all', label: 'All Medications', icon: Pill },
+              { key: 'adherence', label: 'Adherence', icon: BarChart3 },
               { key: 'refills', label: 'Refills Needed', icon: Package },
             ].map((tab) => (
               <button
@@ -555,6 +558,17 @@ export default function MedicationsPage() {
                   </div>
                 )}
               </>
+            )}
+
+            {activeTab === 'adherence' && (
+              <AdherenceTab
+                onMedicationClick={(medicationId) => {
+                  const medication = allMedications.find((m) => m._id === medicationId);
+                  if (medication) {
+                    setEditingMedication(medication);
+                  }
+                }}
+              />
             )}
           </div>
 

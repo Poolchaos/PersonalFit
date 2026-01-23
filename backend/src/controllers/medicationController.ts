@@ -16,6 +16,7 @@ import { Response } from 'express';
 import { validationResult } from 'express-validator';
 import { AuthRequest } from '../middleware/auth';
 import * as medicationService from '../services/medicationService';
+import * as adherenceService from '../services/adherenceService';
 
 /**
  * Get all medications for the authenticated user
@@ -453,6 +454,55 @@ export const updateBottleImage = async (
     res.json({ medication });
   } catch (error) {
     console.error('Update bottle image error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Get adherence overview for all medications
+ */
+export const getAdherenceOverview = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const days = parseInt(req.query.days as string) || 30;
+    const overview = await adherenceService.getAdherenceOverview(
+      req.user!.userId,
+      days
+    );
+
+    res.json(overview);
+  } catch (error) {
+    console.error('Get adherence overview error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Get adherence data for a specific medication
+ */
+export const getMedicationAdherence = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const days = parseInt(req.query.days as string) || 30;
+
+    const adherenceData = await adherenceService.getMedicationAdherence(
+      req.user!.userId,
+      id,
+      days
+    );
+
+    res.json(adherenceData);
+  } catch (error) {
+    console.error('Get medication adherence error:', error);
+    if (error instanceof Error && error.message === 'Medication not found') {
+      res.status(404).json({ error: 'Medication not found' });
+      return;
+    }
     res.status(500).json({ error: 'Internal server error' });
   }
 };

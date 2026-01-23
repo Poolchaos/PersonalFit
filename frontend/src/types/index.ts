@@ -398,3 +398,66 @@ export interface LogDoseInput {
   energy_before?: 1 | 2 | 3 | 4 | 5;
   energy_after?: 1 | 2 | 3 | 4 | 5;
 }
+
+// Adherence Types
+export interface DailyAdherence {
+  date: string;
+  taken: number;
+  missed: number;
+  skipped: number;
+  total: number;
+  percentage: number;
+}
+
+export interface MedicationAdherence {
+  medicationId: string;
+  medicationName: string;
+  taken: number;
+  missed: number;
+  skipped: number;
+  total: number;
+  percentage: number;
+}
+
+export interface AdherenceStreak {
+  current: number;
+  longest: number;
+  lastPerfectDay: string | null;
+}
+
+export interface TimePatternInsight {
+  pattern: 'morning' | 'afternoon' | 'evening' | 'night';
+  missedCount: number;
+  totalCount: number;
+  missedPercentage: number;
+}
+
+export interface AdherenceInsight {
+  type: 'time_pattern' | 'day_pattern' | 'medication_specific' | 'streak' | 'improvement' | 'declining';
+  severity: 'info' | 'warning' | 'success';
+  title: string;
+  message: string;
+  suggestion?: string;
+  actionType?: 'change_time' | 'set_reminder' | 'view_medication';
+  actionData?: Record<string, unknown>;
+}
+
+export interface AdherenceOverview {
+  weeklyAdherence: DailyAdherence[];
+  monthlyAdherence: DailyAdherence[];
+  medicationAdherence: MedicationAdherence[];
+  streak: AdherenceStreak;
+  overallStats: {
+    thisWeek: { taken: number; total: number; percentage: number };
+    thisMonth: { taken: number; total: number; percentage: number };
+    allTime: { taken: number; total: number; percentage: number };
+  };
+  insights: AdherenceInsight[];
+}
+
+export interface MedicationAdherenceDetails {
+  medication: Medication | null;
+  dailyAdherence: DailyAdherence[];
+  stats: MedicationAdherence | null;
+  timePatterns: TimePatternInsight[];
+}

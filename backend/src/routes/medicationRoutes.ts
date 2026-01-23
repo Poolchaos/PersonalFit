@@ -30,6 +30,8 @@ import {
   extractFromBottleImage,
   createMedicationWithImage,
   updateBottleImage,
+  getAdherenceOverview,
+  getMedicationAdherence,
 } from '../controllers/medicationController';
 import { getCorrelations, triggerAnalysis } from '../controllers/correlationController';
 import { parseNotes } from '../controllers/medicationParsingController';
@@ -286,5 +288,9 @@ router.put(
 // Correlation analysis endpoints
 router.get('/correlations', getCorrelations);
 router.post('/correlations/analyze', triggerAnalysis);
+
+// Adherence tracking endpoints
+router.get('/adherence', getAdherenceOverview);
+router.get('/:id/adherence', getMedicationAdherence);
 
 export default router;
