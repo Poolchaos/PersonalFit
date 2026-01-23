@@ -77,6 +77,9 @@ export interface IUser extends Document {
     // NEW: Gems currency
     gems: number; // Premium currency for streak freezes, cosmetics
     total_gems_earned: number;
+    // NEW: Rewards shop
+    purchased_items: string[]; // Array of purchased shop item IDs
+    milestone_rewards_claimed: string[]; // Array of claimed milestone reward IDs
   };
   ai_config?: {
     provider: 'openai' | 'anthropic' | 'local' | 'custom';
@@ -222,6 +225,15 @@ const userSchema = new Schema<IUser>(
       total_gems_earned: {
         type: Number,
         default: 50,
+      },
+      // NEW: Rewards shop
+      purchased_items: {
+        type: [String],
+        default: [],
+      },
+      milestone_rewards_claimed: {
+        type: [String],
+        default: [],
       },
     },
     ai_config: {

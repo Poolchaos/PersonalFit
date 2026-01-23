@@ -64,10 +64,12 @@ export const createSession = async (
             streak_freezes_used_this_month: 0,
             gems: 50,
             total_gems_earned: 50,
+            purchased_items: [],
+            milestone_rewards_claimed: [],
           };
         }
 
-        const gamification = user.gamification;
+        const gamification = user.gamification!;
         const isFirstWorkout = gamification.total_workouts_completed === 0;
 
         // Update streak

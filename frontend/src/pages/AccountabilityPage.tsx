@@ -12,16 +12,24 @@
  * See the LICENSE file for the full license text.
  */
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Flame, Award, Calendar, CheckCircle2, XCircle } from 'lucide-react';
+import { Flame, Award, Calendar, CheckCircle2, XCircle, Trophy, Gem, ShoppingBag } from 'lucide-react';
 import Layout from '../components/Layout';
 import { accountabilityAPI } from '../api';
 import { Card, CardContent, CardHeader, CardTitle } from '../design-system/components/Card';
 import { StreakWidget } from '../components/gamification/StreakWidget';
+import { Leaderboard } from '../components/gamification/Leaderboard';
+import { RewardsShop } from '../components/gamification/RewardsShop';
 import { PageTransition } from '../components/layout/PageTransition';
 import { StreakCardSkeleton } from '../design-system';
+import { useGamification } from '../hooks/useGamification';
 
 export default function AccountabilityPage() {
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+  const { gems } = useGamification();
+
   const { data, isLoading } = useQuery({
     queryKey: ['accountability'],
     queryFn: accountabilityAPI.getStatus,
@@ -51,6 +59,38 @@ export default function AccountabilityPage() {
         <div className="flex items-center gap-3 mb-6">
           <Flame className="h-8 w-8 text-orange-500" />
           <h1 className="text-3xl font-bold text-gray-900">Accountability</h1>
+        </div>
+
+        {/* Gamification Quick Actions */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="flex items-center gap-3 p-4 bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl hover:shadow-md transition-shadow"
+          >
+            <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+              <Trophy className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-gray-900">Leaderboard</p>
+              <p className="text-sm text-gray-600">See rankings</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setShowShop(true)}
+            className="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl hover:shadow-md transition-shadow"
+          >
+            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+              <ShoppingBag className="w-6 h-6 text-purple-600" />
+            </div>
+            <div className="text-left">
+              <p className="font-semibold text-gray-900">Rewards Shop</p>
+              <div className="flex items-center gap-1 text-sm text-gray-600">
+                <Gem className="w-4 h-4 text-cyan-500" />
+                <span>{gems} gems</span>
+              </div>
+            </div>
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -235,6 +275,10 @@ export default function AccountabilityPage() {
           </Card>
         ) : null}
       </div>
+
+      {/* Modals */}
+      {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
+      {showShop && <RewardsShop currentGems={gems} onClose={() => setShowShop(false)} />}
       </PageTransition>
     </Layout>
   );

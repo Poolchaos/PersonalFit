@@ -39,7 +39,7 @@ const MedicationReminderBanner: React.FC = () => {
     if (dismissed) return; // Skip if already dismissed
 
     try {
-      const response = await apiClient.get('/medications');
+      const response = await apiClient.get('/api/medications');
       const medications = response.data;
 
       const now = new Date();

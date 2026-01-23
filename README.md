@@ -60,16 +60,25 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 
 ![Medications Manager](docs/screenshots/8.medications.png)
 
+**Gamification & Rewards**
+
+![Rewards Shop](docs/screenshots/9.rewards-shop.png)
+
+![Leaderboard](docs/screenshots/10.leaderboard.png)
+
 ---
 
 ## ✨ Key Features
 
-- **🎮 Gamification** — XP, levels, 42 achievements, daily challenges, streak tracking
+- **🎮 Gamification System** — XP, levels, 42 achievements, daily challenges, streak tracking
+  - **🏆 Global & Weekly Leaderboards** — Compete with other users, see rankings with XP/streaks/levels
+  - **💎 Rewards Shop** — Earn gems from milestones, purchase themes, badges, titles, profile items
+  - **🎁 Adherence Rewards** — Claim gems for reaching level/streak milestones (Level 5/10/15/20, Streaks 7/14/30 days)
 - **🤖 AI Workout Generation** — OpenAI, Claude, or OpenRouter with multi-agent orchestration
 - **📅 Smart Scheduling** — Visual calendar, weekly preview, progress tracking
 - **💪 Workout Management** — Multiple plans, session logging, active plan system
 - **📊 Progress Tracking** — Body metrics, charts, progress photos with S3 storage
-- **� Medicine & Supplement Manager** — Track medications, dosages, frequencies, health impacts
+- **💊 Medicine & Supplement Manager** — Track medications, dosages, frequencies, health impacts
 - **🔐 Privacy-First** — Self-hosted, your data on your server
 - **🛡️ Production-Ready** — Rate limiting, security headers, 170+ tests
 
@@ -94,6 +103,17 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 - 💡 Smart insights: "Vitamin D appears to improve sleep by 23%"
 - 🎯 AI-powered parsing from onboarding notes with batch import
 - ✨ Auto-fill medication forms from extracted/parsed data
+
+**Phase 3 (Advanced Gamification & Rewards):**
+- 🏆 **Leaderboards** — Global and weekly rankings showing top users by XP, streak, level, and workout count
+- 💎 **Gems Currency** — Earn gems by reaching milestones (levels, streaks)
+- 🛍️ **Rewards Shop** — Purchase cosmetic items with gems:
+  - Themes (8 options): Ocean Breeze, Electric Purple, Golden Sunset, Fire & Ice, Midnight Moon, Desert Oasis, Forest Ranger, Northern Lights
+  - Badges (5): Dedication, Champion, Elite, Master, Legend
+  - Titles (5): "The Motivated", "Fitness Guru", "Iron Will", "Beast Mode", "Unstoppable"
+  - Profile items with rarity tiers (common, uncommon, rare, epic, legendary)
+- 🎁 **Milestone Rewards** — Auto-claim gems when reaching level 5, 10, 15, 20 or streak 7, 14, 30 days
+- 📱 **Mobile Navigation** — Leaderboard and Shop accessible from bottom navigation on mobile devices
 
 ---
 

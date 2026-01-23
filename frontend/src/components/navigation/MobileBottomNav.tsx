@@ -12,9 +12,12 @@
  * See the LICENSE file for the full license text.
  */
 
-import { Home, Dumbbell, Calendar, Trophy, Pill } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Trophy, Pill, Award, ShoppingBag } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { Leaderboard } from '../gamification/Leaderboard';
+import { RewardsShop } from '../gamification/RewardsShop';
 
 const tabs = [
   { icon: Home, label: 'Home', path: '/dashboard' },
@@ -26,38 +29,68 @@ const tabs = [
 
 export function MobileBottomNav() {
   const location = useLocation();
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showShop, setShowShop] = useState(false);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200 md:hidden safe-area-inset-bottom">
-      <div className="flex justify-around items-center h-16">
-        {tabs.map(({ icon: Icon, label, path }) => {
-          const isActive = location.pathname === path;
-          return (
-            <Link
-              key={path}
-              to={path}
-              className="flex flex-col items-center justify-center flex-1 relative"
-            >
-              <motion.div
-                whileTap={{ scale: 0.9 }}
-                className={`flex flex-col items-center ${
-                  isActive ? 'text-primary-500' : 'text-neutral-500'
-                }`}
+    <>
+      {showLeaderboard && <Leaderboard onClose={() => setShowLeaderboard(false)} />}
+      {showShop && <RewardsShop onClose={() => setShowShop(false)} />}
+
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-neutral-200 md:hidden safe-area-inset-bottom">
+        <div className="flex justify-around items-center h-16">
+          {tabs.map(({ icon: Icon, label, path }) => {
+            const isActive = location.pathname === path;
+            return (
+              <Link
+                key={path}
+                to={path}
+                className="flex flex-col items-center justify-center flex-1 relative"
               >
-                <Icon size={24} />
-                <span className="text-xs mt-1">{label}</span>
-              </motion.div>
-              {isActive && (
                 <motion.div
-                  layoutId="activeTab"
-                  className="absolute -top-0.5 left-0 right-0 h-1 bg-primary-500 rounded-full"
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+                  whileTap={{ scale: 0.9 }}
+                  className={`flex flex-col items-center ${
+                    isActive ? 'text-primary-500' : 'text-neutral-500'
+                  }`}
+                >
+                  <Icon size={24} />
+                  <span className="text-xs mt-1">{label}</span>
+                </motion.div>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -top-0.5 left-0 right-0 h-1 bg-primary-500 rounded-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
+
+          {/* Leaderboard Button */}
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="flex flex-col items-center justify-center flex-1 relative"
+          >
+            <motion.div whileTap={{ scale: 0.9 }} className="flex flex-col items-center text-neutral-500">
+              <Award size={24} />
+              <span className="text-xs mt-1">Ranks</span>
+            </motion.div>
+          </button>
+
+          {/* Shop Button */}
+          <button
+            onClick={() => setShowShop(true)}
+            className="flex flex-col items-center justify-center flex-1 relative"
+          >
+            <motion.div whileTap={{ scale: 0.9 }} className="flex flex-col items-center text-neutral-500">
+              <ShoppingBag size={24} />
+              <span className="text-xs mt-1">Shop</span>
+            </motion.div>
+          </button>
+        </div>
+      </nav>
+    </>
+
   );
 }

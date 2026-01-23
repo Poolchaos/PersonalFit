@@ -20,6 +20,17 @@ import {
   getAchievements,
   getLeaderboard,
 } from '../controllers/gamificationController';
+import {
+  getGlobalLeaderboard,
+  getWeeklyLeaderboard,
+  getUserRankWithNearby,
+} from '../controllers/leaderboardController';
+import {
+  getShopItems,
+  purchaseItem,
+  claimMilestoneRewards,
+  getGemBalance,
+} from '../controllers/rewardsShopController';
 
 const router = Router();
 
@@ -53,5 +64,54 @@ router.get('/achievements', getAchievements);
  * @access  Private
  */
 router.get('/leaderboard', getLeaderboard);
+
+/**
+ * @route   GET /api/gamification/leaderboard/global
+ * @desc    Get global leaderboard with pagination
+ * @access  Private
+ */
+router.get('/leaderboard/global', getGlobalLeaderboard);
+
+/**
+ * @route   GET /api/gamification/leaderboard/weekly
+ * @desc    Get weekly leaderboard
+ * @access  Private
+ */
+router.get('/leaderboard/weekly', getWeeklyLeaderboard);
+
+/**
+ * @route   GET /api/gamification/leaderboard/rank
+ * @desc    Get user's rank with nearby competitors
+ * @access  Private
+ */
+router.get('/leaderboard/rank', getUserRankWithNearby);
+
+/**
+ * @route   GET /api/gamification/shop
+ * @desc    Get available shop items
+ * @access  Private
+ */
+router.get('/shop', getShopItems);
+
+/**
+ * @route   POST /api/gamification/shop/purchase
+ * @desc    Purchase a shop item with gems
+ * @access  Private
+ */
+router.post('/shop/purchase', purchaseItem);
+
+/**
+ * @route   POST /api/gamification/shop/claim-rewards
+ * @desc    Claim milestone gem rewards
+ * @access  Private
+ */
+router.post('/shop/claim-rewards', claimMilestoneRewards);
+
+/**
+ * @route   GET /api/gamification/gems
+ * @desc    Get gem balance and purchase history
+ * @access  Private
+ */
+router.get('/gems', getGemBalance);
 
 export default router;

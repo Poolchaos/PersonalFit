@@ -25,6 +25,7 @@ export function useGamification() {
 
   const level = gamificationData?.level || 1;
   const xp = gamificationData?.xp || 0;
+  const gems = gamificationData?.gems || 0;
   const currentStreak = gamificationData?.currentStreak || 0;
   const longestStreak = gamificationData?.longestStreak || 0;
   const totalWorkouts = gamificationData?.totalWorkoutsCompleted || 0;
@@ -35,11 +36,13 @@ export function useGamification() {
     user: {
       level,
       xp,
+      gems,
       xpToNextLevel,
       totalPRs: 0, // TODO: Implement PR tracking
     },
     level,
     xp,
+    gems,
     xpToNextLevel,
     xpProgress,
     currentStreak,
