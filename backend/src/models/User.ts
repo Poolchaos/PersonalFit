@@ -40,6 +40,14 @@ export interface IUser extends Document {
     preferred_workout_types?: string[];
     equipment_access?: string[];
     workout_frequency?: number; // Days per week user wants to workout
+    habits_enabled?: boolean;
+    diet_ai_enabled?: boolean;
+    mental_wellness_enabled?: boolean;
+    unified_health_score_enabled?: boolean;
+    ai_vision_enabled?: boolean;
+    ai_recommendations_enabled?: boolean;
+    ai_habit_suggestions_enabled?: boolean;
+    vision_image_retention?: 'delete' | 'keep';
   };
   notification_preferences?: {
     medication_reminders: {
@@ -138,6 +146,39 @@ const userSchema = new Schema<IUser>(
       preferred_workout_types: [String],
       equipment_access: [String],
       workout_frequency: Number, // Days per week user wants to workout
+      habits_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      diet_ai_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      mental_wellness_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      unified_health_score_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      ai_vision_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      ai_recommendations_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      ai_habit_suggestions_enabled: {
+        type: Boolean,
+        default: false,
+      },
+      vision_image_retention: {
+        type: String,
+        enum: ['delete', 'keep'],
+        default: 'delete',
+      },
     },
     notification_preferences: {
       medication_reminders: {

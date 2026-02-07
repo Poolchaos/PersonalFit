@@ -41,6 +41,94 @@ export interface UserPreferences {
   preferred_workout_duration?: number;
   preferred_workout_types?: string[];
   equipment_access?: string[];
+  habits_enabled?: boolean;
+  diet_ai_enabled?: boolean;
+  mental_wellness_enabled?: boolean;
+  unified_health_score_enabled?: boolean;
+  ai_vision_enabled?: boolean;
+  ai_recommendations_enabled?: boolean;
+  ai_habit_suggestions_enabled?: boolean;
+  vision_image_retention?: 'delete' | 'keep';
+}
+
+export interface HabitEntry {
+  habit_key: string;
+  category: 'good' | 'bad';
+  status: 'completed' | 'missed' | 'skipped';
+  value?: number;
+  unit?: string;
+  notes?: string;
+}
+
+export interface HabitLog {
+  _id: string;
+  user_id: string;
+  log_date: string;
+  entries: HabitEntry[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VisionItem {
+  name: string;
+  quantity: string;
+  unit: string;
+  category: 'protein' | 'vegetable' | 'fruit' | 'grain' | 'dairy' | 'snack' | 'beverage' | 'other';
+  freshness_estimate?: 'fresh' | 'moderate' | 'expiring_soon';
+  confidence: number;
+  confirmed: boolean;
+}
+
+export interface VisionScan {
+  _id: string;
+  user_id: string;
+  source: 'fridge' | 'grocery' | 'receipt';
+  image_url: string;
+  status: 'pending' | 'confirmed' | 'failed';
+  items: VisionItem[];
+  processed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NutritionItem {
+  name: string;
+  quantity?: number;
+  unit?: string;
+}
+
+export interface NutritionEvent {
+  _id: string;
+  user_id: string;
+  source: 'vision' | 'manual' | 'meal_plan';
+  meal_title?: string;
+  consumed_at: string;
+  calories?: number;
+  macros?: {
+    protein_g?: number;
+    carbs_g?: number;
+    fat_g?: number;
+  };
+  items: NutritionItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HealthScore {
+  _id: string;
+  user_id: string;
+  score_date: string;
+  total_score: number;
+  pillars?: {
+    fitness?: number;
+    diet?: number;
+    habits?: number;
+    meds?: number;
+    mental?: number;
+  };
+  reasons?: string[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AuthResponse {

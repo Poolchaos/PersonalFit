@@ -33,6 +33,11 @@ import prRoutes from './routes/prRoutes';
 import dailyChallengeRoutes from './routes/dailyChallengeRoutes';
 import medicationRoutes from './routes/medicationRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import habitRoutes from './routes/habitRoutes';
+import visionRoutes from './routes/visionRoutes';
+import nutritionRoutes from './routes/nutritionRoutes';
+import healthScoreRoutes from './routes/healthScoreRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
 
 const app: Application = express();
 
@@ -108,6 +113,11 @@ app.use('/api/prs', prRoutes);
 app.use('/api/challenges', dailyChallengeRoutes);
 app.use('/api/medications', medicationRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/habits', habitRoutes);
+app.use('/api/vision', visionRoutes);
+app.use('/api/nutrition', nutritionRoutes);
+app.use('/api/health-scores', healthScoreRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
