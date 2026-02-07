@@ -12,7 +12,7 @@
  * See the LICENSE file for the full license text.
  */
 
-import { Home, Dumbbell, Calendar, Trophy, Pill, Award, ShoppingBag } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Trophy, Pill, Award, ShoppingBag, Target } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
@@ -23,8 +23,8 @@ const tabs = [
   { icon: Home, label: 'Home', path: '/dashboard' },
   { icon: Dumbbell, label: 'Workouts', path: '/workouts' },
   { icon: Calendar, label: 'Schedule', path: '/schedule' },
+  { icon: Target, label: 'Goals', path: '/goals' },
   { icon: Pill, label: 'Meds', path: '/medications' },
-  { icon: Trophy, label: 'Goals', path: '/accountability' },
 ];
 
 export function MobileBottomNav() {

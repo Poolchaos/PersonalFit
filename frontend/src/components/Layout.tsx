@@ -78,13 +78,15 @@ export default function Layout({ children }: LayoutProps) {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/workouts', label: 'Workouts' },
     { path: '/schedule', label: 'Schedule' },
-    { path: '/accountability', label: 'Goals' },
+    { path: '/goals', label: 'Goals' },
   ];
 
   const healthMenuItems = [
+    { path: '/accountability', label: 'Streaks & Rewards' },
     { path: '/medications', label: 'Medications' },
     { path: '/metrics', label: 'Metrics' },
     { path: '/equipment', label: 'Equipment' },
+    { path: '/insights', label: 'Insights' },
   ];
 
   return (
@@ -216,8 +218,7 @@ export default function Layout({ children }: LayoutProps) {
                       <button
                         onClick={() => {
                           setProfileDropdownOpen(false);
-                          // Navigate to settings when we have the page
-                          navigate('/profile'); // Temporary - use profile page
+                          navigate('/settings');
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 transition-colors"
                       >
@@ -292,9 +293,13 @@ export default function Layout({ children }: LayoutProps) {
                   <span>Profile</span>
                 </Link>
                 <Link
-                  to="/profile"
+                  to="/settings"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname === '/settings'
+                      ? 'bg-primary-50 text-primary-600'
+                      : 'text-neutral-600 hover:bg-neutral-100'
+                  }`}
                 >
                   <Settings className="w-4 h-4" />
                   <span>Settings</span>

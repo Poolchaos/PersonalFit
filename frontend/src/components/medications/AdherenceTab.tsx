@@ -22,7 +22,8 @@ import {
   MonthlyChart,
   MedicationAdherenceList,
 } from './adherence';
-import type { AdherenceInsight } from '../../types';
+import { ReminderTimeDialog } from './ReminderTimeDialog';
+import type { AdherenceInsight, Medication } from '../../types';
 
 interface AdherenceTabProps {
   onMedicationClick?: (medicationId: string) => void;
@@ -30,17 +31,34 @@ interface AdherenceTabProps {
 
 export const AdherenceTab: React.FC<AdherenceTabProps> = ({ onMedicationClick }) => {
   const [timeRange, setTimeRange] = useState<number>(30);
+  const [reminderDialogOpen, setReminderDialogOpen] = useState(false);
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: medicationQueryKeys.adherence(timeRange),
     queryFn: () => medicationAPI.getAdherenceOverview(timeRange),
   });
 
-  const handleInsightAction = (insight: AdherenceInsight) => {
+  const { data: medicationsData } = useQuery({
+    queryKey: medicationQueryKeys.all,
+    queryFn: () => medicationAPI.getAll(true),
+  });
+
+  const handleInsightAction = async (insight: AdherenceInsight) => {
     if (insight.actionType === 'view_medication' && insight.actionData?.medicationId) {
       onMedicationClick?.(insight.actionData.medicationId as string);
+    } else if (
+      (insight.actionType === 'set_reminder' || insight.actionType === 'change_time') &&
+      insight.actionData?.medicationId
+    ) {
+      const medication = medicationsData?.medications.find(
+        (m) => m._id === insight.actionData?.medicationId
+      );
+      if (medication) {
+        setSelectedMedication(medication);
+        setReminderDialogOpen(true);
+      }
     }
-    // TODO: Handle other action types (set_reminder, change_time)
   };
 
   if (isLoading) {
@@ -157,6 +175,19 @@ export const AdherenceTab: React.FC<AdherenceTabProps> = ({ onMedicationClick })
           />
         </div>
       </div>
+
+      {/* Reminder Time Dialog */}
+      {selectedMedication && (
+        <ReminderTimeDialog
+          key={selectedMedication._id}
+          medication={selectedMedication}
+          isOpen={reminderDialogOpen}
+          onClose={() => {
+            setReminderDialogOpen(false);
+            setSelectedMedication(null);
+          }}
+        />
+      )}
     </div>
   );
 };

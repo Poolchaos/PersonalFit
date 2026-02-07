@@ -70,15 +70,13 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 
 ## ✨ Key Features
 
-- **🎮 Gamification System** — XP, levels, 42 achievements, daily challenges, streak tracking
-  - **🏆 Global & Weekly Leaderboards** — Compete with other users, see rankings with XP/streaks/levels
-  - **💎 Rewards Shop** — Earn gems from milestones, purchase themes, badges, titles, profile items
-  - **🎁 Adherence Rewards** — Claim gems for reaching level/streak milestones (Level 5/10/15/20, Streaks 7/14/30 days)
+- **🎮 Gamification System** — XP, levels, 42 achievements, daily challenges, streak tracking, leaderboards, rewards shop
 - **🤖 AI Workout Generation** — OpenAI, Claude, or OpenRouter with multi-agent orchestration
 - **📅 Smart Scheduling** — Visual calendar, weekly preview, progress tracking
 - **💪 Workout Management** — Multiple plans, session logging, active plan system
 - **📊 Progress Tracking** — Body metrics, charts, progress photos with S3 storage
-- **💊 Medicine & Supplement Manager** — Track medications, dosages, frequencies, health impacts
+- **💊 Medicine & Supplement Manager** — Track medications, dosages, adherence, health insights, OCR bottle scanning
+- **⚙️ Settings Hub** — Notifications, privacy, data management, appearance customization
 - **🔐 Privacy-First** — Self-hosted, your data on your server
 - **🛡️ Production-Ready** — Rate limiting, security headers, 170+ tests
 
@@ -99,21 +97,16 @@ Self-hosted fitness tracking with **AI-powered workout generation** and **gamifi
 - 📸 Scan medication bottle labels with camera or photo upload
 - 🤖 Claude Vision API for automatic label OCR extraction
 - 📊 Confidence scoring for extracted data with manual review/correction flow
-- 🔗 Correlation analysis dashboard showing medication impact on fitness metrics
+- 🔗 Correlation insights dashboard showing medication impact on fitness metrics
 - 💡 Smart insights: "Vitamin D appears to improve sleep by 23%"
 - 🎯 AI-powered parsing from onboarding notes with batch import
 - ✨ Auto-fill medication forms from extracted/parsed data
 
 **Phase 3 (Advanced Gamification & Rewards):**
-- 🏆 **Leaderboards** — Global and weekly rankings showing top users by XP, streak, level, and workout count
+- 🏆 **Leaderboards** — Global and weekly rankings by XP, streak, level, workout count
 - 💎 **Gems Currency** — Earn gems by reaching milestones (levels, streaks)
-- 🛍️ **Rewards Shop** — Purchase cosmetic items with gems:
-  - Themes (8 options): Ocean Breeze, Electric Purple, Golden Sunset, Fire & Ice, Midnight Moon, Desert Oasis, Forest Ranger, Northern Lights
-  - Badges (5): Dedication, Champion, Elite, Master, Legend
-  - Titles (5): "The Motivated", "Fitness Guru", "Iron Will", "Beast Mode", "Unstoppable"
-  - Profile items with rarity tiers (common, uncommon, rare, epic, legendary)
-- 🎁 **Milestone Rewards** — Auto-claim gems when reaching level 5, 10, 15, 20 or streak 7, 14, 30 days
-- 📱 **Mobile Navigation** — Leaderboard and Shop accessible from bottom navigation on mobile devices
+- 🛍️ **Rewards Shop** — Purchase themes, badges, titles, profile items with gems
+- 🎁 **Milestone Rewards** — Auto-claim gems at level 5/10/15/20 or streak 7/14/30 days
 
 ---
 

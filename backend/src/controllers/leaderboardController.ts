@@ -15,6 +15,7 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/auth';
 import User from '../models/User';
+import WorkoutSession from '../models/WorkoutSession';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -24,6 +25,7 @@ export interface LeaderboardEntry {
   xp: number;
   currentStreak: number;
   totalWorkouts: number;
+  weeklyWorkouts?: number;
   isCurrentUser?: boolean;
 }
 
@@ -103,28 +105,57 @@ export const getWeeklyLeaderboard = async (
     const weekStart = new Date(now.setDate(diff));
     weekStart.setHours(0, 0, 0, 0);
 
-    // TODO: Implement workout count tracking by week
-    // For now, return the same as global leaderboard
-    const topUsers = await User.find({ 'gamification.xp': { $exists: true } })
-      .sort({ 'gamification.current_streak': -1, 'gamification.xp': -1 })
-      .limit(limit)
-      .skip(offset)
-      .select(
-        'profile.first_name profile.last_name gamification.xp gamification.level gamification.current_streak gamification.total_workouts_completed'
-      );
+    // Aggregate workout counts by user for this week
+    const weeklyWorkoutCounts = await WorkoutSession.aggregate([
+      {
+        $match: {
+          session_date: { $gte: weekStart },
+          completion_status: 'completed',
+        },
+      },
+      {
+        $group: {
+          _id: '$user_id',
+          workoutCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { workoutCount: -1 },
+      },
+      {
+        $limit: limit + offset,
+      },
+      {
+        $skip: offset,
+      },
+    ]);
 
-    const leaderboard: LeaderboardEntry[] = topUsers.map((user, index) => {
-      const userIdStr = String(user._id);
+    // Get user details for these users
+    const userIds = weeklyWorkoutCounts.map((item) => item._id);
+    const users = await User.find({ _id: { $in: userIds } }).select(
+      'profile.first_name profile.last_name gamification.xp gamification.level gamification.current_streak gamification.total_workouts_completed'
+    );
+
+    // Create a map for quick lookup
+    const userMap = new Map(users.map((user) => [String(user._id), user]));
+    const workoutCountMap = new Map(
+      weeklyWorkoutCounts.map((item) => [String(item._id), item.workoutCount])
+    );
+
+    const leaderboard: LeaderboardEntry[] = weeklyWorkoutCounts.map((item, index) => {
+      const userIdStr = String(item._id);
+      const user = userMap.get(userIdStr);
       return {
         rank: offset + index + 1,
         userId: userIdStr,
-        name: user.profile?.first_name
+        name: user?.profile?.first_name
           ? `${user.profile.first_name} ${user.profile.last_name?.[0] || ''}.`
           : 'Anonymous',
-        level: user.gamification?.level || 1,
-        xp: user.gamification?.xp || 0,
-        currentStreak: user.gamification?.current_streak || 0,
-        totalWorkouts: user.gamification?.total_workouts_completed || 0,
+        level: user?.gamification?.level || 1,
+        xp: user?.gamification?.xp || 0,
+        currentStreak: user?.gamification?.current_streak || 0,
+        totalWorkouts: user?.gamification?.total_workouts_completed || 0,
+        weeklyWorkouts: item.workoutCount,
         isCurrentUser: userId ? userIdStr === userId : false,
       };
     });

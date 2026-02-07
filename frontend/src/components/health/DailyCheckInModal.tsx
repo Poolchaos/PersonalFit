@@ -13,6 +13,7 @@
  */
 
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { Sun, Moon, X } from 'lucide-react';
 import { apiClient } from '../../api/client';
 
@@ -92,7 +93,7 @@ export const DailyCheckInModal: React.FC<DailyCheckInModalProps> = ({
       }
     } catch (error) {
       console.error('Check-in submission error:', error);
-      alert('Failed to submit check-in. Please try again.');
+      toast.error('Failed to submit check-in. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

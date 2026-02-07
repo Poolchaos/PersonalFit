@@ -120,7 +120,7 @@ const NotificationSettings: React.FC = () => {
       setNotificationPermission(permission);
 
       if (permission !== 'granted') {
-        alert('Please allow notifications to receive medication reminders');
+        toast.warning('Please allow notifications to receive medication reminders');
         return;
       }
 
@@ -140,7 +140,7 @@ const NotificationSettings: React.FC = () => {
       await savePreferences({ enabled: true });
     } catch (error) {
       console.error('Error enabling push notifications:', error);
-      alert('Failed to enable push notifications. Please try again.');
+      toast.error('Failed to enable push notifications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -164,7 +164,7 @@ const NotificationSettings: React.FC = () => {
       await savePreferences({ enabled: false });
     } catch (error) {
       console.error('Error disabling push notifications:', error);
-      alert('Failed to disable push notifications. Please try again.');
+      toast.error('Failed to disable push notifications. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -240,7 +240,7 @@ const NotificationSettings: React.FC = () => {
       await apiClient.put('/notifications/preferences', updates);
     } catch (error) {
       console.error('Error saving preferences:', error);
-      alert('Failed to save preferences. Please try again.');
+      toast.error('Failed to save preferences. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -248,7 +248,7 @@ const NotificationSettings: React.FC = () => {
 
   const handleTestNotification = async () => {
     if (!pushEnabled) {
-      alert('Please enable push notifications first');
+      toast.warning('Please enable push notifications first');
       return;
     }
 

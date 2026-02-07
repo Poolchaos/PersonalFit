@@ -31,6 +31,8 @@ import WorkoutPlanReviewPage from './pages/WorkoutPlanReviewPage';
 import SchedulePage from './pages/SchedulePage';
 import WorkoutSessionPage from './pages/WorkoutSessionPage';
 import MedicationsPage from './pages/MedicationsPage';
+import CorrelationInsightsPage from './pages/CorrelationInsightsPage';
+import SettingsPage from './pages/SettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -163,6 +165,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <MedicationsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/insights"
+            element={
+              <ProtectedRoute>
+                <CorrelationInsightsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <SettingsPage />
               </ProtectedRoute>
             }
           />
