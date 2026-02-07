@@ -29,6 +29,11 @@ import { QuickActions } from '../components/dashboard/QuickActions';
 import { XPProgressBar } from '../components/gamification/XPProgressBar';
 import { StreakCounter } from '../components/gamification/StreakCounter';
 import { MedicationsWidget } from '../components/dashboard/MedicationsWidget';
+import { DailyHabitCheckIn } from '../components/habits/DailyHabitCheckIn';
+import { VisionScanUploader } from '../components/vision/VisionScanUploader';
+import { VisionScansList } from '../components/vision/VisionScansList';
+import { HealthScoreCard } from '../components/health/HealthScoreCard';
+import { TodayHealthLoop } from '../components/health/TodayHealthLoop';
 import MedicationReminderBanner from '../components/medications/MedicationReminderBanner';
 import { PageTransition } from '../components/layout/PageTransition';
 import { Card } from '../design-system';
@@ -248,6 +253,14 @@ export default function DashboardPage() {
         {/* Medication Reminder Banner */}
         <MedicationReminderBanner />
 
+        <div className="mb-8">
+          <TodayHealthLoop
+            todayWorkout={todayWorkout?.workout || null}
+            habitsEnabled={profileData?.user?.preferences?.habits_enabled}
+            dietEnabled={profileData?.user?.preferences?.diet_ai_enabled}
+          />
+        </div>
+
         {/* Gamification Stats Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* XP Progress */}
@@ -323,6 +336,29 @@ export default function DashboardPage() {
         <div className="mb-8">
           <MedicationsWidget />
         </div>
+
+        {profileData?.user?.preferences?.habits_enabled && (
+          <div className="mb-8" id="habit-check-in">
+            <DailyHabitCheckIn />
+          </div>
+        )}
+
+        {profileData?.user?.preferences?.diet_ai_enabled && (
+          <>
+            <div className="mb-8" id="vision-scan">
+              <VisionScanUploader />
+            </div>
+            <div className="mb-8">
+              <VisionScansList />
+            </div>
+          </>
+        )}
+
+        {profileData?.user?.preferences?.unified_health_score_enabled && (
+          <div className="mb-8">
+            <HealthScoreCard />
+          </div>
+        )}
 
         {/* Weekly Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">

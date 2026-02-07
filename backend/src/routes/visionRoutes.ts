@@ -21,6 +21,8 @@ import {
   getVisionScanById,
   updateVisionScan,
   uploadVisionImage,
+  analyzeVisionScan,
+  generateMealSuggestionsFromScan,
 } from '../controllers/visionController';
 import { upload } from '../middleware/upload';
 
@@ -66,6 +68,21 @@ router.put(
     body('processed_at').optional().isISO8601(),
   ],
   updateVisionScan
+);
+
+router.post(
+  '/scans/:id/analyze',
+  [body('provider').optional().isIn(['anthropic', 'openai'])],
+  analyzeVisionScan
+);
+
+router.post(
+  '/scans/:id/meal-suggestions',
+  [
+    body('dietary_preferences').optional().isArray(),
+    body('provider').optional().isIn(['anthropic', 'openai']),
+  ],
+  generateMealSuggestionsFromScan
 );
 
 export default router;

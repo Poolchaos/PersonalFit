@@ -31,6 +31,8 @@ import type {
 export { gamificationAPI } from './gamification';
 export type { GamificationStats, XPGainResponse } from './gamification';
 export { medicationAPI, medicationQueryKeys } from './medications';
+export { healthEcosystemAPI, healthEcosystemQueryKeys } from './healthEcosystem';
+export { analyticsAPI } from './analytics';
 export { queryKeys, invalidationKeys } from './queryKeys';
 
 // Auth API

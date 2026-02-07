@@ -16,10 +16,12 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface VisionItem {
   name: string;
-  quantity?: number;
-  unit?: string;
-  confidence?: number;
-  confirmed?: boolean;
+  quantity: string;
+  unit: string;
+  category: 'protein' | 'vegetable' | 'fruit' | 'grain' | 'dairy' | 'snack' | 'beverage' | 'other';
+  freshness_estimate?: 'fresh' | 'moderate' | 'expiring_soon';
+  confidence: number;
+  confirmed: boolean;
 }
 
 export interface IVisionScan extends Document {
@@ -36,9 +38,18 @@ export interface IVisionScan extends Document {
 const visionItemSchema = new Schema<VisionItem>(
   {
     name: { type: String, required: true, trim: true },
-    quantity: { type: Number },
-    unit: { type: String, trim: true },
-    confidence: { type: Number, min: 0, max: 1 },
+    quantity: { type: String, required: true },
+    unit: { type: String, required: true, trim: true },
+    category: {
+      type: String,
+      enum: ['protein', 'vegetable', 'fruit', 'grain', 'dairy', 'snack', 'beverage', 'other'],
+      required: true,
+    },
+    freshness_estimate: {
+      type: String,
+      enum: ['fresh', 'moderate', 'expiring_soon'],
+    },
+    confidence: { type: Number, required: true, min: 0, max: 1 },
     confirmed: { type: Boolean, default: false },
   },
   { _id: false }

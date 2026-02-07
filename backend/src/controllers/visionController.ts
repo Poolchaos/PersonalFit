@@ -18,6 +18,7 @@ import mongoose from 'mongoose';
 import VisionScan from '../models/VisionScan';
 import { uploadPhoto } from '../services/storageService';
 import { AuthRequest } from '../middleware/auth';
+import { analyzeVisionImage, generateMealSuggestions } from '../services/visionAIService';
 
 export const createVisionScan = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -157,3 +158,122 @@ export const updateVisionScan = async (req: AuthRequest, res: Response): Promise
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const analyzeVisionScan = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { provider = 'anthropic' } = req.body;
+
+    // Fetch the vision scan
+    const scan = await VisionScan.findOne({
+      _id: id,
+      user_id: new mongoose.Types.ObjectId(req.user?.userId),
+    });
+
+    if (!scan) {
+      res.status(404).json({ error: 'Vision scan not found' });
+      return;
+    }
+
+    if (!scan.image_url) {
+      res.status(400).json({ error: 'No image URL found for this scan' });
+      return;
+    }
+
+    // Analyze the image with AI
+    try {
+      const analysisResult = await analyzeVisionImage(
+        scan.image_url,
+        scan.source,
+        provider as 'anthropic' | 'openai'
+      );
+
+      // Update the scan with detected items
+      scan.items = analysisResult.items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        category: item.category,
+        confidence: item.confidence,
+        freshness_estimate: item.freshness_estimate,
+        confirmed: false,
+      }));
+      scan.status = 'pending'; // User needs to confirm
+      scan.processed_at = new Date();
+
+      await scan.save();
+
+      res.json({
+        scan,
+        analysis: {
+          total_items_detected: analysisResult.total_items_detected,
+          provider: analysisResult.analysis_provider,
+        },
+      });
+    } catch (aiError) {
+      // Update scan status to failed
+      scan.status = 'failed';
+      await scan.save();
+
+      throw aiError;
+    }
+  } catch (error) {
+    console.error('Analyze vision scan error:', error);
+    res.status(500).json({
+      error: 'Failed to analyze image',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const generateMealSuggestionsFromScan = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { dietary_preferences, provider = 'anthropic' } = req.body;
+
+    // Fetch the vision scan
+    const scan = await VisionScan.findOne({
+      _id: id,
+      user_id: new mongoose.Types.ObjectId(req.user?.userId),
+    });
+
+    if (!scan) {
+      res.status(404).json({ error: 'Vision scan not found' });
+      return;
+    }
+
+    if (scan.items.length === 0) {
+      res.status(400).json({ error: 'No items detected in this scan. Please analyze the image first.' });
+      return;
+    }
+
+    // Generate meal suggestions
+    const mealSuggestions = await generateMealSuggestions(
+      scan.items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        unit: item.unit,
+        category: item.category,
+        confidence: item.confidence,
+        freshness_estimate: item.freshness_estimate,
+      })),
+      dietary_preferences,
+      provider as 'anthropic' | 'openai'
+    );
+
+    res.json({
+      meal_suggestions: mealSuggestions,
+      based_on_items: scan.items.length,
+    });
+  } catch (error) {
+    console.error('Generate meal suggestions error:', error);
+    res.status(500).json({
+      error: 'Failed to generate meal suggestions',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
