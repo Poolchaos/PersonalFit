@@ -33,6 +33,7 @@ import { DailyHabitCheckIn } from '../components/habits/DailyHabitCheckIn';
 import { VisionScanUploader } from '../components/vision/VisionScanUploader';
 import { VisionScansList } from '../components/vision/VisionScansList';
 import { HealthScoreCard } from '../components/health/HealthScoreCard';
+import { AICoachingCard } from '../components/health/AICoachingCard';
 import { TodayHealthLoop } from '../components/health/TodayHealthLoop';
 import MedicationReminderBanner from '../components/medications/MedicationReminderBanner';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -355,9 +356,14 @@ export default function DashboardPage() {
         )}
 
         {profileData?.user?.preferences?.unified_health_score_enabled && (
-          <div className="mb-8">
-            <HealthScoreCard />
-          </div>
+          <>
+            <div className="mb-8">
+              <HealthScoreCard />
+            </div>
+            <div className="mb-8">
+              <AICoachingCard />
+            </div>
+          </>
         )}
 
         {/* Weekly Stats */}

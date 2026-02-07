@@ -28,6 +28,7 @@ import type {
   ProgressStats,
 } from '../types';
 
+export { apiClient } from './client';
 export { gamificationAPI } from './gamification';
 export type { GamificationStats, XPGainResponse } from './gamification';
 export { medicationAPI, medicationQueryKeys } from './medications';

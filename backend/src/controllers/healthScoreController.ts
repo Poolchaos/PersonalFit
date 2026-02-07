@@ -17,6 +17,8 @@ import { validationResult } from 'express-validator';
 import mongoose from 'mongoose';
 import HealthScore from '../models/HealthScore';
 import { AuthRequest } from '../middleware/auth';
+import { generateDailyHealthScore } from '../services/healthScoreService';
+import { generateCoachingRecommendations } from '../services/coachingService';
 
 export const upsertHealthScore = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -89,3 +91,44 @@ export const getHealthScores = async (req: AuthRequest, res: Response): Promise<
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const calculateTodayScore = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId as string;
+    const date = req.body?.date ? new Date(req.body.date) : new Date();
+
+    const healthScore = await generateDailyHealthScore(userId, date);
+
+    res.json({
+      score: healthScore,
+      message: 'Health score calculated successfully',
+    });
+  } catch (error) {
+    console.error('Calculate health score error:', error);
+    res.status(500).json({ error: 'Failed to calculate health score' });
+  }
+};
+
+export const getCoachingRecommendations = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.userId as string;
+    const { provider = 'anthropic' } = req.query;
+
+    const recommendations = await generateCoachingRecommendations(
+      userId,
+      provider as 'anthropic' | 'openai'
+    );
+
+    res.json({
+      recommendations,
+      generated_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Get coaching recommendations error:', error);
+    res.status(500).json({
+      error: 'Failed to generate recommendations',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+

@@ -15,7 +15,12 @@
 import { Router } from 'express';
 import { body, query } from 'express-validator';
 import { authenticate } from '../middleware/auth';
-import { upsertHealthScore, getHealthScores } from '../controllers/healthScoreController';
+import {
+  upsertHealthScore,
+  getHealthScores,
+  calculateTodayScore,
+  getCoachingRecommendations,
+} from '../controllers/healthScoreController';
 
 const router = Router();
 
@@ -41,6 +46,18 @@ router.get(
     query('skip').optional().isInt({ min: 0 }),
   ],
   getHealthScores
+);
+
+router.post(
+  '/calculate',
+  [body('date').optional().isISO8601()],
+  calculateTodayScore
+);
+
+router.get(
+  '/coaching',
+  [query('provider').optional().isIn(['anthropic', 'openai'])],
+  getCoachingRecommendations
 );
 
 export default router;
