@@ -40,7 +40,7 @@ const MedicationReminderBanner: React.FC = () => {
 
     try {
       const response = await apiClient.get('/api/medications');
-      const medications = response.data;
+      const medications = response.data.medications || [];
 
       const now = new Date();
       const upcoming: UpcomingDose[] = [];
