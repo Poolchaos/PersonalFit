@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Bell, BellOff, Moon, TestTube, Loader2, Check, X } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { apiClient } from '../../api/client';
 import {
   isPushSupported,
@@ -120,7 +121,7 @@ const NotificationSettings: React.FC = () => {
       setNotificationPermission(permission);
 
       if (permission !== 'granted') {
-        toast.warning('Please allow notifications to receive medication reminders');
+        toast.error('Please allow notifications to receive medication reminders');
         return;
       }
 
@@ -248,7 +249,7 @@ const NotificationSettings: React.FC = () => {
 
   const handleTestNotification = async () => {
     if (!pushEnabled) {
-      toast.warning('Please enable push notifications first');
+      toast.error('Please enable push notifications first');
       return;
     }
 

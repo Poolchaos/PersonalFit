@@ -35,6 +35,7 @@ export { medicationAPI, medicationQueryKeys } from './medications';
 export { healthEcosystemAPI, healthEcosystemQueryKeys } from './healthEcosystem';
 export { analyticsAPI } from './analytics';
 export { queryKeys, invalidationKeys } from './queryKeys';
+export { goalsAPI, goalsQueryKeys } from './goals';
 
 // Auth API
 export const authAPI = {

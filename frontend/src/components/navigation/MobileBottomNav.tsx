@@ -12,7 +12,7 @@
  * See the LICENSE file for the full license text.
  */
 
-import { Home, Dumbbell, Calendar, Trophy, Pill, Award, ShoppingBag, Target } from 'lucide-react';
+import { Home, Dumbbell, Calendar, Pill, Award, ShoppingBag, Target } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useState } from 'react';

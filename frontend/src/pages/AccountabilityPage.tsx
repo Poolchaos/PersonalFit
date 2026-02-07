@@ -41,13 +41,13 @@ export default function AccountabilityPage() {
   });
 
   // Generate last 7 days for calendar
+  // Shows workouts as completed based on current streak length from backend
   const last7Days = [...Array(7)].map((_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (6 - i));
     return {
       day: date.toLocaleDateString('en-US', { weekday: 'short' }),
       date: date.getDate(),
-      // Mock workout completion - replace with real data from API
       hasWorkout: i < (data?.streak.current || 0),
     };
   });

@@ -138,9 +138,6 @@ export const getWeeklyLeaderboard = async (
 
     // Create a map for quick lookup
     const userMap = new Map(users.map((user) => [String(user._id), user]));
-    const workoutCountMap = new Map(
-      weeklyWorkoutCounts.map((item) => [String(item._id), item.workoutCount])
-    );
 
     const leaderboard: LeaderboardEntry[] = weeklyWorkoutCounts.map((item, index) => {
       const userIdStr = String(item._id);

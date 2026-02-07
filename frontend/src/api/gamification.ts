@@ -22,6 +22,7 @@ export interface GamificationStats {
   levelProgress?: number;
   xpForNextLevel?: number;
   totalWorkoutsCompleted: number;
+  totalPRs: number;
   currentStreak: number;
   longestStreak: number;
   lastWorkoutDate?: string;
