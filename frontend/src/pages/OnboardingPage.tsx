@@ -12,8 +12,8 @@
  * See the LICENSE file for the full license text.
  */
 
-import { OnboardingWizard } from '../components/onboarding/OnboardingWizard';
+import { EnhancedOnboarding } from '../components/onboarding/EnhancedOnboarding';
 
 export default function OnboardingPage() {
-  return <OnboardingWizard />;
+  return <EnhancedOnboarding />;
 }

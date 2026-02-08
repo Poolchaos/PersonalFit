@@ -17,14 +17,20 @@ import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { profileAPI, equipmentAPI, workoutAPI, aiConfigAPI, queryKeys } from '../../api';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input } from '../../design-system';
+import { Button, Input } from '../../design-system';
 import { ChevronRight, ChevronLeft, Sparkles, Key, User, Target, Dumbbell, Calendar, Zap, Pill } from 'lucide-react';
 import type { Equipment } from '../../types';
 import { GeneratingWorkoutLoader } from './GeneratingWorkoutLoader';
 import type { OnboardingData } from './types';
 import { validateStep } from './validation';
+import { AuroraBackground } from '../auth/AuroraBackground';
+import { ProgressDots } from './ProgressDots';
 
-export function OnboardingWizard() {
+interface OnboardingWizardProps {
+  onUserNameCapture?: (name: string) => void;
+}
+
+export function OnboardingWizard({ onUserNameCapture: _onUserNameCapture }: OnboardingWizardProps = {}) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [step, setStep] = useState(0); // Start at step 0 for token
@@ -235,7 +241,6 @@ export function OnboardingWizard() {
   };
 
   const totalSteps = 8; // Updated to include token + modality + medications steps
-  const progress = ((step + 1) / totalSteps) * 100;
 
   // Helper to get icon and image description for current step
   const getStepContent = () => {
@@ -314,23 +319,26 @@ export function OnboardingWizard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center p-4">
-      <Card className="max-w-4xl w-full">
-        <CardHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-6 h-6 text-primary-500" />
-            <CardTitle>Welcome to Lumi!</CardTitle>
-          </div>
-          <div className="w-full bg-neutral-200 rounded-full h-2">
-            <div
-              className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-sm text-neutral-600 mt-2">Step {step + 1} of {totalSteps}</p>
-        </CardHeader>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Aurora background */}
+      <AuroraBackground />
 
-        <CardContent>
+      {/* Progress dots */}
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50">
+        <ProgressDots totalSteps={totalSteps} currentStep={step} />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen flex items-center justify-center p-4 pt-20">
+        <div className="max-w-4xl w-full backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-[0_8px_32px_0_rgba(59,130,246,0.15)] p-8">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Sparkles className="w-6 h-6 text-primary-400" />
+              <h1 className="text-2xl font-bold text-white">Set up your profile</h1>
+            </div>
+            <p className="text-white/60 text-sm">Step {step + 1} of {totalSteps}</p>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left side - Image/Illustration */}
             <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 rounded-lg overflow-hidden min-h-[400px]">
@@ -869,8 +877,8 @@ export function OnboardingWizard() {
               </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
