@@ -12,7 +12,6 @@
  * See the LICENSE file for the full license text.
  */
 
-export { Step0APIKey } from './Step0APIKey';
 export { Step1Profile } from './Step1Profile';
 export { Step2Modality } from './Step2Modality';
 export { Step3Goals } from './Step3Goals';

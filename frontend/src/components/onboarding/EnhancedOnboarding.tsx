@@ -14,17 +14,27 @@
 
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { AuroraBackground } from '../auth/AuroraBackground';
 import { WelcomeScreen } from './WelcomeScreen';
 import { PathSelection } from './PathSelection';
 import { AIIntroduction } from './AIIntroduction';
 import { OnboardingWizard } from './OnboardingWizard';
 import { ProgressDots } from './ProgressDots';
+import { profileAPI, queryKeys } from '../../api';
 
 export function EnhancedOnboarding() {
   const [flowStep, setFlowStep] = useState(0); // 0: welcome, 1: path selection, 2: AI intro, 3+: existing wizard
   const [selectedPaths, setSelectedPaths] = useState<string[]>([]);
-  const [userName, setUserName] = useState('');
+
+  // Fetch existing profile to get user's name (for re-onboarding users)
+  const { data: existingProfile } = useQuery({
+    queryKey: queryKeys.profile.all,
+    queryFn: profileAPI.getProfile,
+  });
+
+  // Get the user's first name if available
+  const userName = existingProfile?.user?.profile?.first_name || 'there';
 
   // Total intro steps before main wizard
   const introSteps = 3;
@@ -80,7 +90,7 @@ export function EnhancedOnboarding() {
           {flowStep === 2 && (
             <div key="ai-intro" className="min-h-screen flex items-center justify-center px-4 py-12">
               <AIIntroduction
-                userName={userName || 'there'}
+                userName={userName}
                 insight={generateInsight(selectedPaths)}
                 onContinue={() => setFlowStep(3)}
               />
@@ -89,7 +99,7 @@ export function EnhancedOnboarding() {
 
           {flowStep >= 3 && (
             <div key="wizard">
-              <OnboardingWizard onUserNameCapture={setUserName} />
+              <OnboardingWizard />
             </div>
           )}
         </AnimatePresence>

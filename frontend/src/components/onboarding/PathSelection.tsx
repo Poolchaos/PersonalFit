@@ -118,29 +118,15 @@ export const PathSelection = ({ selectedPaths, onPathToggle, onContinue }: PathS
 
                 {/* Icon */}
                 <div className="relative">
-                  <motion.div
+                  <div
                     className={cn(
-                      'w-16 h-16 rounded-lg mb-4 flex items-center justify-center mx-auto',
+                      'w-16 h-16 rounded-lg mb-4 flex items-center justify-center mx-auto transition-all duration-300',
                       `bg-gradient-to-br ${path.color}`,
-                      isSelected ? 'opacity-100' : 'opacity-60'
+                      isSelected ? 'opacity-100 shadow-[0_0_20px_rgba(59,130,246,0.4)]' : 'opacity-60'
                     )}
-                    animate={
-                      isSelected
-                        ? {
-                            boxShadow: [
-                              '0 0 0px rgba(59, 130, 246, 0)',
-                              '0 0 20px rgba(59, 130, 246, 0.4)',
-                              '0 0 0px rgba(59, 130, 246, 0)',
-                            ],
-                          }
-                        : {}
-                    }
-                    transition={{
-                      boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-                    }}
                   >
                     <Icon className="w-8 h-8 text-white" />
-                  </motion.div>
+                  </div>
 
                   {/* Checkmark */}
                   {isSelected && (

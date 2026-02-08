@@ -14,7 +14,7 @@
 
 import { motion } from 'framer-motion';
 import { GlassButton } from '../auth/GlassButton';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -40,7 +40,7 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Icon */}
+        {/* Lumi Spark Logo */}
         <motion.div
           className="flex justify-center mb-8"
           initial={{ scale: 0, rotate: -180 }}
@@ -48,19 +48,19 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
           transition={{ duration: 0.8, delay: 0.3, type: 'spring', stiffness: 100 }}
         >
           <div className="relative">
-            <motion.div
-              className="absolute inset-0 blur-3xl bg-primary-500/30 rounded-full"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-            <Sparkles className="w-20 h-20 text-primary-400 relative" strokeWidth={1.5} />
+            {/* Static glow — no animation */}
+            <div className="absolute inset-0 blur-2xl bg-[#7C3AED]/30 rounded-full scale-150" />
+            {/* CSS rotation — GPU-compositable transform */}
+            <div
+              className="animate-spin relative"
+              style={{ animationDuration: '20s', willChange: 'transform' }}
+            >
+              <img
+                src="/images/lumi-spark-logo.svg"
+                alt="Lumi"
+                className="w-20 h-20"
+              />
+            </div>
           </div>
         </motion.div>
 
@@ -73,7 +73,7 @@ export const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
         >
           What if your body
           <br />
-          <span className="bg-gradient-to-r from-primary-400 via-secondary-500 to-success-500 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-[#A78BFA] via-[#FF6B9D] to-[#10B981] bg-clip-text text-transparent">
             could talk to you?
           </span>
         </motion.h1>

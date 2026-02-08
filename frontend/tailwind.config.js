@@ -1,14 +1,14 @@
 ﻿/**
  * Copyright (c) 2025-2026 Phillip-Juan van der Berg. All Rights Reserved.
- * 
+ *
  * This file is part of Lumi.
- * 
+ *
  * Lumi is licensed under the PolyForm Noncommercial License 1.0.0.
  * You may not use this file except in compliance with the License.
- * 
+ *
  * Commercial use requires a separate paid license.
  * Contact: phillipjuanvanderberg@gmail.com
- * 
+ *
  * See the LICENSE file for the full license text.
  */
 
@@ -52,6 +52,10 @@ export default {
         'confetti': 'confetti 1000ms ease-out',
         'shimmer': 'shimmer 750ms linear infinite',
         'progress-bar': 'progressBar 500ms ease-out',
+        // Aurora background — 10s opacity crossfade cycle
+        'aurora-a': 'auroraA 10s linear infinite',
+        'aurora-b': 'auroraB 10s linear infinite',
+        'aurora-c': 'auroraC 10s linear infinite',
       },
       keyframes: animations.keyframes,
     },

@@ -138,7 +138,7 @@ export default function SignupPage() {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className="space-y-1.5 p-3 bg-white/5 backdrop-blur-sm rounded-lg border border-white/10"
+                    className="space-y-2 p-4 bg-white/5 backdrop-blur-md rounded-xl border border-white/10"
                   >
                     {passwordRequirements.map((req, index) => (
                       <motion.div
@@ -146,14 +146,18 @@ export default function SignupPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="flex items-center gap-2 text-xs"
+                        className="flex items-center gap-2.5 text-sm"
                       >
                         {req.valid ? (
-                          <Check className="w-3.5 h-3.5 text-success-DEFAULT" />
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#10B981]/20 flex items-center justify-center">
+                            <Check className="w-3 h-3 text-[#10B981]" strokeWidth={2.5} />
+                          </div>
                         ) : (
-                          <X className="w-3.5 h-3.5 text-white/30" />
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-white/5 flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                          </div>
                         )}
-                        <span className={req.valid ? 'text-success-DEFAULT' : 'text-white/50'}>
+                        <span className={req.valid ? 'text-white/90 font-medium' : 'text-white/50'}>
                           {req.label}
                         </span>
                       </motion.div>
@@ -179,21 +183,25 @@ export default function SignupPage() {
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
-                    className={`flex items-center gap-2 text-xs p-2 rounded-lg ${
+                    className={`flex items-center gap-2.5 text-sm p-3 rounded-xl backdrop-blur-md border ${
                       passwordsMatch
-                        ? 'text-success-DEFAULT bg-success-DEFAULT/10'
-                        : 'text-error-light bg-error-light/10'
+                        ? 'text-[#10B981] bg-[#10B981]/10 border-[#10B981]/20'
+                        : 'text-[#FF6B9D] bg-[#FF6B9D]/10 border-[#FF6B9D]/20'
                     }`}
                   >
                     {passwordsMatch ? (
                       <>
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Passwords match</span>
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#10B981]/20 flex items-center justify-center">
+                          <Check className="w-3 h-3" strokeWidth={2.5} />
+                        </div>
+                        <span className="font-medium">Passwords match</span>
                       </>
                     ) : (
                       <>
-                        <X className="w-3.5 h-3.5" />
-                        <span>Passwords do not match</span>
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-[#FF6B9D]/20 flex items-center justify-center">
+                          <X className="w-3 h-3" strokeWidth={2.5} />
+                        </div>
+                        <span className="font-medium">Passwords do not match</span>
                       </>
                     )}
                   </motion.div>

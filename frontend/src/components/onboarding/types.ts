@@ -15,7 +15,6 @@
 import type { UserProfile } from '../../types';
 
 export interface OnboardingData {
-  openai_token?: string;
   workout_modality?: 'strength' | 'cardio' | 'hybrid';
   profile: Partial<UserProfile>;
   medications?: {

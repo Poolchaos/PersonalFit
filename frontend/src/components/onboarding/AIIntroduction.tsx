@@ -28,7 +28,6 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
   const [displayedText, setDisplayedText] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const fullText = `Hi ${userName}, I'm your Lumi AI`;
-  const insightText = insight;
 
   // Typewriter effect for greeting
   useEffect(() => {
@@ -38,14 +37,15 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
       }, 50);
       return () => clearTimeout(timeout);
     } else {
-      setTimeout(() => setIsTypingComplete(true), 500);
+      const timeout = setTimeout(() => setIsTypingComplete(true), 500);
+      return () => clearTimeout(timeout);
     }
   }, [displayedText, fullText]);
 
   return (
     <OnboardingScreen>
       <div className="space-y-8 text-center">
-        {/* AI Avatar */}
+        {/* AI Avatar — simplified: 1 CSS ring rotation + static orb */}
         <motion.div
           className="flex justify-center"
           initial={{ scale: 0, opacity: 0 }}
@@ -53,75 +53,51 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
           transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
         >
           <div className="relative w-32 h-32">
-            {/* Rotating rings */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute inset-0 rounded-full border-2 border-primary-500/30"
-                style={{
-                  scale: 1 + i * 0.2,
-                }}
-                animate={{
-                  rotate: [0, 360],
-                  opacity: [0.3, 0.6, 0.3],
-                }}
-                transition={{
-                  duration: 4 + i,
-                  repeat: Infinity,
-                  ease: 'linear',
-                }}
-              />
-            ))}
+            {/* Single rotating ring — CSS animation (GPU transform) */}
+            <div
+              className="absolute inset-0 rounded-full border-2 border-primary-500/30 animate-spin"
+              style={{
+                animationDuration: '6s',
+                scale: '1.2',
+                willChange: 'transform',
+              }}
+            />
+            {/* Second ring — counter-rotate, CSS only */}
+            <div
+              className="absolute inset-0 rounded-full border border-primary-400/20 animate-spin"
+              style={{
+                animationDuration: '10s',
+                animationDirection: 'reverse',
+                scale: '1.4',
+                willChange: 'transform',
+              }}
+            />
 
-            {/* Central orb image */}
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              animate={{
-                scale: [1, 1.05, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
+            {/* Lumi Spark Logo — slow CSS rotation */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div
+                className="animate-spin"
+                style={{ animationDuration: '15s', willChange: 'transform' }}
+              >
+                <img
+                  src="/images/lumi-spark-logo.svg"
+                  alt="Lumi AI"
+                  className="w-16 h-16"
+                />
+              </div>
+            </div>
+
+            {/* Central orb image — static (no scale pulse) */}
+            <div className="absolute inset-0 flex items-center justify-center">
               <img
                 src="/images/onboarding/ai-avatar-orb.jpg"
                 alt="AI Avatar"
                 className="w-20 h-20 rounded-full object-cover"
                 style={{
-                  boxShadow: '0 0 40px rgba(59, 130, 246, 0.5)',
+                  boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
                 }}
               />
-            </motion.div>
-
-            {/* Floating particles */}
-            {[...Array(6)].map((_, i) => {
-              const angle = (i * 60 * Math.PI) / 180;
-              const radius = 50;
-              return (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-primary-400 rounded-full"
-                  style={{
-                    left: '50%',
-                    top: '50%',
-                  }}
-                  animate={{
-                    x: [0, Math.cos(angle) * radius],
-                    y: [0, Math.sin(angle) * radius],
-                    opacity: [0.8, 0],
-                    scale: [1, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.3,
-                    ease: 'easeOut',
-                  }}
-                />
-              );
-            })}
+            </div>
           </div>
         </motion.div>
 
@@ -134,10 +110,8 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
           <h2 className="text-3xl font-bold text-white mb-2 min-h-[2.5rem]">
             {displayedText}
             {!isTypingComplete && (
-              <motion.span
-                animate={{ opacity: [1, 0] }}
-                transition={{ duration: 0.5, repeat: Infinity }}
-                className="inline-block w-0.5 h-8 bg-primary-400 ml-1"
+              <span
+                className="inline-block w-0.5 h-8 bg-primary-400 ml-1 animate-pulse"
               />
             )}
           </h2>
@@ -149,7 +123,7 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="relative p-6 rounded-xl bg-gradient-to-br from-primary-500/10 to-achievement-DEFAULT/10 border border-primary-500/30 backdrop-blur-sm"
+            className="relative p-6 rounded-xl bg-gradient-to-br from-primary-500/10 to-achievement-DEFAULT/10 border border-primary-500/30"
           >
             {/* Icon */}
             <motion.div
@@ -170,22 +144,8 @@ export const AIIntroduction = ({ userName, insight, onContinue }: AIIntroduction
               transition={{ delay: 0.4, duration: 0.6 }}
             >
               <p className="text-sm text-primary-300 font-medium mb-2">Your first insight</p>
-              <p className="text-white text-lg leading-relaxed">{insightText}</p>
+              <p className="text-white text-lg leading-relaxed">{insight}</p>
             </motion.div>
-
-            {/* Glow effect */}
-            <motion.div
-              className="absolute inset-0 rounded-xl blur-xl bg-gradient-to-br from-primary-500/20 to-achievement-DEFAULT/20"
-              animate={{
-                opacity: [0.3, 0.5, 0.3],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-              style={{ zIndex: -1 }}
-            />
           </motion.div>
         )}
 

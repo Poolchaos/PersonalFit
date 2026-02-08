@@ -22,17 +22,22 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   success?: string;
   helperText?: string;
+  variant?: 'light' | 'dark';
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, success, helperText, type, className, ...props }, ref) => {
+  ({ label, error, success, helperText, type, className, variant = 'light', ...props }, ref) => {
     const [showPassword, setShowPassword] = useState(false);
     const isPassword = type === 'password';
     const inputType = isPassword && showPassword ? 'text' : type;
+    const isDark = variant === 'dark';
 
     return (
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-neutral-700">
+        <label className={cn(
+          'block text-sm font-medium',
+          isDark ? 'text-white' : 'text-neutral-700'
+        )}>
           {label}
         </label>
         <div className="relative">
@@ -45,9 +50,13 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 ? 'border-error-DEFAULT bg-error-light/5 focus:border-error-DEFAULT focus:ring-error-DEFAULT'
                 : success
                 ? 'border-success-DEFAULT bg-success-light/5 focus:border-success-DEFAULT focus:ring-success-DEFAULT'
+                : isDark
+                ? 'border-white/20 bg-white/10 text-white placeholder:text-white/40 focus:border-primary-500 focus:ring-primary-500'
                 : 'border-neutral-300 bg-white focus:border-primary-500 focus:ring-primary-500',
               'focus:outline-none focus:ring-2 focus:ring-offset-0',
-              'disabled:bg-neutral-100 disabled:cursor-not-allowed',
+              isDark
+                ? 'disabled:bg-white/5 disabled:cursor-not-allowed'
+                : 'disabled:bg-neutral-100 disabled:cursor-not-allowed',
               isPassword && 'pr-12',
               (error || success) && !isPassword && 'pr-12',
               className
@@ -60,7 +69,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700"
+              className={cn(
+                'absolute right-3 top-1/2 -translate-y-1/2',
+                isDark ? 'text-white/50 hover:text-white/80' : 'text-neutral-500 hover:text-neutral-700'
+              )}
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -101,7 +113,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             </motion.p>
           )}
           {helperText && !error && !success && (
-            <p className="text-sm text-neutral-500">{helperText}</p>
+            <p className={cn('text-sm', isDark ? 'text-white/50' : 'text-neutral-500')}>{helperText}</p>
           )}
         </AnimatePresence>
       </div>

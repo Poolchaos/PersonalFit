@@ -13,7 +13,6 @@
  */
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
 
 interface LumiLogoProps {
   className?: string;
@@ -29,60 +28,30 @@ export const LumiLogo = ({ className = '' }: LumiLogoProps) => {
     >
       {/* Glow container */}
       <div className="relative">
-        {/* Outer glow */}
-        <motion.div
-          className="absolute inset-0 blur-2xl bg-primary-500/30 rounded-full"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+        {/* Static glow — no animation, just a soft halo */}
+        <div
+          className="absolute inset-0 blur-2xl bg-[#7C3AED]/30 rounded-full scale-150"
         />
 
         {/* Logo content */}
         <div className="relative flex items-center gap-3">
-          {/* Icon */}
-          <motion.div
-            className="relative"
-            animate={{
-              rotate: [0, 5, -5, 0],
-            }}
-            transition={{
-              duration: 4,
-              repeat: Infinity,
-              ease: 'easeInOut',
+          {/* Logo Icon — single slow CSS rotation (GPU-compositable transform) */}
+          <div
+            className="relative animate-spin"
+            style={{
+              animationDuration: '20s',
+              willChange: 'transform',
             }}
           >
-            <Sparkles className="w-10 h-10 text-primary-400" strokeWidth={2} />
-
-            {/* Particles */}
-            {[...Array(3)].map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute w-1 h-1 bg-primary-400 rounded-full"
-                style={{
-                  top: '50%',
-                  left: '50%',
-                }}
-                animate={{
-                  x: [0, Math.cos((i * 2 * Math.PI) / 3) * 20],
-                  y: [0, Math.sin((i * 2 * Math.PI) / 3) * 20],
-                  opacity: [1, 0],
-                  scale: [1, 0],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: 'easeOut',
-                }}
-              />
-            ))}
-          </motion.div>
+            <img
+              src="/images/lumi-spark-logo.svg"
+              alt="Lumi"
+              className="w-12 h-12"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(124, 58, 237, 0.6))'
+              }}
+            />
+          </div>
 
           {/* Text */}
           <div>
@@ -95,7 +64,7 @@ export const LumiLogo = ({ className = '' }: LumiLogoProps) => {
               Lumi
             </motion.h1>
             <motion.p
-              className="text-sm text-primary-300 font-light tracking-wide"
+              className="text-sm text-[#A78BFA] font-light tracking-wide"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}

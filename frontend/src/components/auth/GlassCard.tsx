@@ -28,19 +28,19 @@ export const GlassCard = ({ children, className }: GlassCardProps) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className={cn(
-        // Base glass effect
-        'relative backdrop-blur-xl bg-white/10',
+        // Base glass effect — backdrop-blur-md for performance (12px vs 24px)
+        'relative backdrop-blur-md bg-white/[0.12]',
         // Border with glow
         'border border-white/20',
-        // Shadow with color glow
-        'shadow-[0_8px_32px_0_rgba(59,130,246,0.15)]',
+        // Shadow with Electric Violet glow
+        'shadow-[0_8px_32px_0_rgba(124,58,237,0.2)]',
         // Rounded corners
         'rounded-2xl',
         // Padding
         'p-8',
         // Hover effect
         'transition-all duration-300',
-        'hover:shadow-[0_8px_32px_0_rgba(59,130,246,0.25)]',
+        'hover:shadow-[0_8px_32px_0_rgba(124,58,237,0.3)]',
         'hover:border-white/30',
         className
       )}

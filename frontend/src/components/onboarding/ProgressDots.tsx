@@ -30,29 +30,15 @@ export const ProgressDots = ({ totalSteps, currentStep, className }: ProgressDot
 
         return (
           <div key={index} className="relative">
-            {/* Dot */}
-            <motion.div
+            {/* Dot — static glow instead of animated box-shadow */}
+            <div
               className={cn(
                 'w-2.5 h-2.5 rounded-full transition-all duration-300',
                 isCurrent && 'w-8',
                 isCompleted && 'bg-achievement-DEFAULT',
-                isCurrent && 'bg-primary-500',
+                isCurrent && 'bg-primary-500 shadow-[0_0_12px_rgba(59,130,246,0.5)]',
                 !isCompleted && !isCurrent && 'bg-white/20'
               )}
-              animate={
-                isCurrent
-                  ? {
-                      boxShadow: [
-                        '0 0 8px rgba(59, 130, 246, 0.4)',
-                        '0 0 16px rgba(59, 130, 246, 0.6)',
-                        '0 0 8px rgba(59, 130, 246, 0.4)',
-                      ],
-                    }
-                  : {}
-              }
-              transition={{
-                boxShadow: { duration: 2, repeat: Infinity, ease: 'easeInOut' },
-              }}
             />
 
             {/* Completion checkmark animation */}
@@ -64,12 +50,7 @@ export const ProgressDots = ({ totalSteps, currentStep, className }: ProgressDot
                   exit={{ scale: 0, opacity: 0 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <motion.div
-                    className="w-1.5 h-1.5 bg-white rounded-full"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                  />
+                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
                 </motion.div>
               )}
             </AnimatePresence>

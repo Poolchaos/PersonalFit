@@ -24,8 +24,12 @@ interface Config {
   jwt_expires_in: string;
   jwt_refresh_secret: string;
   jwt_refresh_expires_in: string;
+  // Multi-LLM Provider Configuration
   openai_api_key: string;
   anthropic_api_key: string;
+  gemini_api_key: string;
+  moonshot_api_key: string;
+  default_llm_provider: string;
   encryption_secret: string;
   cors_origin: string;
   minio_endpoint: string;
@@ -44,8 +48,12 @@ const config: Config = {
   jwt_expires_in: process.env.JWT_EXPIRES_IN || '24h',
   jwt_refresh_secret: process.env.JWT_REFRESH_SECRET || '',
   jwt_refresh_expires_in: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+  // Multi-LLM Provider API Keys
   openai_api_key: process.env.OPENAI_API_KEY || '',
   anthropic_api_key: process.env.ANTHROPIC_API_KEY || '',
+  gemini_api_key: process.env.GEMINI_API_KEY || '',
+  moonshot_api_key: process.env.MOONSHOT_API_KEY || '',
+  default_llm_provider: process.env.DEFAULT_LLM_PROVIDER || 'openai',
   encryption_secret: process.env.ENCRYPTION_SECRET || process.env.JWT_SECRET || '',
   cors_origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   minio_endpoint: process.env.MINIO_ENDPOINT || 'localhost',

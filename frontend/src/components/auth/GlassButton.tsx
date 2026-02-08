@@ -50,15 +50,15 @@ export const GlassButton = ({
         'overflow-hidden',
         isPrimary
           ? [
-              'bg-gradient-to-r from-primary-500 to-primary-600',
+              'bg-gradient-to-r from-[#7C3AED] to-[#9333EA]',
               'text-white',
-              'shadow-[0_0_20px_rgba(59,130,246,0.3)]',
-              'hover:shadow-[0_0_30px_rgba(59,130,246,0.5)]',
+              'shadow-[0_0_20px_rgba(124,58,237,0.4)]',
+              'hover:shadow-[0_0_30px_rgba(124,58,237,0.6)]',
               'hover:scale-[1.02]',
               'active:scale-[0.98]',
             ]
           : [
-              'bg-white/10 backdrop-blur-sm',
+              'bg-white/10',
               'text-white',
               'border border-white/20',
               'hover:bg-white/20',

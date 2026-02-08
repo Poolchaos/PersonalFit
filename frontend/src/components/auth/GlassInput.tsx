@@ -46,14 +46,13 @@ export const GlassInput = ({
       <motion.label
         htmlFor={id}
         className={cn(
-          'absolute left-4 transition-all duration-200 pointer-events-none',
-          'text-white/70',
+          'absolute left-4 transition-all duration-200 pointer-events-none z-10',
           isFocused || hasValue
-            ? 'top-0 -translate-y-1/2 text-xs bg-[#0F1729] px-2'
-            : 'top-1/2 -translate-y-1/2 text-base'
+            ? 'top-0 -translate-y-1/2 text-xs font-medium px-2 rounded-md bg-gradient-to-r from-[#1a0b2e] via-[#2D1B69] to-[#1a0b2e]'
+            : 'top-1/2 -translate-y-1/2 text-sm font-medium'
         )}
         animate={{
-          color: isFocused ? '#3b82f6' : 'rgba(255, 255, 255, 0.7)',
+          color: isFocused ? '#A78BFA' : 'rgba(255, 255, 255, 0.9)',
         }}
       >
         {label}
@@ -64,7 +63,7 @@ export const GlassInput = ({
         className="relative"
         animate={{
           boxShadow: isFocused
-            ? '0 0 0 2px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2)'
+            ? '0 0 0 2px rgba(124, 58, 237, 0.4), 0 0 20px rgba(124, 58, 237, 0.3)'
             : '0 0 0 1px rgba(255, 255, 255, 0.1)',
         }}
         transition={{ duration: 0.2 }}
@@ -82,7 +81,7 @@ export const GlassInput = ({
           autoComplete={autoComplete}
           className={cn(
             'w-full px-4 py-3.5 rounded-xl',
-            'bg-white/5 backdrop-blur-sm',
+            'bg-white/5',
             'border border-white/10',
             'text-white placeholder:text-white/30',
             'outline-none',
