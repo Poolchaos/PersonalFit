@@ -1,7 +1,7 @@
 {
-    "name": "personalfit-backend",
+    "name": "lumi-backend",
     "version": "1.0.0",
-    "description": "PersonalFit Backend API - AI-powered fitness planner with accountability",
+    "description": "Lumi Backend API - AI-powered health ecosystem with vision, medication tracking, and wellness insights",
     "main": "dist/server.js",
     "scripts": {
         "dev": "nodemon --exec ts-node src/server.ts",

@@ -2,21 +2,21 @@ services:
   # MongoDB Database
   mongodb:
     image: mongo:7.0
-    container_name: personalfit-mongodb
+    container_name: lumi-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeme}
-      MONGO_INITDB_DATABASE: personalfit
+      MONGO_INITDB_DATABASE: lumi
     ports:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
       - ./mongo-init:/docker-entrypoint-initdb.d:ro
     networks:
-      - personalfit-network
+      - lumi-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/personalfit --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/lumi --quiet
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,12 +28,12 @@ services:
       context: ./backend
       dockerfile: Dockerfile
       target: development
-    container_name: personalfit-backend
+    container_name: lumi-backend
     restart: unless-stopped
     environment:
       NODE_ENV: development
       PORT: 5000
-      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/personalfit?authSource=admin
+      MONGODB_URI: mongodb://${MONGO_ROOT_USERNAME:-admin}:${MONGO_ROOT_PASSWORD:-changeme}@mongodb:27017/lumi?authSource=admin
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev-refresh-secret-change-in-production}
@@ -61,7 +61,7 @@ services:
       minio:
         condition: service_healthy
     networks:
-      - personalfit-network
+      - lumi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 10s
@@ -76,7 +76,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: production
-    container_name: personalfit-frontend
+    container_name: lumi-frontend
     restart: unless-stopped
     environment:
       VITE_API_URL: http://localhost:5000
@@ -85,12 +85,12 @@ services:
     depends_on:
       - backend
     networks:
-      - personalfit-network
+      - lumi-network
 
   # MinIO Object Storage (S3-compatible)
   minio:
     image: minio/minio:latest
-    container_name: personalfit-minio
+    container_name: lumi-minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
@@ -102,7 +102,7 @@ services:
       - minio-data:/data
     command: server /data --console-address ":9001"
     networks:
-      - personalfit-network
+      - lumi-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -110,14 +110,14 @@ services:
       retries: 3
 
 networks:
-  personalfit-network:
+  lumi-network:
     driver: bridge
-    name: personalfit-network
+    name: lumi-network
 
 volumes:
   mongodb-data:
-    name: personalfit-mongodb-data
+    name: lumi-mongodb-data
   backend-node-modules:
-    name: personalfit-backend-node-modules
+    name: lumi-backend-node-modules
   minio-data:
-    name: personalfit-minio-data
+    name: lumi-minio-data

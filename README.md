@@ -1,8 +1,8 @@
-# PersonalFit 🏋️
+# Lumi ✨
 
-**Comprehensive Self-Hosted Fitness & Health Platform**
+**AI-Powered Health Ecosystem**
 
-AI-powered workouts • Medication tracking • Vision analysis • Gamification • Privacy-first
+Illuminate your health through intelligent insights • Vision AI • Medication tracking • Mental wellness • Habit architecture • Privacy-first
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
@@ -17,7 +17,7 @@ AI-powered workouts • Medication tracking • Vision analysis • Gamification
 
 > **This software is NOT free for commercial use.**
 >
-> PersonalFit is licensed under the **PolyForm Noncommercial License 1.0.0**.
+> Lumi is licensed under the **PolyForm Noncommercial License 1.0.0**.
 >
 > ✅ **Allowed**: Personal use, learning, research, non-profit organizations
 > ❌ **Not Allowed**: Commercial use, SaaS integration, reselling
@@ -28,9 +28,9 @@ See the [LICENSE](LICENSE) file for full terms.
 
 ---
 
-## 🎯 What is PersonalFit?
+## 🎯 What is Lumi?
 
-Complete self-hosted fitness and health ecosystem. AI-generated workout plans, medication management with OCR bottle scanning, food photo analysis, correlation insights, gamification with XP/achievements/leaderboards, and comprehensive progress tracking. Your data stays on your server.
+Lumi is an all-in-one health ecosystem that illuminates your path to wellness through AI-powered insights. Combining vision AI (fridge/grocery scanning), medication management, mental wellness tracking, intelligent workout generation, and comprehensive habit architecture — all while keeping your data private on your own server. Lumi brings clarity to your health journey through predictive analytics and proactive guidance.
 
 ---
 
