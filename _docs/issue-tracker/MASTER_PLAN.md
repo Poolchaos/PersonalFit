@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 1 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 2 | 🟡 In Progress |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **1** | |
+| **Total** | | **43** | **2** | |
 
 ---
 
@@ -37,12 +37,13 @@
   - **Resolution:** Explicit field whitelisting in all 8 vulnerable sites. 34 tests added.
   - **Effort:** 2h
 
-- [ ] **S0-2** | Add RBAC system + admin authorization
+- [x] **S0-2** | Add RBAC system + admin authorization ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 Critical
   - **Issue:** `POST /api/admin/trigger-missed-workout-detection` only requires `authenticate`. Any logged-in user can trigger system-wide operations. No `role` field exists on User model.
   - **Files:** `adminRoutes.ts` (L22, L25), `User.ts` (no role field)
   - **Verification:** CONFIRMED — audit finding 1.2
   - **Fix Strategy:** Add `role: { type: String, enum: ['user', 'admin'], default: 'user' }` to User schema. Create `authorizeRole('admin')` middleware. Apply to admin routes.
+  - **Resolution:** Added `role` field to User model, created `authorizeRole` middleware, protected admin routes. 11 tests added.
   - **Effort:** 1h
 
 - [ ] **S0-3** | Secure Docker Compose credentials + port bindings
