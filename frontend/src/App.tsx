@@ -60,11 +60,6 @@ const queryClient = new QueryClient({
   },
 });
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
-}
-
 /**
  * Wraps protected routes with ErrorBoundary for per-route error isolation.
  * Errors in one page won't crash other pages.

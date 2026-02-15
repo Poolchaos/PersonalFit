@@ -67,7 +67,7 @@ export const createUserRateLimiter = (options: {
       return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
     },
     // Custom handler for when rate limit is exceeded
-    handler: (req: Request, res: Response) => {
+    handler: (_req: Request, res: Response) => {
       res.status(429).json({
         error: message,
         retry_after_ms: windowMs,

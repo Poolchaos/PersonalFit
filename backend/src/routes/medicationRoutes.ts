@@ -13,7 +13,7 @@
  */
 
 import { Router } from 'express';
-import { body, query } from 'express-validator';
+import { body, query, param } from 'express-validator';
 import multer from 'multer';
 import {
   getMedications,

@@ -17,7 +17,7 @@
  */
 
 import { Router, Response } from 'express';
-import { body, param, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import {
   checkForPR,
