@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 6 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 7 | ✅ Complete |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **6** | |
+| **Total** | | **43** | **7** | |
 
 ---
 
@@ -84,12 +84,13 @@
   - **Resolution:** Moved node-cron to dependencies. @types/node-cron stays in devDependencies.
   - **Effort:** 5m
 
-- [ ] **S0-7** | Fix photo delete `$unset` data loss bug
+- [x] **S0-7** | Fix photo delete `$unset` data loss bug ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 High
   - **Issue:** Deleting any single photo runs `$unset` on all three URL fields (`front_url`, `side_url`, `back_url`). MongoDB `$unset` ignores the value — it always removes the field.
   - **Files:** `photoController.ts` (L124-132)
   - **Verification:** CONFIRMED — audit finding 1.11
   - **Fix Strategy:** Determine which field matches the deleted filename, then `$unset` only that specific field. Add a helper function that maps filename → field path.
+  - **Resolution:** Map photoType to field, use regex match to only unset matching field.
   - **Effort:** 30m
 
 ---

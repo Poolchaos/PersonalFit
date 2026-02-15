@@ -134,7 +134,7 @@ export const deleteProgressPhoto = async (
     if (fieldToUnset) {
       // Only unset the specific field that matches the deleted photo
       await BodyMetrics.updateMany(
-        { 
+        {
           user_id: new mongoose.Types.ObjectId(userId),
           [fieldToUnset]: { $regex: new RegExp(filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }
         },
