@@ -384,9 +384,11 @@ export class AIOrchestrationService extends EventEmitter {
         score: review.score ?? 0,
         refinements: review.refinements,
       };
-    } catch {
-      // If parsing fails, assume approved
-      return { approved: true, score: 70 };
+    } catch (error) {
+      // SECURITY: On parse failure, REJECT the plan - don't approve unsafe content
+      // This forces a re-review or manual intervention
+      console.error('AI reviewer returned invalid JSON, rejecting plan for safety:', error);
+      return { approved: false, score: 0, refinements: 'AI review failed to parse - requires re-review' };
     }
   }
 
