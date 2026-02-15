@@ -37,21 +37,8 @@ export const initializeStorage = async (): Promise<void> => {
     const exists = await minioClient.bucketExists(BUCKET_NAME);
     if (!exists) {
       await minioClient.makeBucket(BUCKET_NAME, 'us-east-1');
-      console.log(`âœ“ MinIO bucket '${BUCKET_NAME}' created successfully`);
-
-      // Set bucket policy to allow read access for authenticated users
-      const policy = {
-        Version: '2012-10-17',
-        Statement: [
-          {
-            Effect: 'Allow',
-            Principal: { AWS: ['*'] },
-            Action: ['s3:GetObject'],
-            Resource: [`arn:aws:s3:::${BUCKET_NAME}/*`],
-          },
-        ],
-      };
-      await minioClient.setBucketPolicy(BUCKET_NAME, JSON.stringify(policy));
+      console.log(`✓ MinIO bucket '${BUCKET_NAME}' created successfully`);
+      // Note: No public bucket policy - all access via presigned URLs only
     } else {
       console.log(`âœ“ MinIO bucket '${BUCKET_NAME}' already exists`);
     }

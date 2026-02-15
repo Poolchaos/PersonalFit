@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 2 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 3 | 🟡 In Progress |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **2** | |
+| **Total** | | **43** | **3** | |
 
 ---
 
@@ -46,12 +46,13 @@
   - **Resolution:** Added `role` field to User model, created `authorizeRole` middleware, protected admin routes. 11 tests added.
   - **Effort:** 1h
 
-- [ ] **S0-3** | Secure Docker Compose credentials + port bindings
+- [x] **S0-3** | Secure Docker Compose credentials + port bindings ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 Critical
   - **Issue:** MongoDB (`admin:changeme`), MinIO (`minioadmin:minioadmin123`), JWT/encryption secrets all have hardcoded defaults. All ports bound to `0.0.0.0`.
   - **Files:** `docker-compose.yml` (L9-10, L40-44, L49-50, L94-95)
   - **Verification:** CONFIRMED — audit finding 1.3
   - **Fix Strategy:** Remove all `:-default` fallbacks for secrets. Bind DB/storage ports to `127.0.0.1`. Add a startup validation script that rejects known-weak secrets. Document required `.env` setup.
+  - **Resolution:** Required env vars via :? syntax, localhost-bound ports, production weak-secret validation.
   - **Effort:** 30m
 
 - [ ] **S0-4** | Remove public MinIO bucket policy
