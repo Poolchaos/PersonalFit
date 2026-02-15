@@ -37,17 +37,17 @@ const getRefreshTokenExpiresAt = (): Date => {
     // Default to 7 days if parsing fails
     return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
   }
-  
+
   const value = parseInt(match[1], 10);
   const unit = match[2];
-  
+
   const multipliers: Record<string, number> = {
     s: 1000,
     m: 60 * 1000,
     h: 60 * 60 * 1000,
     d: 24 * 60 * 60 * 1000,
   };
-  
+
   return new Date(Date.now() + value * multipliers[unit]);
 };
 
@@ -59,7 +59,7 @@ const storeRefreshToken = async (
 ): Promise<void> => {
   const tokenHash = RefreshToken.hashToken(token);
   const expiresAt = getRefreshTokenExpiresAt();
-  
+
   await RefreshToken.create({
     token_hash: tokenHash,
     user_id: userId,
@@ -208,7 +208,7 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     // Check if token exists in database and is not revoked
     const oldTokenHash = RefreshToken.hashToken(oldToken);
     const storedToken = await RefreshToken.findValidToken(oldTokenHash);
-    
+
     if (!storedToken) {
       // Token not found or already revoked - potential token reuse attack
       // Revoke all tokens for this user as a security measure
@@ -250,7 +250,7 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     // Revoke the old token and link it to the new one
     await RefreshToken.revokeToken(oldTokenHash, newTokenDoc._id as Types.ObjectId);
 
-    res.json({ 
+    res.json({
       accessToken,
       refreshToken: newRefreshToken,
     });
@@ -284,7 +284,7 @@ export const logoutAll = async (req: Request, res: Response): Promise<void> => {
   try {
     // req.user is set by authenticate middleware
     const userId = (req as Request & { user?: { userId: string } }).user?.userId;
-    
+
     if (!userId) {
       res.status(401).json({ error: 'Authentication required' });
       return;
@@ -292,7 +292,7 @@ export const logoutAll = async (req: Request, res: Response): Promise<void> => {
 
     const revokedCount = await RefreshToken.revokeAllUserTokens(userId);
 
-    res.json({ 
+    res.json({
       message: 'Logged out from all devices',
       sessions_revoked: revokedCount,
     });

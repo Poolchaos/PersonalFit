@@ -22,7 +22,7 @@ const LOCKOUT_DURATION_MINUTES = 15; // How long to lock out after max failures
 
 /**
  * Rate limiting middleware for login endpoint.
- * 
+ *
  * Blocks login attempts if there have been too many recent failed attempts
  * for the same email address. This prevents brute-force attacks on specific
  * accounts regardless of what IP the attacker uses.
@@ -34,24 +34,24 @@ export const loginRateLimiter = async (
 ): Promise<void> => {
   try {
     const email = req.body.email;
-    
+
     if (!email) {
       // If no email provided, let the route handler deal with validation
       return next();
     }
-    
+
     // Count recent failed attempts for this email
     const failedAttempts = await LoginAttempt.countRecentFailedAttempts(
       email,
       LOCKOUT_WINDOW_MINUTES
     );
-    
+
     if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
       // Calculate when lockout expires
       const lockoutEnds = new Date(
         Date.now() + LOCKOUT_DURATION_MINUTES * 60 * 1000
       );
-      
+
       res.status(429).json({
         error: 'Too many failed login attempts. Please try again later.',
         retry_after_minutes: LOCKOUT_DURATION_MINUTES,
@@ -59,7 +59,7 @@ export const loginRateLimiter = async (
       });
       return;
     }
-    
+
     next();
   } catch (error) {
     // Log but don't block on rate limiter errors - fail open for availability
