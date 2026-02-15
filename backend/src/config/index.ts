@@ -83,6 +83,38 @@ if (config.node_env === 'production') {
       `Missing required environment variables: ${missingVars.join(', ')}`
     );
   }
+
+  // Block known weak/default secrets in production
+  const KNOWN_WEAK_SECRETS = [
+    'dev-secret-change-in-production',
+    'dev-refresh-secret-change-in-production',
+    'dev-encryption-secret-change-in-production',
+    'your-secret-key-change-in-production',
+    'your-refresh-secret-key-change-in-production',
+    'your-encryption-secret-change-in-production',
+    'changeme',
+    'minioadmin',
+    'minioadmin123',
+  ];
+
+  const weakSecretChecks: Array<{ name: string; value: string }> = [
+    { name: 'JWT_SECRET', value: config.jwt_secret },
+    { name: 'JWT_REFRESH_SECRET', value: config.jwt_refresh_secret },
+    { name: 'ENCRYPTION_SECRET', value: config.encryption_secret },
+    { name: 'MINIO_ACCESS_KEY', value: config.minio_access_key },
+    { name: 'MINIO_SECRET_KEY', value: config.minio_secret_key },
+  ];
+
+  const weakSecrets = weakSecretChecks.filter(
+    (check) => KNOWN_WEAK_SECRETS.includes(check.value) || check.value.length < 16
+  );
+
+  if (weakSecrets.length > 0) {
+    throw new Error(
+      `SECURITY ERROR: Weak or default secrets detected in production: ${weakSecrets.map((s) => s.name).join(', ')}. ` +
+      `Please set strong, unique values for these environment variables.`
+    );
+  }
 }
 
 export default config;
