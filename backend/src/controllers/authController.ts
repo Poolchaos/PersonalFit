@@ -23,6 +23,11 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from '../utils/jwt';
+import {
+  recordSuccessfulLogin,
+  recordFailedLogin,
+  getClientIp,
+} from '../middleware/loginRateLimiter';
 
 // Helper to calculate token expiration date from config string (e.g., "7d")
 const getRefreshTokenExpiresAt = (): Date => {
@@ -130,10 +135,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const { email, password } = req.body;
+    const clientIp = getClientIp(req);
 
     // Find user with password hash (excluded by default via select: false)
     const user = await User.findOne({ email }).select('+password_hash');
     if (!user) {
+      // Record failed attempt (user not found)
+      await recordFailedLogin(email, clientIp);
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
@@ -141,9 +149,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Verify password
     const isValidPassword = await user.comparePassword(password);
     if (!isValidPassword) {
+      // Record failed attempt (wrong password)
+      await recordFailedLogin(email, clientIp);
       res.status(401).json({ error: 'Invalid credentials' });
       return;
     }
+
+    // Record successful login
+    await recordSuccessfulLogin(email, clientIp);
 
     // Generate tokens
     const userId = (user._id as string).toString();

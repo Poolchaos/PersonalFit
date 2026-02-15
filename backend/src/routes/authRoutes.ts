@@ -16,6 +16,7 @@ import { Router } from 'express';
 import { body } from 'express-validator';
 import { signup, login, refresh, logout, logoutAll } from '../controllers/authController';
 import { authenticate } from '../middleware/auth';
+import { loginRateLimiter } from '../middleware/loginRateLimiter';
 
 const router = Router();
 
@@ -36,9 +37,10 @@ router.post(
   signup
 );
 
-// Login route
+// Login route with per-account rate limiting
 router.post(
   '/login',
+  loginRateLimiter, // Check rate limit before processing login
   [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty(),
