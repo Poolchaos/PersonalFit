@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 3 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 4 | 🟡 In Progress |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **3** | |
+| **Total** | | **43** | **4** | |
 
 ---
 
@@ -55,12 +55,13 @@
   - **Resolution:** Required env vars via :? syntax, localhost-bound ports, production weak-secret validation.
   - **Effort:** 30m
 
-- [ ] **S0-4** | Remove public MinIO bucket policy
+- [x] **S0-4** | Remove public MinIO bucket policy ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 Critical
   - **Issue:** `Principal: { AWS: ['*'] }` grants unauthenticated read to all objects (user photos, medication images). Presigned URLs already exist but are redundant.
   - **Files:** `storageService.ts` (L42-54)
   - **Verification:** CONFIRMED — audit finding 1.4
   - **Fix Strategy:** Remove the `setObjectPolicy` call that sets public access. Rely exclusively on existing `generatePresignedUrl()` for all object access.
+  - **Resolution:** Removed setBucketPolicy call. All access now via presigned URLs only.
   - **Effort:** 15m
 
 - [ ] **S0-5** | Add `select: false` to `password_hash` in User model
