@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 4 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 5 | 🟡 In Progress |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **4** | |
+| **Total** | | **43** | **5** | |
 
 ---
 
@@ -64,12 +64,13 @@
   - **Resolution:** Removed setBucketPolicy call. All access now via presigned URLs only.
   - **Effort:** 15m
 
-- [ ] **S0-5** | Add `select: false` to `password_hash` in User model
+- [x] **S0-5** | Add `select: false` to `password_hash` in User model ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 Critical
   - **Issue:** 18 of 19 `User.findById` calls load password hash into memory. Only `profileController` manually excludes it. Pattern is known — `api_key_encrypted` already uses `select: false`.
   - **Files:** `User.ts` (L116-118)
   - **Verification:** CONFIRMED — audit finding 1.9
   - **Fix Strategy:** Add `select: false` to `password_hash` field. Update `authController.login` and `authController.signup` to use `.select('+password_hash')`.
+  - **Resolution:** Added select:false, updated login to use .select('+password_hash'). 11 RBAC tests pass.
   - **Effort:** 15m
 
 ### 🔴 HIGH — Production Stability
