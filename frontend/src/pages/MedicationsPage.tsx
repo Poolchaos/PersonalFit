@@ -116,7 +116,7 @@ export default function MedicationsPage() {
     },
   });
 
-  // Log dose mutation
+  // Log dose mutation with optimistic updates for instant UI feedback
   const logDoseMutation = useMutation({
     mutationFn: ({
       medicationId,
@@ -131,13 +131,51 @@ export default function MedicationsPage() {
         scheduled_time: scheduledTime,
         status,
       }),
+    onMutate: async ({ medicationId, scheduledTime, status }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: medicationQueryKeys.today() });
+
+      // Snapshot previous value
+      const previousTodaysData = queryClient.getQueryData<{
+        todaysDoses: TodaysMedication[];
+      }>(medicationQueryKeys.today());
+
+      // Optimistically update the cache
+      if (previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), {
+          ...previousTodaysData,
+          todaysDoses: previousTodaysData.todaysDoses.map((med) =>
+            med.medication._id === medicationId
+              ? {
+                  ...med,
+                  doses: med.doses.map((dose) =>
+                    dose.scheduled_time === scheduledTime
+                      ? { ...dose, status }
+                      : dose
+                  ),
+                }
+              : med
+          ),
+        });
+      }
+
+      // Return context for rollback
+      return { previousTodaysData };
+    },
     onSuccess: (_, variables) => {
       toast.success(variables.status === 'taken' ? 'Dose logged!' : 'Dose skipped');
+    },
+    onError: (_, __, context) => {
+      // Rollback to previous value on error
+      if (context?.previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), context.previousTodaysData);
+      }
+      toast.error('Failed to log dose');
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure cache is in sync
       queryClient.invalidateQueries({ queryKey: medicationQueryKeys.today() });
       queryClient.invalidateQueries({ queryKey: medicationQueryKeys.list() });
-    },
-    onError: () => {
-      toast.error('Failed to log dose');
     },
   });
 

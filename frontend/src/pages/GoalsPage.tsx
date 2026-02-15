@@ -119,17 +119,59 @@ export default function GoalsPage() {
     },
   });
 
-  // Update progress mutation
+  // Update progress mutation with optimistic updates for instant UI feedback
   const updateProgressMutation = useMutation({
     mutationFn: ({ id, current_value }: { id: string; current_value: number }) =>
       goalsAPI.updateProgress(id, current_value),
+    onMutate: async ({ id, current_value }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: goalsQueryKeys.list({ status: 'active' }) });
+
+      // Snapshot previous value
+      const previousGoals = queryClient.getQueryData<{ goals: Goal[] }>(
+        goalsQueryKeys.list({ status: 'active' })
+      );
+
+      // Optimistically update the cache
+      if (previousGoals) {
+        queryClient.setQueryData(goalsQueryKeys.list({ status: 'active' }), {
+          ...previousGoals,
+          goals: previousGoals.goals.map((goal) =>
+            goal._id === id
+              ? {
+                  ...goal,
+                  current_value,
+                  progress_percentage: Math.min(
+                    100,
+                    Math.round(
+                      ((current_value - goal.initial_value) /
+                        (goal.target_value - goal.initial_value)) *
+                        100
+                    )
+                  ),
+                }
+              : goal
+          ),
+        });
+      }
+
+      // Return context for rollback
+      return { previousGoals };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: goalsQueryKeys.all });
-      queryClient.invalidateQueries({ queryKey: goalsQueryKeys.stats() });
       toast.success('Progress updated!');
     },
-    onError: () => {
+    onError: (_, __, context) => {
+      // Rollback to previous value on error
+      if (context?.previousGoals) {
+        queryClient.setQueryData(goalsQueryKeys.list({ status: 'active' }), context.previousGoals);
+      }
       toast.error('Failed to update progress');
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure cache is in sync
+      queryClient.invalidateQueries({ queryKey: goalsQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: goalsQueryKeys.stats() });
     },
   });
 
