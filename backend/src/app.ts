@@ -49,15 +49,104 @@ app.use(cors({
   credentials: true,
 }));
 
-// Security headers
+// Security headers with CSP, HSTS, and Referrer-Policy
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
+  // Content Security Policy - restrict where resources can be loaded from
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for Tailwind
+      imgSrc: ["'self'", "data:", "blob:", "https:"], // Allow images from CDNs and data URIs
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      connectSrc: ["'self'", "https://api.openai.com", "https://api.anthropic.com"], // AI APIs
+      frameAncestors: ["'none'"], // Prevent embedding in iframes
+      formAction: ["'self'"],
+      upgradeInsecureRequests: [], // Auto-upgrade HTTP to HTTPS
+    },
+  },
+  // HTTP Strict Transport Security - force HTTPS
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+  // Referrer Policy - limit information sent with referrer header
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin',
+  },
+  // Prevent MIME type sniffing
+  noSniff: true,
+  // Prevent clickjacking with frame options
+  frameguard: {
+    action: 'deny',
+  },
+  // Hide X-Powered-By header
+  hidePoweredBy: true,
+  // Cross-Origin Opener Policy
+  crossOriginOpenerPolicy: {
+    policy: 'same-origin',
+  },
+  // Cross-Origin Embedder Policy
+  crossOriginEmbedderPolicy: false, // Disabled to allow cross-origin images
 }));
 
 // Skip rate limiting in test environment
 const isTestEnv = config.node_env === 'test';
 
-// Rate limiting - General API
+// Extended request type with user info from auth middleware
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string;
+    email: string;
+  };
+}
+
+// Lightweight JWT decoder for rate limiting key generation.
+// Only decodes payload without verification - we just need the userId for keying.
+// Actual authentication is handled by the authenticate middleware.
+const decodeJwtPayload = (token: string): { userId: string } | null => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+    return payload.userId ? { userId: payload.userId } : null;
+  } catch {
+    return null;
+  }
+};
+
+// Key generator that uses user ID if authenticated, otherwise IP.
+// This ensures per-user rate limiting for authenticated users,
+// avoiding the NAT-sharing issue where multiple users behind the same IP
+// would share the same rate limit quota.
+const getUserOrIpKey = (req: Request): string => {
+  // First check if user is already set by auth middleware
+  const authReq = req as AuthenticatedRequest;
+  if (authReq.user?.userId) {
+    return `user:${authReq.user.userId}`;
+  }
+
+  // Try to extract user ID from Authorization header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.slice(7);
+    const payload = decodeJwtPayload(token);
+    if (payload?.userId) {
+      return `user:${payload.userId}`;
+    }
+  }
+
+  // Fallback to IP for unauthenticated requests
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return `ip:${forwarded.split(',')[0].trim()}`;
+  }
+  return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+};
+
+// Rate limiting - General API (per-user for authenticated, per-IP for anonymous)
 const generalLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute
@@ -65,9 +154,10 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTestEnv,
+  keyGenerator: getUserOrIpKey,
 });
 
-// Rate limiting - Auth endpoints (stricter)
+// Rate limiting - Auth endpoints (stricter, always IP-based since not yet authenticated)
 const authLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 10, // 10 requests per minute
@@ -77,7 +167,7 @@ const authLimiter = rateLimit({
   skip: () => isTestEnv,
 });
 
-// Rate limiting - AI generation (very strict)
+// Rate limiting - AI generation (very strict, per-user)
 const aiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // 10 requests per hour
@@ -85,6 +175,7 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: () => isTestEnv,
+  keyGenerator: getUserOrIpKey,
 });
 
 // Apply general rate limiting to all routes
@@ -116,7 +207,7 @@ app.use('/api/challenges', dailyChallengeRoutes);
 app.use('/api/medications', medicationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/habits', habitRoutes);
-app.use('/api/vision', visionRoutes);
+app.use('/api/vision', aiLimiter, visionRoutes);
 app.use('/api/nutrition', nutritionRoutes);
 app.use('/api/health-scores', healthScoreRoutes);
 app.use('/api/analytics', analyticsRoutes);

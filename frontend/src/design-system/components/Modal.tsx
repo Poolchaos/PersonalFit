@@ -12,7 +12,7 @@
  * See the LICENSE file for the full license text.
  */
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './Button';
 
@@ -152,6 +152,100 @@ export function ConfirmModal({
       <p className={`text-neutral-700 ${variantStyles[variant]}`}>
         {message}
       </p>
+    </Modal>
+  );
+}
+
+interface NumberPromptModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (value: number) => void;
+  title: string;
+  message?: string;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  defaultValue?: number;
+  submitText?: string;
+  cancelText?: string;
+  loading?: boolean;
+}
+
+export function NumberPromptModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  title,
+  message,
+  placeholder = 'Enter a number',
+  min = 1,
+  max = 9999,
+  defaultValue,
+  submitText = 'Submit',
+  cancelText = 'Cancel',
+  loading = false,
+}: NumberPromptModalProps) {
+  const [value, setValue] = useState<string>(defaultValue?.toString() || '');
+  const [error, setError] = useState<string>('');
+
+  const handleSubmit = () => {
+    const num = Number(value);
+    if (isNaN(num) || num < min || num > max) {
+      setError(`Please enter a number between ${min} and ${max}`);
+      return;
+    }
+    setError('');
+    onSubmit(num);
+    setValue('');
+  };
+
+  const handleClose = () => {
+    setValue('');
+    setError('');
+    onClose();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSubmit();
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={title}
+      size="sm"
+      footer={
+        <>
+          <Button onClick={handleClose} variant="outline" disabled={loading}>
+            {cancelText}
+          </Button>
+          <Button onClick={handleSubmit} variant="primary" loading={loading}>
+            {submitText}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        {message && <p className="text-neutral-700">{message}</p>}
+        <input
+          type="number"
+          value={value}
+          onChange={(e) => {
+            setValue(e.target.value);
+            setError('');
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          min={min}
+          max={max}
+          autoFocus
+          className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+        />
+        {error && <p className="text-error-DEFAULT text-sm">{error}</p>}
+      </div>
     </Modal>
   );
 }

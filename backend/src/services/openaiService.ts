@@ -16,6 +16,43 @@ import OpenAI from 'openai';
 import config from '../config';
 import { logOpenAIError } from '../utils/openaiValidator';
 
+/**
+ * SECURITY: Sanitize user input before including in AI prompts
+ * Prevents prompt injection attacks by:
+ * 1. Limiting length to prevent prompt bloat
+ * 2. Wrapping in clear boundary markers
+ * 3. Stripping potential instruction-like patterns
+ */
+function sanitizeUserInputForPrompt(input: string | undefined | null, maxLength: number = 500): string {
+  if (!input || typeof input !== 'string') return '';
+
+  // Truncate to max length
+  let sanitized = input.slice(0, maxLength);
+
+  // Remove patterns that look like instructions to the AI
+  // These patterns are commonly used in jailbreak attempts
+  sanitized = sanitized
+    .replace(/ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?)?/gi, '[removed]')
+    .replace(/disregard\s+(all\s+)?(previous|above|prior)/gi, '[removed]')
+    .replace(/forget\s+(everything|all)/gi, '[removed]')
+    .replace(/new\s+instructions?:/gi, '[removed]')
+    .replace(/system\s*:/gi, '[removed]')
+    .replace(/assistant\s*:/gi, '[removed]')
+    .replace(/```[\s\S]*?```/g, '[code block removed]') // Remove code blocks
+    .replace(/\{[\s\S]*?".*?"[\s\S]*?}/g, '[json removed]'); // Remove JSON-like content
+
+  return sanitized.trim();
+}
+
+/**
+ * Wrap sanitized user input in clear boundary markers
+ */
+function wrapUserInput(label: string, value: string | undefined | null, maxLength: number = 500): string {
+  const sanitized = sanitizeUserInputForPrompt(value, maxLength);
+  if (!sanitized) return `${label}: None reported`;
+  return `${label}: [USER_INPUT_START]${sanitized}[USER_INPUT_END]`;
+}
+
 // Default client using system API key (fallback)
 const defaultOpenAI = new OpenAI({
   apiKey: config.openai_api_key,
@@ -175,22 +212,30 @@ Design a flexibility-focused workout plan:
     equipmentContext = `Available equipment:\n${equipmentList}`;
   }
 
-  // Build user context
+  // Build user context with SANITIZED user inputs
+  // SECURITY: All user-supplied text fields are sanitized to prevent prompt injection
+  const sanitizedCurrentActivities = sanitizeUserInputForPrompt(userProfile.current_activities);
+  const sanitizedMedications = sanitizeUserInputForPrompt(medicationsText || userProfile.onboarding_medications_notes);
+  const sanitizedInjuriesRestrictions = sanitizeUserInputForPrompt(userProfile.injuries_and_restrictions, 1000);
+  const sanitizedGoals = userProfile.fitness_goals?.map(g => sanitizeUserInputForPrompt(g, 100)).join(', ') || 'General fitness';
+  const sanitizedConditions = userProfile.medical_conditions?.map(c => sanitizeUserInputForPrompt(c, 100)).join(', ') || 'None reported';
+  const sanitizedInjuries = userProfile.injuries?.map(i => sanitizeUserInputForPrompt(i, 100)).join(', ') || 'None reported';
+
   const userContext = `
 User Profile:
-- Fitness Goals: ${userProfile.fitness_goals?.join(', ') || 'General fitness'}
+- ${wrapUserInput('Fitness Goals', sanitizedGoals, 300)}
 - Experience Level: ${userProfile.experience_level || 'Not specified'}
 - Activity Level: ${userProfile.activity_level || 'Not specified'}
-- Current Regular Activities: ${userProfile.current_activities || 'None reported'}
-- Medical Conditions: ${userProfile.medical_conditions?.join(', ') || 'None reported'}
-- Injuries: ${userProfile.injuries?.join(', ') || 'None reported'}
-- Medications & Supplements: ${medicationsText || userProfile.onboarding_medications_notes || 'None reported'}
+- ${wrapUserInput('Current Regular Activities', sanitizedCurrentActivities, 300)}
+- ${wrapUserInput('Medical Conditions', sanitizedConditions, 300)}
+- ${wrapUserInput('Injuries', sanitizedInjuries, 300)}
+- ${wrapUserInput('Medications & Supplements', sanitizedMedications, 500)}
 - Height: ${userProfile.height_cm ? `${userProfile.height_cm} cm` : 'Not specified'}
 - Weight: ${userProfile.weight_kg ? `${userProfile.weight_kg} kg` : 'Not specified'}
 
-${userProfile.injuries_and_restrictions ? `
-âš ï¸ CRITICAL SAFETY ALERT - INJURIES & RESTRICTIONS âš ï¸
-${userProfile.injuries_and_restrictions}
+${sanitizedInjuriesRestrictions ? `
+⚠️ CRITICAL SAFETY ALERT - INJURIES & RESTRICTIONS ⚠️
+[USER_INPUT_START]${sanitizedInjuriesRestrictions}[USER_INPUT_END]
 
 MANDATORY REQUIREMENTS:
 1. YOU MUST CAREFULLY READ AND UNDERSTAND the above injuries and restrictions
@@ -210,9 +255,9 @@ Examples of restrictions to respect:
 USER SAFETY IS PARAMOUNT. When programming, constantly ask: "Could this exercise harm someone with these specific conditions?" If yes, EXCLUDE IT.
 ` : ''}
 
-${medicationsText || userProfile.onboarding_medications_notes ? `
+${sanitizedMedications ? `
 ⚠️ MEDICATION CONSIDERATIONS ⚠️
-User is taking: ${medicationsText || userProfile.onboarding_medications_notes}
+User is taking: [USER_INPUT_START]${sanitizedMedications}[USER_INPUT_END]
 
 IMPORTANT MEDICATION-RELATED CONSIDERATIONS:
 1. Some medications affect heart rate, blood pressure, or energy levels
@@ -509,42 +554,55 @@ USER SAFETY AND RESEARCH INTEGRITY ARE NON-NEGOTIABLE.`;
     const modelToUse = 'gpt-4o-mini';
     console.log('Using model:', modelToUse);
 
-    const completion = await openai.chat.completions.create({
-      model: modelToUse,
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are an evidence-based strength and conditioning specialist with expertise in exercise science, biomechanics, and periodization. CRITICAL RULES: (1) All programming decisions MUST be grounded in peer-reviewed research - NO guessing or assumptions. (2) User safety is paramount - when in doubt about exercise safety, EXCLUDE IT. (3) Only use explicitly available equipment - NO substitutions. (4) Match complexity to stated experience level - NEVER program beyond user capabilities. (5) Respect ALL reported injuries and restrictions - provide safe alternatives. (6) Volume must fall within evidence-based ranges for experience level. Prioritize safety, progressive overload, and individualization. Always respond with valid JSON matching the requested schema.',
-        },
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-    });
+    // SECURITY: 30-second timeout to prevent hung connections
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    const requestDuration = Date.now() - requestStartTime;
-    console.log('âœ“ OpenAI request successful');
-    console.log('Request duration:', requestDuration + 'ms');
-    console.log('Response ID:', completion.id);
-    console.log('Model used:', completion.model);
-    console.log('Usage:', JSON.stringify(completion.usage));
+    try {
+      const completion = await openai.chat.completions.create({
+        model: modelToUse,
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are an evidence-based strength and conditioning specialist with expertise in exercise science, biomechanics, and periodization. CRITICAL RULES: (1) All programming decisions MUST be grounded in peer-reviewed research - NO guessing or assumptions. (2) User safety is paramount - when in doubt about exercise safety, EXCLUDE IT. (3) Only use explicitly available equipment - NO substitutions. (4) Match complexity to stated experience level - NEVER program beyond user capabilities. (5) Respect ALL reported injuries and restrictions - provide safe alternatives. (6) Volume must fall within evidence-based ranges for experience level. Prioritize safety, progressive overload, and individualization. Always respond with valid JSON matching the requested schema.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.7,
+      }, { timeout: 30000 });
 
-    const responseContent = completion.choices[0]?.message?.content;
-    if (!responseContent) {
-      console.error('âœ— No response content from OpenAI');
-      throw new Error('No response from OpenAI');
+      const requestDuration = Date.now() - requestStartTime;
+      console.log('✓ OpenAI request successful');
+      console.log('Request duration:', requestDuration + 'ms');
+      console.log('Response ID:', completion.id);
+      console.log('Model used:', completion.model);
+      console.log('Usage:', JSON.stringify(completion.usage));
+
+      const responseContent = completion.choices[0]?.message?.content;
+      if (!responseContent) {
+        console.error('✗ No response content from OpenAI');
+        throw new Error('No response from OpenAI');
+      }
+
+      console.log('Response length:', responseContent.length, 'characters');
+      console.log('=== OpenAI Request Complete ===\n');
+
+      const workoutPlan = JSON.parse(responseContent) as WorkoutPlan;
+      return workoutPlan;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  } catch (error) {
+    // Check for timeout/abort error
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('AI request timed out after 30 seconds. Please try again.');
     }
 
-    console.log('Response length:', responseContent.length, 'characters');
-    console.log('=== OpenAI Request Complete ===\n');
-
-    const workoutPlan = JSON.parse(responseContent) as WorkoutPlan;
-    return workoutPlan;
-  } catch (error) {
     logOpenAIError(error, 'generateWorkoutPlan');
 
     // Enhanced error handling with full details

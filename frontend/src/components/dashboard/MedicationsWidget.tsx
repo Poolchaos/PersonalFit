@@ -40,12 +40,50 @@ export function MedicationsWidget() {
         scheduled_time: scheduledTime,
         status: 'taken',
       }),
+    onMutate: async ({ medicationId, scheduledTime }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: medicationQueryKeys.today() });
+
+      // Snapshot previous value
+      const previousTodaysData = queryClient.getQueryData<{
+        todaysDoses: TodaysMedication[];
+      }>(medicationQueryKeys.today());
+
+      // Optimistically update the cache
+      if (previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), {
+          ...previousTodaysData,
+          todaysDoses: previousTodaysData.todaysDoses.map((med) =>
+            med.medication._id === medicationId
+              ? {
+                  ...med,
+                  doses: med.doses.map((dose) =>
+                    dose.scheduled_time === scheduledTime
+                      ? { ...dose, status: 'taken' as const }
+                      : dose
+                  ),
+                }
+              : med
+          ),
+        });
+      }
+
+      // Return context for rollback
+      return { previousTodaysData };
+    },
     onSuccess: () => {
       toast.success('Dose logged!');
-      queryClient.invalidateQueries({ queryKey: medicationQueryKeys.today() });
     },
-    onError: () => {
+    onError: (_, __, context) => {
+      // Rollback to previous value on error
+      if (context?.previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), context.previousTodaysData);
+      }
       toast.error('Failed to log dose');
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure cache is in sync
+      queryClient.invalidateQueries({ queryKey: medicationQueryKeys.today() });
     },
   });
 

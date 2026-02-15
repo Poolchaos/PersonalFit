@@ -28,6 +28,9 @@ interface ParsedMedication {
   };
   purpose?: string;
   notes?: string;
+  // SAFETY: Dosage validation fields
+  requires_review?: boolean;
+  dosage_warning?: string;
 }
 
 interface ParsingResult {
@@ -35,6 +38,7 @@ interface ParsingResult {
   medications: ParsedMedication[];
   suggestions?: string;
   error?: string;
+  requires_user_confirmation?: boolean; // SAFETY: Flag when any medication needs review
 }
 
 /**
@@ -142,7 +146,7 @@ Return valid JSON only:`;
       };
     }
 
-    // Validate and clean the parsed medications
+    // Validate and clean the parsed medications with DOSAGE SAFETY checks
     const medications: ParsedMedication[] = (parsedData.medications || [])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- API response type is validated at runtime
       .map((med: any) => {
@@ -163,9 +167,70 @@ Return valid JSON only:`;
           return null;
         }
 
+        // SAFETY: Dosage range validation - flag potentially dangerous values
+        const amount = Number(med.dosage.amount);
+        const unit = String(med.dosage.unit).toLowerCase();
+        let requiresReview = false;
+        let dosageWarning: string | undefined;
+
+        // Common medication sanity checks (unit-aware)
+        const maxSafeDosages: Record<string, Record<string, number>> = {
+          // Vitamins/Supplements
+          'vitamin d': { iu: 10000, mcg: 250 },
+          'vitamin d3': { iu: 10000, mcg: 250 },
+          'vitamin c': { mg: 2000, g: 2 },
+          'vitamin b12': { mcg: 2500, mg: 2.5 },
+          'vitamin a': { iu: 10000, mcg: 3000 },
+          'iron': { mg: 65, tablets: 2 },
+          'calcium': { mg: 2500, g: 2.5 },
+          'zinc': { mg: 40 },
+          'omega-3': { mg: 3000, g: 3 },
+          'fish oil': { mg: 3000, g: 3 },
+          'magnesium': { mg: 400 },
+          // Common OTC pain relievers
+          'aspirin': { mg: 1000, tablets: 2 },
+          'ibuprofen': { mg: 1200, tablets: 3 },
+          'acetaminophen': { mg: 1000, tablets: 2 },
+          'tylenol': { mg: 1000, tablets: 2 },
+          'naproxen': { mg: 500, tablets: 1 },
+          // Caffeine
+          'caffeine': { mg: 400 },
+        };
+
+        const medNameLower = String(med.name).toLowerCase();
+        const matchingMed = Object.entries(maxSafeDosages).find(([name]) =>
+          medNameLower.includes(name)
+        );
+
+        if (matchingMed) {
+          const [, limits] = matchingMed;
+          const maxForUnit = limits[unit];
+          if (maxForUnit && amount > maxForUnit) {
+            requiresReview = true;
+            dosageWarning = `Dosage ${amount}${unit} exceeds typical safe single dose of ${maxForUnit}${unit}`;
+            console.warn(`DOSAGE WARNING for ${med.name}: ${dosageWarning}`);
+          }
+        }
+
+        // Generic sanity checks for any medication
+        if (unit === 'g' && amount > 10) {
+          requiresReview = true;
+          dosageWarning = dosageWarning || `Unusually high dose: ${amount}g`;
+        }
+        if (unit === 'mg' && amount > 5000) {
+          requiresReview = true;
+          dosageWarning = dosageWarning || `Unusually high dose: ${amount}mg - please verify`;
+        }
+
         // Validate frequency
         if (!med.frequency.times_per_day || med.frequency.times_per_day < 1) {
           med.frequency.times_per_day = 1;
+        }
+        // Flag unusual frequency
+        if (med.frequency.times_per_day > 6) {
+          requiresReview = true;
+          dosageWarning = (dosageWarning ? dosageWarning + '; ' : '') +
+            `Unusual frequency: ${med.frequency.times_per_day}x/day`;
         }
 
         return {
@@ -182,14 +247,21 @@ Return valid JSON only:`;
           },
           purpose: med.purpose ? String(med.purpose).trim() : undefined,
           notes: med.notes ? String(med.notes).trim() : undefined,
+          // SAFETY: Add review flags
+          requires_review: requiresReview,
+          dosage_warning: dosageWarning,
         } as ParsedMedication;
       })
       .filter((med: ParsedMedication | null) => med !== null) as ParsedMedication[];
+
+    // SAFETY: Check if any medications require user review
+    const requiresUserConfirmation = medications.some(med => med.requires_review);
 
     return {
       success: true,
       medications,
       suggestions: parsedData.suggestions || undefined,
+      requires_user_confirmation: requiresUserConfirmation,
     };
   } catch (error: unknown) {
     console.error('Error parsing medication notes:', error);

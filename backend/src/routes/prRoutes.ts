@@ -17,6 +17,7 @@
  */
 
 import { Router, Response } from 'express';
+import { body, validationResult } from 'express-validator';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import {
   checkForPR,
@@ -28,11 +29,52 @@ import {
 
 const router = Router();
 
+// Validation for PR check
+const checkPRValidation = [
+  body('exerciseName')
+    .notEmpty()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Exercise name is required (max 100 chars)'),
+  body('category')
+    .isIn(['strength', 'cardio', 'flexibility', 'other'])
+    .withMessage('Category must be one of: strength, cardio, flexibility, other'),
+  body('recordType')
+    .isIn(['weight', 'reps', 'duration', 'distance', 'speed'])
+    .withMessage('Record type must be one of: weight, reps, duration, distance, speed'),
+  body('value')
+    .isFloat({ min: 0 })
+    .withMessage('Value must be a non-negative number'),
+  body('unit')
+    .notEmpty()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 20 })
+    .withMessage('Unit is required (max 20 chars)'),
+  body('workoutSessionId')
+    .optional()
+    .isMongoId()
+    .withMessage('Invalid workout session ID'),
+  body('notes')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Notes must be max 500 chars'),
+];
+
 /**
  * POST /api/prs/check - Check and record a potential PR
  */
-router.post('/check', authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post('/check', authenticate, checkPRValidation, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
     const userId = req.user?.userId;
     if (!userId) {
       res.status(401).json({ error: 'Unauthorized' });
@@ -40,13 +82,6 @@ router.post('/check', authenticate, async (req: AuthRequest, res: Response): Pro
     }
 
     const { exerciseName, category, recordType, value, unit, workoutSessionId, notes } = req.body;
-
-    if (!exerciseName || !category || !recordType || value === undefined || !unit) {
-      res.status(400).json({
-        error: 'Missing required fields: exerciseName, category, recordType, value, unit',
-      });
-      return;
-    }
 
     const result = await checkForPR({
       userId,

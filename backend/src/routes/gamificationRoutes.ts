@@ -31,8 +31,45 @@ import {
   claimMilestoneRewards,
   getGemBalance,
 } from '../controllers/rewardsShopController';
+import { body, validationResult } from 'express-validator';
+import { Request, Response, NextFunction } from 'express';
 
 const router = Router();
+
+// Validation middleware for award-xp
+const awardXpValidation = [
+  body('sessionId')
+    .isMongoId()
+    .withMessage('Valid session ID is required'),
+  body('hadPersonalRecord')
+    .optional()
+    .isBoolean()
+    .withMessage('hadPersonalRecord must be a boolean'),
+  body('workoutDate')
+    .optional()
+    .isISO8601()
+    .withMessage('workoutDate must be a valid ISO 8601 date'),
+];
+
+// Validation middleware for shop purchase
+const purchaseValidation = [
+  body('itemId')
+    .notEmpty()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 50 })
+    .withMessage('Valid item ID is required'),
+];
+
+// Generic validation error handler
+const handleValidationErrors = (req: Request, res: Response, next: NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+  next();
+};
 
 // All routes require authentication
 router.use(authenticate);
@@ -49,7 +86,7 @@ router.get('/stats', getGamificationStats);
  * @desc    Award XP for completing a workout
  * @access  Private
  */
-router.post('/award-xp', awardWorkoutXp);
+router.post('/award-xp', awardXpValidation, handleValidationErrors, awardWorkoutXp);
 
 /**
  * @route   GET /api/gamification/achievements
@@ -98,7 +135,7 @@ router.get('/shop', getShopItems);
  * @desc    Purchase a shop item with gems
  * @access  Private
  */
-router.post('/shop/purchase', purchaseItem);
+router.post('/shop/purchase', purchaseValidation, handleValidationErrors, purchaseItem);
 
 /**
  * @route   POST /api/gamification/shop/claim-rewards

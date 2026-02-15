@@ -25,6 +25,52 @@ export const apiClient = axios.create({
   },
 });
 
+// Singleton promise for token refresh - prevents race conditions
+// when multiple 401s occur simultaneously
+let refreshPromise: Promise<string> | null = null;
+
+/**
+ * Refreshes the access token using the refresh token.
+ * Uses singleton promise pattern to prevent multiple concurrent refresh calls.
+ */
+const refreshAccessToken = async (): Promise<string> => {
+  // If a refresh is already in progress, wait for it
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  // Start a new refresh
+  refreshPromise = (async () => {
+    try {
+      const { refreshToken } = useAuthStore.getState();
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
+        refreshToken,
+      });
+
+      // Backend now returns both new access token and rotated refresh token
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data;
+
+      // Update store with new tokens
+      useAuthStore.getState().setAuth(
+        useAuthStore.getState().user!,
+        newAccessToken,
+        newRefreshToken || refreshToken // Use new refresh token if returned, else keep old
+      );
+
+      return newAccessToken;
+    } finally {
+      // Clear the promise so future 401s can trigger new refresh
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+};
+
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
@@ -58,18 +104,8 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const { refreshToken } = useAuthStore.getState();
-        const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
-          refreshToken,
-        });
-
-        const { accessToken: newAccessToken } = response.data;
-        useAuthStore.getState().setAuth(
-          useAuthStore.getState().user!,
-          newAccessToken,
-          refreshToken!
-        );
-
+        // Use singleton refresh - all concurrent 401s share same promise
+        const newAccessToken = await refreshAccessToken();
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalRequest);
       } catch (refreshError) {

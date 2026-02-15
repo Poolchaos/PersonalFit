@@ -104,7 +104,7 @@ async function analyzeWithClaude(
         },
       ],
       system: systemPrompt,
-    });
+    }, { timeout: 30000 });
 
     // Parse Claude's response
     const textContent = response.content.find((block) => block.type === 'text');
@@ -194,13 +194,13 @@ Rules:
 - Containers and packaging
 - Freshness indicators (appearance, packaging date if visible)
 - Quantity estimates based on visible portions`,
-    
+
     grocery: `\n\nContext: Analyzing grocery items (bags, cart, or haul). Focus on:
 - All purchased items
 - Package sizes and quantities
 - Brand names when clearly visible
 - Item categories for meal planning`,
-    
+
     receipt: `\n\nContext: Analyzing a purchase receipt. Focus on:
 - Line items with food/beverage names
 - Quantities purchased
@@ -246,7 +246,7 @@ function parseVisionResponse(responseText: string): DetectedFoodItem[] {
     }
 
     const items = JSON.parse(jsonMatch[0]);
-    
+
     // Validate and normalize items
     return items
       .filter((item: { name?: string; confidence?: number }) => item.name && item.confidence !== undefined)
@@ -274,7 +274,7 @@ export async function generateMealSuggestions(
   provider: 'anthropic' | 'openai' = 'anthropic'
 ): Promise<string[]> {
   const itemsList = items.map((item) => `${item.quantity} ${item.unit} ${item.name}`).join('\n');
-  
+
   const prompt = `Based on these available ingredients:
 ${itemsList}
 
@@ -298,7 +298,7 @@ Return ONLY a JSON array of meal names, like: ["Meal Name 1", "Meal Name 2", "Me
             content: prompt,
           },
         ],
-      });
+      }, { timeout: 30000 });
 
       const textContent = response.content.find((block) => block.type === 'text');
       if (!textContent || textContent.type !== 'text') {
@@ -321,7 +321,7 @@ Return ONLY a JSON array of meal names, like: ["Meal Name 1", "Meal Name 2", "Me
           },
         ],
         max_tokens: 1000,
-      });
+      }, { timeout: 30000 });
 
       const responseText = response.choices[0]?.message?.content;
       if (!responseText) {

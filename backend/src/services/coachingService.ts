@@ -104,7 +104,7 @@ Current Total Score: ${latest.total_score}/100
 
 Pillar Breakdown:
 - Fitness: ${latest.pillars?.fitness || 0}/100
-- Diet: ${latest.pillars?.diet || 0}/100  
+- Diet: ${latest.pillars?.diet || 0}/100
 - Habits: ${latest.pillars?.habits || 0}/100
 - Medications: ${latest.pillars?.meds || 0}/100
 - Mental Wellness: ${latest.pillars?.mental || 0}/100
@@ -154,7 +154,7 @@ Generate 2-4 personalized coaching recommendations for this user.`;
         },
       ],
       system: systemPrompt,
-    });
+    }, { timeout: 30000 });
 
     const textContent = response.content.find((block) => block.type === 'text');
     if (!textContent || textContent.type !== 'text') {

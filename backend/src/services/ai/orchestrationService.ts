@@ -384,9 +384,11 @@ export class AIOrchestrationService extends EventEmitter {
         score: review.score ?? 0,
         refinements: review.refinements,
       };
-    } catch {
-      // If parsing fails, assume approved
-      return { approved: true, score: 70 };
+    } catch (error) {
+      // SECURITY: On parse failure, REJECT the plan - don't approve unsafe content
+      // This forces a re-review or manual intervention
+      console.error('AI reviewer returned invalid JSON, rejecting plan for safety:', error);
+      return { approved: false, score: 0, refinements: 'AI review failed to parse - requires re-review' };
     }
   }
 
@@ -516,7 +518,7 @@ export class AIOrchestrationService extends EventEmitter {
   }
 
   /**
-   * Call AI provider
+   * Call AI provider with timeout
    */
   private async callAI(
     systemPrompt: string,
@@ -533,7 +535,7 @@ export class AIOrchestrationService extends EventEmitter {
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-      });
+      }, { timeout: 30000 });
 
       return response.choices[0]?.message?.content || '';
 
@@ -543,7 +545,7 @@ export class AIOrchestrationService extends EventEmitter {
         max_tokens: 4096,
         system: systemPrompt,
         messages: [{ role: 'user', content: userPrompt }],
-      });
+      }, { timeout: 30000 });
 
       const textBlock = response.content.find(block => block.type === 'text');
       return textBlock?.text || '';
@@ -562,13 +564,53 @@ export class AIOrchestrationService extends EventEmitter {
   }
 
   /**
+   * SECURITY: Sanitize user profile before including in prompts
+   * Prevents prompt injection by cleaning user-supplied text fields
+   */
+  private sanitizeUserProfile(profile: Record<string, unknown>): Record<string, unknown> {
+    const sanitizeString = (input: unknown, maxLength: number = 500): string => {
+      if (typeof input !== 'string') return '';
+      return input
+        .slice(0, maxLength)
+        .replace(/ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?)?/gi, '[removed]')
+        .replace(/disregard\s+(all\s+)?(previous|above|prior)/gi, '[removed]')
+        .replace(/forget\s+(everything|all)/gi, '[removed]')
+        .replace(/new\s+instructions?:/gi, '[removed]')
+        .replace(/system\s*:/gi, '[removed]')
+        .replace(/assistant\s*:/gi, '[removed]')
+        .replace(/```[\s\S]*?```/g, '[code removed]')
+        .replace(/\{[\s\S]*?".*?"[\s\S]*?}/g, '[json removed]')
+        .trim();
+    };
+
+    const sanitizeArray = (arr: unknown): string[] => {
+      if (!Array.isArray(arr)) return [];
+      return arr.map(item => sanitizeString(item, 100)).filter(Boolean);
+    };
+
+    return {
+      ...profile,
+      // Sanitize freeform text fields
+      injuries_and_restrictions: sanitizeString(profile.injuries_and_restrictions, 1000),
+      current_activities: sanitizeString(profile.current_activities),
+      medications: sanitizeString(profile.medications),
+      onboarding_medications_notes: sanitizeString(profile.onboarding_medications_notes),
+      // Sanitize array fields
+      fitness_goals: sanitizeArray(profile.fitness_goals),
+      medical_conditions: sanitizeArray(profile.medical_conditions),
+      injuries: sanitizeArray(profile.injuries),
+    };
+  }
+
+  /**
    * Build prompt for planner agent
    */
   private buildPlannerPrompt(userProfile: Record<string, unknown>): string {
+    const sanitizedProfile = this.sanitizeUserProfile(userProfile);
     return `Analyze the following user profile and create a workout planning strategy:
 
 User Profile:
-${JSON.stringify(userProfile, null, 2)}
+${JSON.stringify(sanitizedProfile, null, 2)}
 
 Consider:
 1. Fitness level and experience
@@ -587,10 +629,11 @@ Provide a structured planning strategy for the workout generator.`;
     userProfile: Record<string, unknown>,
     plan: Record<string, unknown>
   ): string {
+    const sanitizedProfile = this.sanitizeUserProfile(userProfile);
     return `Generate a complete, personalized workout plan based on the following:
 
 User Profile:
-${JSON.stringify(userProfile, null, 2)}
+${JSON.stringify(sanitizedProfile, null, 2)}
 
 Planning Strategy:
 ${JSON.stringify(plan, null, 2)}
@@ -608,10 +651,11 @@ IMPORTANT: Output must be valid JSON matching the WorkoutPlan schema exactly.`;
     userProfile: Record<string, unknown>,
     workoutPlan: WorkoutPlan
   ): string {
+    const sanitizedProfile = this.sanitizeUserProfile(userProfile);
     return `Review the following workout plan for safety, effectiveness, and personalization:
 
 User Profile:
-${JSON.stringify(userProfile, null, 2)}
+${JSON.stringify(sanitizedProfile, null, 2)}
 
 Generated Workout Plan:
 ${JSON.stringify(workoutPlan, null, 2)}

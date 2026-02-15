@@ -16,6 +16,7 @@ import request from 'supertest';
 import mongoose from 'mongoose';
 import app from '../app';
 import User from '../models/User';
+import RefreshToken from '../models/RefreshToken';
 
 // Valid password meeting all requirements: uppercase, lowercase, number
 const VALID_PASSWORD = 'Password123';
@@ -34,6 +35,7 @@ describe('Authentication API', () => {
 
   beforeEach(async () => {
     await User.deleteMany({});
+    await RefreshToken.deleteMany({});
   });
 
   describe('POST /api/auth/signup', () => {
@@ -141,7 +143,7 @@ describe('Authentication API', () => {
   });
 
   describe('POST /api/auth/refresh', () => {
-    it('should return new access token with valid refresh token', async () => {
+    it('should return new tokens with valid refresh token (rotation)', async () => {
       const signupResponse = await request(app)
         .post('/api/auth/signup')
         .send({
@@ -157,6 +159,35 @@ describe('Authentication API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('accessToken');
+      expect(response.body).toHaveProperty('refreshToken');
+      // New refresh token should be different (rotation)
+      expect(response.body.refreshToken).not.toBe(refreshToken);
+    });
+
+    it('should invalidate old refresh token after rotation', async () => {
+      const signupResponse = await request(app)
+        .post('/api/auth/signup')
+        .send({
+          email: 'test@example.com',
+          password: VALID_PASSWORD,
+        });
+
+      const oldRefreshToken = signupResponse.body.refreshToken;
+
+      // First refresh should succeed
+      const firstResponse = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: oldRefreshToken });
+
+      expect(firstResponse.status).toBe(200);
+
+      // Second refresh with old token should fail (token reuse detection)
+      const secondResponse = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: oldRefreshToken });
+
+      expect(secondResponse.status).toBe(401);
+      expect(secondResponse.body.error).toContain('all sessions revoked');
     });
 
     it('should return 400 without refresh token', async () => {
@@ -171,6 +202,96 @@ describe('Authentication API', () => {
       const response = await request(app)
         .post('/api/auth/refresh')
         .send({ refreshToken: 'invalid-token' });
+
+      expect(response.status).toBe(401);
+    });
+  });
+
+  describe('POST /api/auth/logout', () => {
+    it('should revoke refresh token on logout', async () => {
+      const signupResponse = await request(app)
+        .post('/api/auth/signup')
+        .send({
+          email: 'test@example.com',
+          password: VALID_PASSWORD,
+        });
+
+      const refreshToken = signupResponse.body.refreshToken;
+
+      // Logout should succeed
+      const logoutResponse = await request(app)
+        .post('/api/auth/logout')
+        .send({ refreshToken });
+
+      expect(logoutResponse.status).toBe(200);
+      expect(logoutResponse.body.message).toBe('Logged out successfully');
+
+      // Refresh with the revoked token should fail
+      const refreshResponse = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(refreshResponse.status).toBe(401);
+    });
+
+    it('should return 400 without refresh token', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout')
+        .send({});
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('POST /api/auth/logout-all', () => {
+    it('should revoke all refresh tokens for user', async () => {
+      const signupResponse = await request(app)
+        .post('/api/auth/signup')
+        .send({
+          email: 'test@example.com',
+          password: VALID_PASSWORD,
+        });
+
+      const accessToken = signupResponse.body.accessToken;
+      const refreshToken1 = signupResponse.body.refreshToken;
+
+      // Login again to get another refresh token
+      const loginResponse = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'test@example.com',
+          password: VALID_PASSWORD,
+        });
+
+      const refreshToken2 = loginResponse.body.refreshToken;
+
+      // Logout all devices
+      const logoutAllResponse = await request(app)
+        .post('/api/auth/logout-all')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send();
+
+      expect(logoutAllResponse.status).toBe(200);
+      expect(logoutAllResponse.body.sessions_revoked).toBe(2);
+
+      // Both refresh tokens should now be invalid
+      const refresh1Response = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: refreshToken1 });
+
+      expect(refresh1Response.status).toBe(401);
+
+      const refresh2Response = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken: refreshToken2 });
+
+      expect(refresh2Response.status).toBe(401);
+    });
+
+    it('should return 401 without authentication', async () => {
+      const response = await request(app)
+        .post('/api/auth/logout-all')
+        .send();
 
       expect(response.status).toBe(401);
     });

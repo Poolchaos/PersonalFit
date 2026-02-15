@@ -17,6 +17,7 @@
  */
 
 import { Router, Response } from 'express';
+import { param, body, validationResult } from 'express-validator';
 import { authenticate, AuthRequest } from '../middleware/auth';
 import {
   getDailyChallenges,
@@ -57,8 +58,23 @@ router.get('/today', authenticate, async (req: AuthRequest, res: Response): Prom
 router.post(
   '/:challengeId/progress',
   authenticate,
+  [
+    param('challengeId')
+      .isMongoId()
+      .withMessage('Invalid challenge ID'),
+    body('progressIncrement')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Progress increment must be between 1 and 100'),
+  ],
   async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        res.status(400).json({ errors: errors.array() });
+        return;
+      }
+
       const userId = req.user?.userId;
       if (!userId) {
         res.status(401).json({ error: 'Unauthorized' });

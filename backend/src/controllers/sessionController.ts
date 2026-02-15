@@ -52,86 +52,29 @@ export const createSession = async (
 
     await session.save();
 
-    // If the session is completed, award XP and update gamification
+    // If the session is completed, award XP and update gamification (with idempotency)
     if (session.completion_status === 'completed') {
-      const user = await User.findById(req.user?.userId);
-
-      if (user) {
-        // Initialize gamification if not present
-        if (!user.gamification) {
-          user.gamification = {
-            xp: 0,
-            level: 1,
-            total_workouts_completed: 0,
-            current_streak: 0,
-            longest_streak: 0,
-            achievements: [],
-            total_prs: 0,
-            streak_freezes_available: 2,
-            streak_freezes_used_this_month: 0,
-            gems: 50,
-            total_gems_earned: 50,
-            purchased_items: [],
-            milestone_rewards_claimed: [],
-          };
-        }
-
-        const gamification = user.gamification!;
-        const isFirstWorkout = gamification.total_workouts_completed === 0;
-
-        // Update streak
-        const streakUpdate = updateStreak({
-          lastWorkoutDate: gamification.last_workout_date,
-          workoutDate: session.session_date,
-          currentStreak: gamification.current_streak,
-        });
-
-        gamification.current_streak = streakUpdate.newStreak;
-        gamification.last_workout_date = session.session_date;
-
-        // Update longest streak if applicable
-        if (streakUpdate.newStreak > (gamification.longest_streak || 0)) {
-          gamification.longest_streak = streakUpdate.newStreak;
-        }
-
-        // Calculate XP earned
-        const xpResult = calculateWorkoutXp({
-          isFirstWorkout,
-          currentStreak: gamification.current_streak,
-          hadPersonalRecord: false,
-        });
-
-        // Update user stats
-        gamification.xp += xpResult.totalXp;
-        gamification.total_workouts_completed += 1;
-
-        const oldLevel = gamification.level;
-        const newLevel = calculateLevel(gamification.xp);
-        gamification.level = newLevel;
-
-        // Check for new achievements
-        const newAchievements = checkAchievements({
-          currentAchievements: gamification.achievements,
-          stats: {
-            totalWorkouts: gamification.total_workouts_completed,
-            currentStreak: gamification.current_streak,
-            totalPRs: gamification.total_prs || 0,
-            level: newLevel,
+      // Atomically mark session as xp_awarded to prevent double awards
+      const markedSession = await WorkoutSession.findOneAndUpdate(
+        {
+          _id: session._id,
+          xp_awarded: { $ne: true }, // Only if not already awarded
+        },
+        {
+          $set: {
+            xp_awarded: true,
+            xp_awarded_at: new Date(),
           },
-        });
+        },
+        { new: true }
+      );
 
-        if (newAchievements.length > 0) {
-          gamification.achievements.push(...newAchievements);
-        }
-
-        await user.save();
-
-        console.log(`XP awarded for session ${session._id}:`, {
-          xpAwarded: xpResult.totalXp,
-          breakdown: xpResult.breakdown,
-          newLevel,
-          leveledUp: newLevel > oldLevel,
-        });
+      // If marking failed (already awarded), skip XP logic
+      if (!markedSession) {
+        console.log(`XP already awarded for session ${session._id}, skipping`);
+      } else {
+        // Award XP with atomic update
+        await awardXpForSession(req.user?.userId!, session.session_date, session._id);
       }
     }
 
@@ -396,3 +339,134 @@ export const updateExercise = async (
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+/**
+ * Helper function to award XP for a session atomically (internal use)
+ * Uses optimistic locking to prevent race conditions
+ */
+async function awardXpForSession(
+  userId: string,
+  sessionDate: Date,
+  sessionId: unknown
+): Promise<void> {
+  const MAX_RETRIES = 3;
+  let attempt = 0;
+
+  while (attempt < MAX_RETRIES) {
+    attempt++;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      console.error(`User ${userId} not found for XP award`);
+      return;
+    }
+
+    const currentVersion = user.__v;
+
+    // Initialize gamification if not present
+    if (!user.gamification) {
+      const initResult = await User.findOneAndUpdate(
+        { _id: userId, gamification: { $exists: false } },
+        {
+          $set: {
+            gamification: {
+              xp: 0,
+              level: 1,
+              total_workouts_completed: 0,
+              current_streak: 0,
+              longest_streak: 0,
+              achievements: [],
+              total_prs: 0,
+              streak_freezes_available: 2,
+              streak_freezes_used_this_month: 0,
+              gems: 50,
+              total_gems_earned: 50,
+              purchased_items: [],
+              milestone_rewards_claimed: [],
+            },
+          },
+        },
+        { new: true }
+      );
+      if (initResult) {
+        continue; // Retry with initialized state
+      }
+    }
+
+    const gamification = user.gamification!;
+    const isFirstWorkout = gamification.total_workouts_completed === 0;
+
+    // Update streak
+    const streakUpdate = updateStreak({
+      lastWorkoutDate: gamification.last_workout_date,
+      workoutDate: sessionDate,
+      currentStreak: gamification.current_streak,
+    });
+
+    const newStreak = streakUpdate.newStreak;
+    const newLongestStreak = Math.max(newStreak, gamification.longest_streak || 0);
+
+    // Calculate XP earned
+    const xpResult = calculateWorkoutXp({
+      isFirstWorkout,
+      currentStreak: newStreak,
+      hadPersonalRecord: false,
+    });
+
+    const newXp = gamification.xp + xpResult.totalXp;
+    const newWorkoutCount = gamification.total_workouts_completed + 1;
+    const oldLevel = gamification.level;
+    const newLevel = calculateLevel(newXp);
+
+    // Check for new achievements
+    const newAchievements = checkAchievements({
+      currentAchievements: gamification.achievements,
+      stats: {
+        totalWorkouts: newWorkoutCount,
+        currentStreak: newStreak,
+        totalPRs: gamification.total_prs || 0,
+        level: newLevel,
+      },
+    });
+
+    // Build atomic update with version check (optimistic locking)
+    const updateResult = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        __v: currentVersion,
+      },
+      {
+        $inc: {
+          'gamification.xp': xpResult.totalXp,
+          'gamification.total_workouts_completed': 1,
+          __v: 1,
+        },
+        $set: {
+          'gamification.current_streak': newStreak,
+          'gamification.longest_streak': newLongestStreak,
+          'gamification.level': newLevel,
+          'gamification.last_workout_date': sessionDate,
+        },
+        ...(newAchievements.length > 0
+          ? { $addToSet: { 'gamification.achievements': { $each: newAchievements } } }
+          : {}),
+      },
+      { new: true }
+    );
+
+    if (updateResult) {
+      console.log(`XP awarded for session ${sessionId}:`, {
+        xpAwarded: xpResult.totalXp,
+        breakdown: xpResult.breakdown,
+        newLevel,
+        leveledUp: newLevel > oldLevel,
+      });
+      return;
+    }
+
+    // Version conflict - retry
+    console.log(`Optimistic lock conflict on XP award (attempt ${attempt}), retrying...`);
+  }
+
+  console.error(`Failed to award XP after ${MAX_RETRIES} attempts for session ${sessionId}`);
+}

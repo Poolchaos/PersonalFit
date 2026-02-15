@@ -28,6 +28,8 @@ export interface IWorkoutSession extends Document {
   mood_before?: 'great' | 'good' | 'okay' | 'tired' | 'unmotivated';
   mood_after?: 'energized' | 'accomplished' | 'satisfied' | 'exhausted' | 'disappointed';
   perceived_difficulty?: number; // 1-10 scale
+  xp_awarded?: boolean; // Idempotency flag to prevent double XP awards
+  xp_awarded_at?: Date; // When XP was awarded
   created_at: Date;
   updated_at: Date;
 }
@@ -91,6 +93,14 @@ const workoutSessionSchema = new Schema<IWorkoutSession>(
       type: Number,
       min: 1,
       max: 10,
+    },
+    xp_awarded: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    xp_awarded_at: {
+      type: Date,
     },
   },
   {

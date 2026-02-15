@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 import Layout from '../components/Layout';
 import { medicationAPI, medicationQueryKeys, profileAPI, queryKeys, workoutAPI } from '../api';
 import type { Medication, TodaysMedication, CreateMedicationInput } from '../types';
-import { Card, CardContent, Button, Modal, ConfirmModal } from '../design-system';
+import { Card, CardContent, Button, Modal, ConfirmModal, NumberPromptModal } from '../design-system';
 import {
   Pill,
   Plus,
@@ -48,6 +48,7 @@ export default function MedicationsPage() {
   const [activeTab, setActiveTab] = useState<'today' | 'all' | 'refills' | 'adherence'>('today');
   const [dismissedOnboardingNote, setDismissedOnboardingNote] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [refillMedicationId, setRefillMedicationId] = useState<string | null>(null);
   const formRef = useRef<MedicationFormHandle>(null);
 
   // Fetch user profile to check for onboarding medications notes
@@ -115,7 +116,7 @@ export default function MedicationsPage() {
     },
   });
 
-  // Log dose mutation
+  // Log dose mutation with optimistic updates for instant UI feedback
   const logDoseMutation = useMutation({
     mutationFn: ({
       medicationId,
@@ -130,13 +131,51 @@ export default function MedicationsPage() {
         scheduled_time: scheduledTime,
         status,
       }),
+    onMutate: async ({ medicationId, scheduledTime, status }) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: medicationQueryKeys.today() });
+
+      // Snapshot previous value
+      const previousTodaysData = queryClient.getQueryData<{
+        todaysDoses: TodaysMedication[];
+      }>(medicationQueryKeys.today());
+
+      // Optimistically update the cache
+      if (previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), {
+          ...previousTodaysData,
+          todaysDoses: previousTodaysData.todaysDoses.map((med) =>
+            med.medication._id === medicationId
+              ? {
+                  ...med,
+                  doses: med.doses.map((dose) =>
+                    dose.scheduled_time === scheduledTime
+                      ? { ...dose, status }
+                      : dose
+                  ),
+                }
+              : med
+          ),
+        });
+      }
+
+      // Return context for rollback
+      return { previousTodaysData };
+    },
     onSuccess: (_, variables) => {
       toast.success(variables.status === 'taken' ? 'Dose logged!' : 'Dose skipped');
+    },
+    onError: (_, __, context) => {
+      // Rollback to previous value on error
+      if (context?.previousTodaysData) {
+        queryClient.setQueryData(medicationQueryKeys.today(), context.previousTodaysData);
+      }
+      toast.error('Failed to log dose');
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure cache is in sync
       queryClient.invalidateQueries({ queryKey: medicationQueryKeys.today() });
       queryClient.invalidateQueries({ queryKey: medicationQueryKeys.list() });
-    },
-    onError: () => {
-      toast.error('Failed to log dose');
     },
   });
 
@@ -220,9 +259,13 @@ export default function MedicationsPage() {
   };
 
   const handleRefill = (id: string) => {
-    const count = window.prompt('How many did you refill?');
-    if (count && !isNaN(Number(count)) && Number(count) > 0) {
-      refillMutation.mutate({ id, count: Number(count) });
+    setRefillMedicationId(id);
+  };
+
+  const handleRefillSubmit = (count: number) => {
+    if (refillMedicationId) {
+      refillMutation.mutate({ id: refillMedicationId, count });
+      setRefillMedicationId(null);
     }
   };
 
@@ -627,6 +670,20 @@ export default function MedicationsPage() {
             confirmText="Remove"
             variant="danger"
             loading={deleteMutation.isPending}
+          />
+
+          {/* Refill Count Modal */}
+          <NumberPromptModal
+            isOpen={!!refillMedicationId}
+            onClose={() => setRefillMedicationId(null)}
+            onSubmit={handleRefillSubmit}
+            title="Refill Medication"
+            message="How many pills/doses did you refill?"
+            placeholder="Enter quantity"
+            min={1}
+            max={9999}
+            submitText="Add Refill"
+            loading={refillMutation.isPending}
           />
 
           {/* AI Medication Parsing Modal */}

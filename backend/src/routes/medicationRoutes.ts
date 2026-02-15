@@ -13,7 +13,7 @@
  */
 
 import { Router } from 'express';
-import { body, query } from 'express-validator';
+import { body, query, param } from 'express-validator';
 import multer from 'multer';
 import {
   getMedications,
@@ -281,6 +281,11 @@ router.post(
 // Update medication with new bottle image
 router.put(
   '/:id/bottle-image',
+  [
+    param('id')
+      .isMongoId()
+      .withMessage('Invalid medication ID'),
+  ],
   upload.single('bottle_image'),
   updateBottleImage
 );

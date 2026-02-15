@@ -14,7 +14,9 @@
 
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { signup, login, refresh } from '../controllers/authController';
+import { signup, login, refresh, logout, logoutAll } from '../controllers/authController';
+import { authenticate } from '../middleware/auth';
+import { loginRateLimiter } from '../middleware/loginRateLimiter';
 
 const router = Router();
 
@@ -35,9 +37,10 @@ router.post(
   signup
 );
 
-// Login route
+// Login route with per-account rate limiting
 router.post(
   '/login',
+  loginRateLimiter, // Check rate limit before processing login
   [
     body('email').isEmail().normalizeEmail(),
     body('password').notEmpty(),
@@ -45,7 +48,13 @@ router.post(
   login
 );
 
-// Refresh token route
+// Refresh token route (now includes token rotation)
 router.post('/refresh', refresh);
+
+// Logout route (revokes current refresh token)
+router.post('/logout', logout);
+
+// Logout from all devices (requires authentication)
+router.post('/logout-all', authenticate, logoutAll);
 
 export default router;

@@ -52,7 +52,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   }
 
   const permission = await Notification.requestPermission();
-  console.log('Notification permission:', permission);
+  if (import.meta.env.DEV) console.log('Notification permission:', permission);
   return permission;
 }
 
@@ -69,7 +69,7 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       scope: '/',
     });
 
-    console.log('✅ Service Worker registered:', registration.scope);
+    if (import.meta.env.DEV) console.log('✅ Service Worker registered:', registration.scope);
 
     // Wait for the service worker to be ready
     await navigator.serviceWorker.ready;
@@ -133,7 +133,7 @@ export async function subscribeToPushNotifications(): Promise<PushSubscription> 
     let subscription = await registration.pushManager.getSubscription();
 
     if (subscription) {
-      console.log('Already subscribed to push notifications');
+      if (import.meta.env.DEV) console.log('Already subscribed to push notifications');
       return subscription;
     }
 
@@ -147,14 +147,14 @@ export async function subscribeToPushNotifications(): Promise<PushSubscription> 
       applicationServerKey: applicationServerKey.buffer as ArrayBuffer,
     });
 
-    console.log('✅ Subscribed to push notifications');
+    if (import.meta.env.DEV) console.log('✅ Subscribed to push notifications');
 
     // Send subscription to server
     await apiClient.post('/notifications/register-device', {
       subscription: subscription.toJSON(),
     });
 
-    console.log('✅ Subscription registered with server');
+    if (import.meta.env.DEV) console.log('✅ Subscription registered with server');
 
     return subscription;
   } catch (error) {
@@ -173,13 +173,13 @@ export async function unsubscribeFromPushNotifications(): Promise<void> {
 
     if (subscription) {
       await subscription.unsubscribe();
-      console.log('✅ Unsubscribed from push notifications');
+      if (import.meta.env.DEV) console.log('✅ Unsubscribed from push notifications');
     }
 
     // Tell server to remove subscription
     await apiClient.delete('/notifications/unregister-device');
 
-    console.log('✅ Subscription removed from server');
+    if (import.meta.env.DEV) console.log('✅ Subscription removed from server');
   } catch (error) {
     console.error('❌ Failed to unsubscribe from push notifications:', error);
     throw error;
@@ -213,7 +213,7 @@ export async function isSubscribed(): Promise<boolean> {
 export async function sendTestNotification(): Promise<void> {
   try {
     await apiClient.post('/notifications/test');
-    console.log('✅ Test notification sent');
+    if (import.meta.env.DEV) console.log('✅ Test notification sent');
   } catch (error) {
     console.error('❌ Failed to send test notification:', error);
     throw error;
@@ -247,7 +247,7 @@ export async function initializePushNotifications(): Promise<void> {
 
     // Set up message listener
     navigator.serviceWorker.addEventListener('message', (event) => {
-      console.log('Message from service worker:', event.data);
+      if (import.meta.env.DEV) console.log('Message from service worker:', event.data);
 
       if (event.data?.type === 'LOG_DOSE') {
         // Handle dose logging request from notification
@@ -265,7 +265,7 @@ export async function initializePushNotifications(): Promise<void> {
       }
     });
 
-    console.log('✅ Push notifications initialized');
+    if (import.meta.env.DEV) console.log('✅ Push notifications initialized');
   } catch (error) {
     console.error('❌ Failed to initialize push notifications:', error);
   }
