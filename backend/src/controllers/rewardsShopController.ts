@@ -18,7 +18,7 @@ import User from '../models/User';
 import {
   getAvailableShopItems,
   getShopItemsByCategory,
-  validatePurchase,
+  getShopItem,
   checkMilestoneRewards,
 } from '../services/rewardsShopService';
 
@@ -65,7 +65,7 @@ export const getShopItems = async (
 };
 
 /**
- * Purchase a shop item
+ * Purchase a shop item (atomic operation to prevent race conditions)
  */
 export const purchaseItem = async (
   req: AuthRequest,
@@ -84,56 +84,61 @@ export const purchaseItem = async (
       return;
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
+    // Validate item exists and get price
+    const item = getShopItem(itemId);
+    if (!item) {
+      res.status(400).json({ error: 'Item not found' });
       return;
     }
 
-    // Initialize gamification if needed
-    if (!user.gamification) {
-      user.gamification = {
-        xp: 0,
-        level: 1,
-        total_workouts_completed: 0,
-        current_streak: 0,
-        longest_streak: 0,
-        total_prs: 0,
-        achievements: [],
-        gems: 0,
-        total_gems_earned: 0,
-        purchased_items: [],
-        milestone_rewards_claimed: [],
-        streak_freezes_available: 0,
-        streak_freezes_used_this_month: 0,
-      };
-    }
+    // Atomic purchase: only succeeds if user has enough gems AND hasn't already purchased
+    // Uses $inc for gem deduction and $addToSet for purchase tracking
+    const result = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        'gamification.gems': { $gte: item.gemsPrice },
+        'gamification.purchased_items': { $ne: itemId },
+      },
+      {
+        $inc: { 'gamification.gems': -item.gemsPrice },
+        $addToSet: { 'gamification.purchased_items': itemId },
+      },
+      { new: true }
+    );
 
-    const userGems = user.gamification!.gems || 0;
-    const userPurchases = user.gamification!.purchased_items || [];
+    if (!result) {
+      // Determine why the update failed
+      const user = await User.findById(userId).select('gamification.gems gamification.purchased_items');
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
 
-    // Validate purchase
-    const validation = validatePurchase(itemId, userGems, userPurchases);
-    if (!validation.valid) {
-      res.status(400).json({ error: validation.error });
+      const userGems = user.gamification?.gems || 0;
+      const userPurchases = user.gamification?.purchased_items || [];
+
+      if (userPurchases.includes(itemId)) {
+        res.status(400).json({ error: 'Item already purchased' });
+        return;
+      }
+
+      if (userGems < item.gemsPrice) {
+        res.status(400).json({
+          error: `Not enough gems. Need ${item.gemsPrice}, have ${userGems}`,
+        });
+        return;
+      }
+
+      // Edge case: gamification not initialized
+      res.status(400).json({ error: 'Unable to complete purchase' });
       return;
     }
-
-    const item = require('../services/rewardsShopService').getShopItem(itemId);
-
-    // Deduct gems and add to purchases
-    if (user.gamification) {
-      user.gamification.gems = userGems - item.gemsPrice;
-      user.gamification.purchased_items = [...userPurchases, itemId];
-    }
-
-    await user.save();
 
     res.json({
       success: true,
       message: `Successfully purchased ${item.name}!`,
-      gemsRemaining: user.gamification?.gems,
-      purchasedItems: user.gamification?.purchased_items,
+      gemsRemaining: result.gamification?.gems,
+      purchasedItems: result.gamification?.purchased_items,
     });
   } catch (error) {
     console.error('Purchase item error:', error);
@@ -142,7 +147,7 @@ export const purchaseItem = async (
 };
 
 /**
- * Claim milestone rewards (gems)
+ * Claim milestone rewards (gems) - atomic operation
  */
 export const claimMilestoneRewards = async (
   req: AuthRequest,
@@ -155,7 +160,10 @@ export const claimMilestoneRewards = async (
       return;
     }
 
-    const user = await User.findById(userId);
+    // First, get user to calculate available rewards
+    const user = await User.findById(userId).select(
+      'gamification.level gamification.current_streak gamification.milestone_rewards_claimed'
+    );
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
@@ -178,7 +186,7 @@ export const claimMilestoneRewards = async (
       return;
     }
 
-    // Award gems
+    // Calculate totals
     let totalGemsAwarded = 0;
     const newMilestones: string[] = [];
 
@@ -187,21 +195,41 @@ export const claimMilestoneRewards = async (
       newMilestones.push(reward.milestoneId);
     }
 
-    user.gamification!.gems = (user.gamification?.gems || 0) + totalGemsAwarded;
-    user.gamification!.total_gems_earned =
-      (user.gamification?.total_gems_earned || 0) + totalGemsAwarded;
-    user.gamification!.milestone_rewards_claimed = [
-      ...completedMilestones,
-      ...newMilestones,
-    ];
+    // Atomic update: only claim milestones not already claimed
+    const result = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        // Ensure none of the new milestones are already claimed
+        'gamification.milestone_rewards_claimed': { $nin: newMilestones },
+      },
+      {
+        $inc: {
+          'gamification.gems': totalGemsAwarded,
+          'gamification.total_gems_earned': totalGemsAwarded,
+        },
+        $addToSet: {
+          'gamification.milestone_rewards_claimed': { $each: newMilestones },
+        },
+      },
+      { new: true }
+    );
 
-    await user.save();
+    if (!result) {
+      // Milestones were already claimed (race condition prevented)
+      res.json({
+        success: true,
+        newRewards: [],
+        totalGemsAwarded: 0,
+        message: 'Rewards already claimed',
+      });
+      return;
+    }
 
     res.json({
       success: true,
       newRewards: availableRewards,
       totalGemsAwarded,
-      totalGems: user.gamification!.gems,
+      totalGems: result.gamification?.gems,
       message: `Claimed ${totalGemsAwarded} gems!`,
     });
   } catch (error) {
