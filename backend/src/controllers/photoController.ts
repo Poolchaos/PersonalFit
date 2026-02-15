@@ -122,17 +122,25 @@ export const deleteProgressPhoto = async (
 
     await deletePhoto(filename);
 
-    // Remove from any associated metrics
-    await BodyMetrics.updateMany(
-      { user_id: new mongoose.Types.ObjectId(userId) },
-      {
-        $unset: {
-          'progress_photos.front_url': filename,
-          'progress_photos.side_url': filename,
-          'progress_photos.back_url': filename,
+    // Determine which photo field to unset based on the photoType from the filename
+    // photoType is extracted from the path: {userId}/{photoType}/{timestamp}
+    const photoTypeToField: Record<string, string> = {
+      'front': 'progress_photos.front_url',
+      'side': 'progress_photos.side_url',
+      'back': 'progress_photos.back_url',
+    };
+
+    const fieldToUnset = photoTypeToField[photoType];
+    if (fieldToUnset) {
+      // Only unset the specific field that matches the deleted photo
+      await BodyMetrics.updateMany(
+        { 
+          user_id: new mongoose.Types.ObjectId(userId),
+          [fieldToUnset]: { $regex: new RegExp(filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }
         },
-      }
-    );
+        { $unset: { [fieldToUnset]: '' } }
+      );
+    }
 
     res.json({ message: 'Photo deleted successfully' });
   } catch (error) {

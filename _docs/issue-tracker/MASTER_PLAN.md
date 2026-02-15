@@ -10,13 +10,13 @@
 
 | Sprint | Theme | Items | Done | Status |
 |---|---|---|---|---|
-| **S0** | Stop the Bleeding | 7 | 5 | 🟡 In Progress |
+| **S0** | Stop the Bleeding | 7 | 6 | 🟡 In Progress |
 | **S1** | Atomicity & AI Safety | 6 | 0 | 🔴 Not Started |
 | **S2** | Auth & Security Hardening | 6 | 0 | 🔴 Not Started |
 | **S3** | Frontend Quality | 8 | 0 | 🔴 Not Started |
 | **S4** | Testing & Observability | 8 | 0 | 🔴 Not Started |
 | **S5** | Data Integrity & Polish | 8 | 0 | 🔴 Not Started |
-| **Total** | | **43** | **5** | |
+| **Total** | | **43** | **6** | |
 
 ---
 
@@ -75,12 +75,13 @@
 
 ### 🔴 HIGH — Production Stability
 
-- [ ] **S0-6** | Move `node-cron` from devDependencies to dependencies
+- [x] **S0-6** | Move `node-cron` from devDependencies to dependencies ✅ COMPLETED 2026-02-15
   - **Priority:** 🔴 High
   - **Issue:** `schedulerService.ts` imports `node-cron` at runtime, but it's in `devDependencies`. Production Docker (`npm ci --only=production`) won't install it → startup crash.
   - **Files:** `backend/package.json` (L46), `schedulerService.ts` (L15), `Dockerfile` (L56)
   - **Verification:** CONFIRMED — audit finding 1.13
   - **Fix Strategy:** `npm uninstall node-cron && npm install node-cron`. Verify types package location too.
+  - **Resolution:** Moved node-cron to dependencies. @types/node-cron stays in devDependencies.
   - **Effort:** 5m
 
 - [ ] **S0-7** | Fix photo delete `$unset` data loss bug
