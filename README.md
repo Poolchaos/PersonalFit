@@ -75,7 +75,8 @@ Lumi is an all-in-one health ecosystem that illuminates your path to wellness th
 - **🤖 Multi-LLM AI Engine** — OpenAI GPT-4o, Anthropic Claude, Google Gemini, Moonshot Kimi — swap providers via config
 - **📅 Smart Scheduling** — Visual calendar, weekly preview, progress tracking
 - **💪 Workout Management** — Multiple plans, session logging, active plan system
-- **📊 Progress Tracking** — Body metrics, charts, progress photos with S3 storage
+- **� Workout Sharing** — Generate shareable links, public plan preview, one-click import for authenticated users
+- **�📊 Progress Tracking** — Body metrics, charts, progress photos with S3 storage
 - **💊 Medicine & Supplement Manager** — Track medications, dosages, adherence, health insights, OCR bottle scanning
 - **⚙️ Settings Hub** — Notifications, privacy, data management, appearance customization
 - **🔐 Privacy-First** — Self-hosted, your data on your server
